@@ -11,6 +11,7 @@ DATA_GENERATION_DIR     = "data_generation"
 DATA_DIR                = "data"
 ESTIMATION_DIR          = "estimation"
 ESTIMATION_RESULTS_DIR  = "estimation_results"
+RESULTS_DIR             = "results"
 
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))

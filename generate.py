@@ -143,6 +143,8 @@ def get_settings(system, instance):
         "time_start": instance["time"]["start"],
         "time_end": instance["time"]["end"],
         "time_count": instance["time"]["count"],
+        "lower_bound": SEARCH_BOUNDS[0],
+        "upper_bound": SEARCH_BOUNDS[1]
     }
 
     return settings
@@ -207,8 +209,6 @@ OUTPUT_DIR:         {output_dir}
             
             settings = get_settings(system, instance)
             settings.update({'data_filepath' : data_filepath})
-            settings["lower_bound"] = SEARCH_BOUNDS[0]
-            settings["upper_bound"] = SEARCH_BOUNDS[1]
             
             with open(args.template_data_generation, 'r') as template:
                 julia_file = chevron.render(template, settings)
@@ -227,9 +227,6 @@ OUTPUT_DIR:         {output_dir}
                 print("params = {}".format(instance["parameters"]))
                 continue
             
-            df = pd.read_csv(data_filepath, header=None, index_col=False)
-            settings["data"] = df[list(range(1, settings["num_measurements"]+1))].to_string(index=False, header=False, index_names=False)
-        
     # Ia-R'lyehl Cihuiha flgagnl id Ia!
     content = chevron.render(open(args.template_instances, "r"), instances)
     content = ",".join(content.split(",")[:-1]) + "\n]\n}"

@@ -11,26 +11,26 @@ using Optim, LineSearches
 
 solver = Vern9()
 
-name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+name = "seir_0"
+@parameters a b nu 
+@variables S(t) E(t) In(t) NN(t) y1(t) y2(t)
+states = [S, E, In, NN]
+parameters = [a, b, nu]
 state_equations = [
-{{#components}}
-    D({{state_var}}) ~ {{state_expr}},
-{{/components}}
+    D(S) ~ -b * S * In / NN,
+    D(E) ~ b * S * In / NN - nu * E,
+    D(In) ~ nu * E - a * In,
+    D(NN) ~ 0,
 ]
 measured_quantities = [
-{{#measured_quantities}}
-    {{measurement}} ~ {{measurement_expression}},
-{{/measured_quantities}}
+    y1 ~ In,
+    y2 ~ NN,
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [0.195, 0.354, 0.431, 0.151]
+p_true = [0.326, 0.196, 0.337]
 
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
+time_interval = [-1.0, 1.0]
+datasize = 201
 
 model, mq = create_ordered_ode_system(
     name,
@@ -40,7 +40,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em2/data/seir_0.csv", Tuple))
 
 pep = ParameterEstimationProblem(
     name,
@@ -97,5 +97,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em2/estimation_results/seir_0.csv", table, header=string.(collect(keys(table))))
 

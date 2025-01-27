@@ -11,26 +11,23 @@ using Optim, LineSearches
 
 solver = Vern9()
 
-name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+name = "lotka-volterra_0"
+@parameters k1 k2 k3 
+@variables r(t) w(t) y1(t)
+states = [r, w]
+parameters = [k1, k2, k3]
 state_equations = [
-{{#components}}
-    D({{state_var}}) ~ {{state_expr}},
-{{/components}}
+    D(r) ~ k1*r - k2*r*w,
+    D(w) ~ k2*r*w - k3*w,
 ]
 measured_quantities = [
-{{#measured_quantities}}
-    {{measurement}} ~ {{measurement_expression}},
-{{/measured_quantities}}
+    y1 ~ r,
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [0.691, 0.131]
+p_true = [0.475, 0.881, 0.584]
 
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
+time_interval = [-1.0, 1.0]
+datasize = 201
 
 model, mq = create_ordered_ode_system(
     name,
@@ -40,7 +37,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em4/data/lotka-volterra_0.csv", Tuple))
 
 pep = ParameterEstimationProblem(
     name,
@@ -97,5 +94,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em4/estimation_results/lotka-volterra_0.csv", table, header=string.(collect(keys(table))))
 

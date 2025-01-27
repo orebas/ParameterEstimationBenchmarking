@@ -11,26 +11,24 @@ using Optim, LineSearches
 
 solver = Vern9()
 
-name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+name = "harmonic_0"
+@parameters a b 
+@variables x1(t) x2(t) y1(t) y2(t)
+states = [x1, x2]
+parameters = [a, b]
 state_equations = [
-{{#components}}
-    D({{state_var}}) ~ {{state_expr}},
-{{/components}}
+    D(x1) ~ -a*x2,
+    D(x2) ~ +x1/b,
 ]
 measured_quantities = [
-{{#measured_quantities}}
-    {{measurement}} ~ {{measurement_expression}},
-{{/measured_quantities}}
+    y1 ~ x1,
+    y2 ~ x2,
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [0.267, 0.229]
+p_true = [0.891, 0.182]
 
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
+time_interval = [-1.0, 1.0]
+datasize = 201
 
 model, mq = create_ordered_ode_system(
     name,
@@ -40,7 +38,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_0/data/harmonic_0.csv", Tuple))
 
 pep = ParameterEstimationProblem(
     name,
@@ -97,5 +95,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_0/estimation_results/harmonic_0.csv", table, header=string.(collect(keys(table))))
 

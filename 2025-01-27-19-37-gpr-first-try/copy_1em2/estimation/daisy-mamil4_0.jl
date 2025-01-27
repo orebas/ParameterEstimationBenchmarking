@@ -11,26 +11,27 @@ using Optim, LineSearches
 
 solver = Vern9()
 
-name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+name = "daisy-mamil4_0"
+@parameters k01 k12 k13 k14 k21 k31 k41 
+@variables x1(t) x2(t) x3(t) x4(t) y1(t) y2(t) y3(t)
+states = [x1, x2, x3, x4]
+parameters = [k01, k12, k13, k14, k21, k31, k41]
 state_equations = [
-{{#components}}
-    D({{state_var}}) ~ {{state_expr}},
-{{/components}}
+    D(x1) ~ -k01 * x1 + k12 * x2 + k13 * x3 + k14 * x4 - k21 * x1 - k31 * x1 - k41 * x1,
+    D(x2) ~ -k12 * x2 + k21 * x1,
+    D(x3) ~ -k13 * x3 + k31 * x1,
+    D(x4) ~ -k14 * x4 + k41 * x1,
 ]
 measured_quantities = [
-{{#measured_quantities}}
-    {{measurement}} ~ {{measurement_expression}},
-{{/measured_quantities}}
+    y1 ~ x1,
+    y2 ~ x2,
+    y3 ~ x3 + x4,
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [0.148, 0.633, 0.637, 0.268]
+p_true = [0.59, 0.594, 0.855, 0.645, 0.388, 0.45, 0.658]
 
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
+time_interval = [-1.0, 1.0]
+datasize = 201
 
 model, mq = create_ordered_ode_system(
     name,
@@ -40,7 +41,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em2/data/daisy-mamil4_0.csv", Tuple))
 
 pep = ParameterEstimationProblem(
     name,
@@ -97,5 +98,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em2/estimation_results/daisy-mamil4_0.csv", table, header=string.(collect(keys(table))))
 

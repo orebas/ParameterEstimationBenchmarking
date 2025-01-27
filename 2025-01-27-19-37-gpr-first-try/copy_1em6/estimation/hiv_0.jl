@@ -11,26 +11,29 @@ using Optim, LineSearches
 
 solver = Vern9()
 
-name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+name = "hiv_0"
+@parameters lm d beta a k uu c q b h 
+@variables x(t) yy(t) vv(t) w(t) z(t) y1(t) y2(t) y3(t) y4(t)
+states = [x, yy, vv, w, z]
+parameters = [lm, d, beta, a, k, uu, c, q, b, h]
 state_equations = [
-{{#components}}
-    D({{state_var}}) ~ {{state_expr}},
-{{/components}}
+    D(x) ~ lm - d * x - beta * x * vv,
+    D(yy) ~ beta * x * vv - a * yy,
+    D(vv) ~ k * yy - uu * vv,
+    D(w) ~ c * x * yy * w - c * q * yy * w - b * w,
+    D(z) ~ c * q * yy * w - h * z,
 ]
 measured_quantities = [
-{{#measured_quantities}}
-    {{measurement}} ~ {{measurement_expression}},
-{{/measured_quantities}}
+    y1 ~ w,
+    y2 ~ z,
+    y3 ~ x,
+    y4 ~ yy+vv,
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [0.757, 0.178, 0.77, 0.177, 0.881]
+p_true = [0.622, 0.303, 0.473, 0.296, 0.227, 0.188, 0.625, 0.211, 0.257, 0.395]
 
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
+time_interval = [-1.0, 1.0]
+datasize = 201
 
 model, mq = create_ordered_ode_system(
     name,
@@ -40,7 +43,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em6/data/hiv_0.csv", Tuple))
 
 pep = ParameterEstimationProblem(
     name,
@@ -97,5 +100,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write("/home/ademin/no-matlab-no-worry/2025-01-27-19-37/copy_1em6/estimation_results/hiv_0.csv", table, header=string.(collect(keys(table))))
 

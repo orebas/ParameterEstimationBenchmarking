@@ -2,14 +2,14 @@
 
 ## Installation
 
-Possible create a new environment:
+Possibly create a new environment:
 
 ```
 python -m venv venv
 source venv/bin/activate
 ```
 
-Instll Python packages:
+Install Python packages:
 
 ```
 python -m pip install -r requirements.txt
@@ -42,14 +42,14 @@ Run
 python generate.py
 ```
 
-This will create directory "DATE" with synthetic data.
+This will create directory "[CURRENT_DATE]" with synthetic data.
 
 ### Estimation
 
 Run
 
 ```
-python estimate.py "DATE"
+python estimate.py "[CURRENT_DATE]"
 ```
 
 ### Analysis
@@ -57,7 +57,8 @@ python estimate.py "DATE"
 Run
 
 ```
-python analyze.py "DATE"
+python analyze.py "[CURRENT_DATE]"
 ```
 
+This will create the summary file in "[CURRENT_DATE]/results".
 

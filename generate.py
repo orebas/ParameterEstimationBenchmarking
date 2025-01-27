@@ -287,7 +287,7 @@ if __name__=='__main__':
     parser.add_argument('-s', '--systems', default="jsons/systems.json")
     parser.add_argument('-i', '--template_instances', default="templates/json_template_instances.json")
     parser.add_argument('-g', '--template_data_generation', default="templates/julia_template_for_data_generation.jl")
-    parser.add_argument('-e', '--template_estimation', default="templates/julia_template_for_estimation.jl")
+    parser.add_argument('-e', '--template_estimation', default="templates/julia_template_for_estimation_odepe.jl")
     args = parser.parse_args()
     main(args)
 

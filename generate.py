@@ -186,6 +186,10 @@ OUTPUT_DIR:         {output_dir}
     os.makedirs(output_dir)
     os.makedirs(output_dir / DATA_GENERATION_DIR)
     os.makedirs(output_dir / DATA_DIR)
+    
+    
+    with open(output_dir / "systems.json") as systems_json:
+        json.dump(systems, systems_json)
 
     # Generate data and populate instances
     instances = {"instances":[]}

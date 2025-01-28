@@ -1,9 +1,9 @@
 from termcolor import colored
 
-NUM_TESTS       = 1
+NUM_TESTS       = 3
 TIME_INTERVAL   = [-1.0, 1.0]
 PARAM_INTERVAL  = [0.1, 0.9]
-NUM_PTS         = 201
+NUM_PTS         = 1001
 NOISE_LEVEL     = {"0": 0, "1em8": 1e-8, "1em6": 1e-6, "1em4": 1e-4, "1em2": 1e-2}
 SEARCH_BOUNDS   = [-3.0, 3.0]
 

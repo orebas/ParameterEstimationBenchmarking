@@ -185,6 +185,7 @@ TIME_INTERVAL:      {TIME_INTERVAL}
 PARAM_INTERVAL:     {PARAM_INTERVAL}
 NUM_PTS:            {NUM_PTS}
 NOISE_LEVEL:        {NOISE_LEVEL}
+NOISE_TYPE:         {NOISE_TYPE}
 SEARCH_BOUNDS:      {SEARCH_BOUNDS}
 
 SYSTEMS:            {", ".join(systems['names'])}
@@ -285,7 +286,11 @@ OUTPUT_DIR:         {output_dir}
                 if noise_level == 0:
                     df = df
                 else:
-                    df.loc[:, df.columns != df.columns[0]] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1)))
+                    assert NOISE_TYPE in ("ADDITIVE", "MULTIPLICATIVE")
+                    if NOISE_TYPE == "ADDITIVE":
+                        df.loc[:, df.columns != df.columns[0]] += list(df[df.columns[1:]].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1))
+                    else:
+                        df.loc[:, df.columns != df.columns[0]] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1)))
 
                 df.to_csv(data_filepath_noisy, index=False, header=False)
                 

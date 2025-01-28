@@ -40,7 +40,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple, header=false))
 
 pep = ParameterEstimationProblem(
     name,

@@ -23,6 +23,19 @@ from termcolor import colored
 
 from shared import *
 
+SCIML_DAT_STR = {
+"biohydrogenation": "(sol[1, :]), (sol[2, :])",
+"crauste":"(sol[1, :]), (sol[2, :]), (sol[3, :] .+ sol[4, :]), (sol[5, :])",
+"daisy-mamil3": "vcat(sol[1, :]), vcat(sol[2, :])",
+"daisy-mamil4": "(sol[1, :]), (sol[2, :]), (sol[3, :] + sol[4, :])",
+"harmonic": "vcat(sol[1, :]), vcat(sol[2, :])",
+"hiv": "(sol[4, :]), (sol[5, :]), (sol[1, :]), (sol[2, :] .+ sol[3, :])",
+"lotka-volterra": "sol[1, :]",
+"seir": "(sol[3, :]), (sol[4, :])",
+"vanderpol": "(sol[1, :]), (sol[2, :])",
+"fitzhugh-nagumo": "(sol[1, :])"
+}
+
 def generate_instance(system, instance_name, param_vals, initial_vals):
     state_variables = system["state-variables"]
     states = {}
@@ -164,6 +177,9 @@ def main(args):
     print(f"""
 ###  GENERATING SYNTHETIC DATA  ###
 
+GENERATOR           {args.template_data_generation}
+ESTIMATOR           {args.template_estimation}
+
 NUM_TESTS:          {NUM_TESTS}
 TIME_INTERVAL:      {TIME_INTERVAL}
 PARAM_INTERVAL:     {PARAM_INTERVAL}
@@ -277,7 +293,7 @@ OUTPUT_DIR:         {output_dir}
                 settings["data_filepath"] = data_filepath_noisy
                 settings["estimation_result_filepath"] = estimation_result_filepath
                 settings["at_time"] = (TIME_INTERVAL[1] - TIME_INTERVAL[0])/2 + TIME_INTERVAL[0]
-            
+                settings["data_expr"] = SCIML_DAT_STR[system["name"]]
                 with open(estimation_filepath, 'w') as output_file:
                     testfile = chevron.render(open(args.template_estimation), settings)
                     output_file.write(testfile)

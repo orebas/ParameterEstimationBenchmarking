@@ -22,7 +22,7 @@ from pathlib import Path
 
 from shared import *
 
-MAX_PROCS = 15
+MAX_PROCS = 3
 
 def poll_all(procs):
     for p in list(procs):

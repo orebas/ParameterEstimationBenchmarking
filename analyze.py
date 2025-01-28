@@ -55,12 +55,14 @@ def main():
     for (mnemonic, noise_level) in NOISE_LEVEL.items():
         results[mnemonic] = {}
         for system in systems["systems"]:
-            results[mnemonic][system["name"]] = {}
+           #  results[mnemonic][system["name"]] = {}
             
             # !!! No system at all in data
             if system["name"] not in data[mnemonic]:
                 warn(f"Not found {mnemonic} / {system['name']}")
                 continue
+            
+            results[mnemonic][system["name"]] = {}
 
             instance_basename = system["name"] + "_"
             for i in range(NUM_TESTS):
@@ -153,6 +155,7 @@ def main():
             for system in systems["systems"]:
                 if system["name"] not in results[mnemonic]:
                     csvwriter.writerow(["", "N/A", "N/A", "N/A"])
+                    continue
                 stats = [results[mnemonic][system["name"]][str(i)][2] if str(i) in results[mnemonic][system["name"]] else [] for i in range(NUM_TESTS)]
                 stats = filter(lambda x: len(x) > 0 and isinstance(x[0], float), stats)
                 stats = [x[0] for x in stats]

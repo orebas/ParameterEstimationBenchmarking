@@ -1,29 +1,51 @@
 using ModelingToolkit, DifferentialEquations
-using ParameterEstimation, Distributions
-solver = Tsit5()
+using ODEParameterEstimation, Distributions
+using OrderedCollections
 
-@parameters {{#parameters}}{{varname}}{{space}}{{/parameters}}
-@variables t {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-D = Differential(t)
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
-@named model = ODESystem([
-                            {{#components}}
+solver = Vern9()
+
+
+const t = ModelingToolkit.t_nounits
+const D = ModelingToolkit.D_nounits
+
+parameters = @parameters {{#parameters}}{{varname}}{{space}}{{/parameters}}
+states = @variables {{#states}}{{varname}}(t){{space}}{{/states}} 
+observables = @variables {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
+p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
+ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
+
+equations =             [
+                           {{#components}}
                              D({{state_var}}) ~ {{state_expr}},
                             {{/components}}
-                         ], t, states, parameters)
+                        ]
+
+
 measured_quantities = [
     {{#measured_quantities}}
         {{measurement}} ~ {{measurement_expression}},
     {{/measured_quantities}}
 ]
-ic = [{{#initial_conditions}}{{value}}{{comma}}{{/initial_conditions}}]
-p_true = [{{#parameters}}{{true}}{{comma}}{{/parameters}}]
-time_interval = [{{time_start}}, {{time_end}}]
-datasize = {{time_count}}
 
-data_sample = ParameterEstimation.sample_data(model, measured_quantities, convert(Array{Float64},time_interval),
-                                              p_true, ic, datasize; solver = solver)
+model, mq = create_ordered_ode_system("{{model_name}}", states, parameters, equations, measured_quantities)
+
+PEP = ParameterEstimationProblem(
+    "{{model_name}}",
+    model,
+    mq,
+    nothing,
+    [{{time_start}}, {{time_end}}],
+    nothing,
+    OrderedDict(parameters .=> p_true),
+    OrderedDict(states .=> ic),
+    0,
+)
+
+estimation_problem_with_data = sample_problem_data(PEP, datasize = {{time_count}}, time_interval = [{{time_start}}, {{time_end}}], noise_level = 0.000)
+
+
+
+data_sample = estimation_problem_with_data.data_sample
 
 n = Normal(0.0, 1e-8)
 for (key, value) in data_sample

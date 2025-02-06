@@ -1,4 +1,4 @@
-using ODEParameterEstimation
+ using ODEParameterEstimation
 using ModelingToolkit, DifferentialEquations
 using BenchmarkTools
 using OrderedCollections
@@ -9,13 +9,91 @@ using GaussianProcesses
 using Statistics
 using Optim, LineSearches
 
+
+using AbstractAlgebra
+using RationalUnivariateRepresentation
+using RS
+
+
+"""
+	exprs_to_AA_polys(exprs, vars)
+
+Convert each symbolic expression in `exprs` into a polynomial in an
+AbstractAlgebra polynomial ring in the variables `vars`. This returns
+both the ring `R` and the vector of polynomials in `R`.
+"""
+function exprs_to_AA_polys(exprs, vars)
+	# Create a polynomial ring over QQ, using the variable names
+
+	M = Module()
+	Base.eval(M, :(using AbstractAlgebra))
+	#Base.eval(M, :(using Nemo))
+	#	Base.eval(M, :(using RationalUnivariateRepresentation))
+	#	Base.eval(M, :(using RS))
+
+	var_names = string.(vars)
+	ring_command = "R = @polynomial_ring(QQ, $var_names)"
+	#approximation_command = "R(expr::Float64) = R(Nemo.rational_approx(expr, 1e-4))"
+	ring_object = Base.eval(M, Meta.parse(ring_command))
+	#display(temp)
+	#Base.eval(M, Meta.parse(approximation_command))
+
+
+	a = string.(exprs)
+	AA_polys = []
+	for expr in exprs
+		push!(AA_polys, Base.eval(M, Meta.parse(string(expr))))
+	end
+	return ring_object, AA_polys
+
+end
+
+
+
+
+
+function solve_with_rs(poly_system, varlist;
+	start_point = nothing,  # Not used but kept for interface consistency
+	options = Dict())
+
+	#try
+	# Convert symbolic expressions to AA polynomials using existing infrastructure
+	R, aa_system = exprs_to_AA_polys(poly_system, varlist)
+
+	println("aa_system")
+	println(aa_system)
+	println("R")
+	println(R)
+	# Compute RUR and get separating element
+	rur, sep = zdim_parameterization(aa_system, get_separating_element = true)
+
+	# Find solutions
+	output_precision = get(options, :output_precision, Int32(20))
+	sol = RS.rs_isolate(rur, sep, output_precision = output_precision)
+
+	# Convert solutions back to our format
+	solutions = []
+	display(sol)
+	for s in sol
+		# Extract real solutions
+		#display(s)
+		real_sol = [convert(Float64, real(v[1])) for v in s]
+		push!(solutions, real_sol)
+	end
+
+	#return solutions, varlist, Dict(), varlist
+	return solutions, varlist, Dict(), varlist
+end
+
+
+
+
 solver = Vern9()
 
 name = "{{name}}"
-@parameters {{#parameters}}{{varname}} {{/parameters}}
-@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-states = [{{#states}}{{varname}}{{comma}}{{/states}}]
-parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
+parameters = @parameters {{#parameters}}{{varname}} {{/parameters}}
+states = @variables  {{#states}}{{varname}}(t){{space}}{{/states}}
+observables = @variables  {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
 state_equations = [
 {{#components}}
     D({{state_var}}) ~ {{state_expr}},
@@ -54,37 +132,13 @@ pep = ParameterEstimationProblem(
     0
 )
 
-function test_gpr_function(xs::AbstractArray{T}, ys::AbstractArray{T}) where {T}
-	# For 1D input data, we need a matrix of size 1 × (degree+1)
-	# The +1 is because we include the constant term (degree 0)
-	#degree = 2
-	#β = zeros(1, degree + 1)  # Initialize coefficients matrix
-	#poly_mean = MeanPoly(β)
 
-	# Add small noise proportional to y standard deviation to avoid conditioning issues
-	ys_std = Statistics.std(ys)
-	noise_level = 1e-6 * ys_std
-	ys_noisy = ys .+ noise_level * randn(length(ys))
-
-
-	kernel = SEIso(log(std(xs) / 8), 0.0)
-	gp = GP(xs, ys_noisy, MeanZero(), kernel, -2.0)
-	optimize!(gp; method = LBFGS(linesearch = LineSearches.BackTracking()))
-
-	# Create callable function
-	gpr_func = x -> begin
-		pred, _ = predict_f(gp, [x])
-		return pred[1]
-	end
-	return gpr_func
-end
 
 res = analyze_parameter_estimation_problem(
     pep,
-    test_mode = false,
     nooutput = true,
-    interpolator = test_gpr_function
-)
+    system_solver = solve_with_rs
+    )
 
 analysis_result, besterror = analyze_estimation_result(
     pep,

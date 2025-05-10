@@ -77,7 +77,7 @@ function solve_with_rs(poly_system, varlist;
 	for s in sol
 		# Extract real solutions
 		#display(s)
-		real_sol = [convert(Float64, real(v[1])) for v in s]
+		real_sol = [convert(Float64, v[1]) for v in s]
 		push!(solutions, real_sol)
 	end
 

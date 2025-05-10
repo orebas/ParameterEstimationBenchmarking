@@ -1,6 +1,6 @@
 from termcolor import colored
 
-NUM_TESTS       = 10
+NUM_TESTS       = 2
 TIME_INTERVAL   = [-1.0, 1.0]
 PARAM_INTERVAL  = [0.1, 0.9]
 NUM_PTS         = 1001

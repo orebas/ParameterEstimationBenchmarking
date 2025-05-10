@@ -8,10 +8,7 @@ import numpy as np
 import shlex
 import subprocess
 import chevron
-from scipy.integrate import solve_ivp
 from pprint import pprint
-#from julia.api import Julia
-#import csv
 import pandas as pd
 pd.set_option("display.precision",16)
 from collections import defaultdict

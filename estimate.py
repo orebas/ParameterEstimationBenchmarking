@@ -8,7 +8,6 @@ import numpy as np
 import shlex
 import subprocess
 import chevron
-from scipy.integrate import solve_ivp
 from pprint import pprint
 from subprocess import Popen, PIPE
 #from julia.api import Julia

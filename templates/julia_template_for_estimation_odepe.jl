@@ -118,7 +118,7 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple, header=false))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false))
 
 pep = ParameterEstimationProblem(
     name,
@@ -151,5 +151,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write(joinpath(@__DIR__, "{{estimation_result_filepath}}"), table, header=string.(collect(keys(table))))
 

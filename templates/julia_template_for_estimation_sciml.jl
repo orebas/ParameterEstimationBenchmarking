@@ -31,7 +31,7 @@ datasize = {{time_count}}
 
 sampling_times = range(time_interval[1], time_interval[2], length = datasize)
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple, header=false))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false))
 
 # p_rand = rand(Uniform({{lower_bound}}, {{upper_bound}}), length(ic) + length(p_true)) # Random Parameters
 p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
@@ -73,5 +73,5 @@ table = merge(
 	      Dict(string(x) => [result_ode.u[length(states)+i]] for (i,x) in enumerate(parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write(joinpath(@__DIR__, "{{estimation_result_filepath}}"), table, header=string.(collect(keys(table))))
 

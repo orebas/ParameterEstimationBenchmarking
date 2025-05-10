@@ -30,7 +30,7 @@ ic_constraints = Dict({{#states}}({{varname}}=>({{lower_bound}}, {{upper_bound}}
 time_interval = [{{time_start}}, {{time_end}}]
 datasize = {{time_count}}
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read("{{data_filepath}}", Tuple, header=false))
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false))
 
 @time res = ParameterEstimation.estimate(model, measured_quantities, data_sample;
             solver = solver, interpolators = Dict("AAA" => ParameterEstimation.aaad), parameter_constraints = p_constraints, ic_constraints = ic_constraints)
@@ -40,5 +40,5 @@ table = merge(
     Dict((string(x) => [each.parameters[x] for each in res] for x in parameters))
 )
 
-CSV.write("{{estimation_result_filepath}}", table, header=string.(collect(keys(table))))
+CSV.write(joinpath(@__DIR__, "{{estimation_result_filepath}}"), table, header=string.(collect(keys(table))))
 

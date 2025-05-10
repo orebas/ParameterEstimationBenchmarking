@@ -27,10 +27,12 @@ Pkg.add("BenchmarkTools")
 Pkg.add("CSV")
 ```
 
+Note: the Julia scripts use the global Julia environment.
+
 ## Usage Example
 
 The pipeline consists of three stages:
-- Generation of data
+- Generation
 - Estimation
 - Analysis
 
@@ -42,23 +44,37 @@ Run
 python generate.py config/config.json config/systems.json
 ```
 
-This will create directory "[CURRENT_DATE]" with synthetic data.
+- This creates directory `[DATE]` with data.
+- The main file is `[DATE]/instances.json`.
+- Possible to modify `config.json` and `systems.json`.
 
 ### Estimation
 
 Run
 
 ```
-python estimate.py "[CURRENT_DATE]"
+python estimate.py "[DATE]" software
 ```
+
+- This runs estimation for the `software`. Possible choices of `software` are:
+    - pe
+    - odepe
+    - amigo2
+    - iqm
+    - sciml
+- The main file is `[DATE]/software.json`.
 
 ### Analysis
 
 Run
 
 ```
-python analyze.py "[CURRENT_DATE]"
+python analyze.py "[DATE]"
 ```
 
-This will create the summary file in "[CURRENT_DATE]/results".
+This will create the summary files in "[CURRENT_DATE]/results".
+
+## Running on HPC
+
+
 

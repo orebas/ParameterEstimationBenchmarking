@@ -8,23 +8,21 @@ solver = Vern9()
 const t = ModelingToolkit.t_nounits
 const D = ModelingToolkit.D_nounits
 
-parameters = @parameters k5 k6 k7 k8 k9 k10
-states = @variables x4(t) x5(t) x6(t) x7(t) 
+parameters = @parameters a b
+states = @variables x1(t) x2(t) 
 observables = @variables y1(t) y2(t)
-p_true = [0.883, 0.739, 0.469, 0.724, 0.195, 0.612]
-ic = [0.215, 0.856, 0.517, 0.432]
+p_true = [0.539, 0.672]
+ic = [0.582, 0.536]
 
 equations =             [
-                             D(x4) ~ - k5 * x4 / (k6 + x4),
-                             D(x5) ~ k5 * x4 / (k6 + x4) - k7 * x5/(k8 + x5 + x6),
-                             D(x6) ~ k7 * x5 / (k8 + x5 + x6) - k9 * x6 * (k10 - x6) / k10,
-                             D(x7) ~ k9 * x6 * (k10 - x6) / k10,
+                             D(x1) ~ a * x2,
+                             D(x2) ~ -(x1) - b * (x1^2 - 1) * (x2),
                         ]
 
 
 measured_quantities = [
-        y1 ~ x4,
-        y2 ~ x5,
+        y1 ~ x1,
+        y2 ~ x2,
 ]
 
 model, mq = create_ordered_ode_system("", states, parameters, equations, measured_quantities)
@@ -60,5 +58,5 @@ dat_str = ""
 for i=1:1001
   global dat_str = dat_str * string(data_sample["t"][i]) * ", " * join(collect(data_sample[ks[j]][i] for j=1:(length(ks)-1)), ", ") * "\n"
 end
-write("/home/ademin/no-matlab-no-worry/2025_05_10_20_18/files/data/biohydrogenation_1.csv", dat_str)
+write("/home/ademin/no-matlab-no-worry/2025_05_10_23_02/filetree/data_original/vanderpol_0.csv", dat_str)
 

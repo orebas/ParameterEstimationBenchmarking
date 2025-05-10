@@ -4,12 +4,14 @@ import os
 import sys
 import re
 import json
+import tqdm
 import numpy as np
 import shlex
 import subprocess
 import chevron
 from pprint import pprint
 from subprocess import Popen, PIPE
+import shutil
 #from julia.api import Julia
 #import csv
 import pandas as pd
@@ -20,59 +22,107 @@ from datetime import datetime
 from pathlib import Path
 from termcolor import colored
 
-def warn(msg):
-    print(colored("[WARN] " + msg, "red"))
+from shared import warn, get_settings
+
+AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
 
 MAX_PROCS = 5
+
+def generate_runnable_files(args):
+    with open(args.dir / 'huge_json.json', 'r') as io:
+        instances = json.load(io)
+
+    print(f"""
+###  GENERATING RUNNABLE FILES  ###
+
+SOFTWARE            {args.software}
+
+TEMPLATE            {args.config['TEMPLATE_ESTIMATION'][args.software]}
+
+OUTPUT:             {args.dir}
+    SCRIPTS:        {args.dir / args.config['FILETREE'] / args.software}
+""")
+
+    if os.path.exists(args.dir / args.config['FILETREE'] / args.software):
+        warn(f"Deleting existing {args.dir / args.config['FILETREE'] / args.software}")
+        shutil.rmtree(args.dir / args.config['FILETREE'] / args.software)
+        
+    shutil.copytree(args.dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'], args.dir / args.config['FILETREE'] / args.software)
+    
+    for instance in instances['instances']:
+        print(instance['id'])
+
+        if args.software in ['pe','odepe','sciml','amigo2']:
+            settings = get_settings(args, instance)
+            settings["data_filepath"] = 'data.csv'
+            settings["estimation_result_filepath"] = 'result.csv'
+            settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
+            settings["data_expr"] = instance["sciml_measurements"]
+            fileext = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm'}
+            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'{instance["id"]}.{fileext[args.software]}', 'w') as output_file:
+                testfile = chevron.render(open(args.config['TEMPLATE_ESTIMATION'][args.software]), settings)
+                output_file.write(testfile)
 
 def poll_all(procs):
     for p in list(procs):
         poll = p['p'].poll()
         if poll is not None:
             procs.remove(p)
-            p['logs'].close()
+            p['log_file'].close()
             if p['p'].returncode != 0:
-                warn(f"Failed: {p['mnemonic']} / {p['file']}")
+                warn(f"Error running: {p['cmd']}.\nLogs written to: {p['log_filepath']}")
+
+def run_runnable_files(args):
+    with open(args.dir / 'huge_json.json', 'r') as io:
+        instances = json.load(io)
+
+        print(f"""
+###  RUNNING RUNNABLE FILES  ###
+
+SOFTWARE            {args.software}
+MAX_PROCS           {MAX_PROCS}
+
+OUTPUT:             {args.dir}
+    SCRIPTS:        {args.dir / args.config['FILETREE'] / args.software}
+    RESULTS:        {args.dir / args.config['FILETREE'] / args.software}
+    HUGE_JSON:      {args.dir / f'{args.software}_results.json'}
+""")
+
+    procs = []
+    for instance in instances['instances']:
+        while len(procs) >= MAX_PROCS:
+            poll_all(procs)
+
+        print("Running: %s" % ", ".join(list(map(lambda p: p['instance_id'], procs))))
+        
+        cmd = shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"{instance['id']}.jl"))
+        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.log'))
+        log_file = open(log_filepath, "w")
+        try:
+            p = Popen(cmd, stdout=log_file, stderr=log_file)
+            procs.append(dict(instance_id=instance['id'], cmd=cmd, p=p, log_file=log_file, log_filepath=log_filepath))
+        except subprocess.CalledProcessError:
+            warn(f"Error for {instance['id']}.")
+
+    while len(procs) > 0:
+        poll_all(procs)
 
 def main(args):
+    assert args.software in AVAILABLE_SOFTWARE
+    
     args.dir = Path(args.dir)
     
     with open(args.dir / 'config' / 'config.json', 'r') as io:
         args.config = json.load(io)
 
-    with open(args.dir / 'instances.json', 'r') as io:
-        instances = json.load(io)
-        
-    procs = []
-    for (mnemonic, noise_level) in args.config['NOISE_LEVEL'].items():
-        copy_dir = output_dir / f"copy_{mnemonic}"
-        results_dir = copy_dir / ESTIMATION_RESULTS_DIR
-        print(f"\nNOISE LEVEL: {noise_level}")
-        print(f"  CLEANING RESULTS: {results_dir}")
-        for root, dirs, files in os.walk(results_dir):
-            for file in files:
-                os.remove(Path(root) / file)
-        print(f"  RUNNING FILES IN: {copy_dir / ESTIMATION_DIR}")
-        for root, dirs, files in os.walk(copy_dir / ESTIMATION_DIR):
-            for file in files:
-                while len(procs) >= MAX_PROCS:
-                    poll_all(procs)             
-                print("    ", file)
-                cmd = shlex.split('julia ' + str(Path(root) / file))
-                log_file = open(str(copy_dir / ESTIMATION_RESULTS_DIR / (file + ".log")), "w")
-                try:
-                    p = Popen(cmd, stdout=log_file, stderr=log_file)
-                    procs.append(dict(mnemonic=mnemonic, file=file, p=p, logs=log_file))
-                except subprocess.CalledProcessError:
-                    print("Error excepted. Settings:")
-                    print(file)
-                    continue
-    while len(procs) > 0:
-        poll_all(procs)  
+    generate_runnable_files(args)
+    # run_runnable_files(args)
+    # collect_results(args)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", help="The directory generated by generate.py.")
+    parser.add_argument("software", help="The software to run estimation for. Possible choices are: {}.".format(', '.join(AVAILABLE_SOFTWARE)))
     args = parser.parse_args()
     
     main(args)

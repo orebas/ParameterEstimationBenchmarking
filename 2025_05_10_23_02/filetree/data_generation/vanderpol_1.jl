@@ -8,26 +8,21 @@ solver = Vern9()
 const t = ModelingToolkit.t_nounits
 const D = ModelingToolkit.D_nounits
 
-parameters = @parameters muN muEE muLE muLL muM muP muPE muPL deltaNE deltaEL deltaLM rhoE rhoP
-states = @variables n(t) e(t) s(t) m(t) p(t) 
-observables = @variables y1(t) y2(t) y3(t) y4(t)
-p_true = [0.312, 0.719, 0.465, 0.555, 0.115, 0.594, 0.59, 0.594, 0.855, 0.645, 0.388, 0.45, 0.658]
-ic = [0.148, 0.633, 0.637, 0.268, 0.203]
+parameters = @parameters a b
+states = @variables x1(t) x2(t) 
+observables = @variables y1(t) y2(t)
+p_true = [0.439, 0.617]
+ic = [0.45, 0.813]
 
 equations =             [
-                             D(n) ~ -1 * n * muN - n * p * deltaNE,
-                             D(e) ~ n * p * deltaNE - e * e * muEE - e * deltaEL + e * p * rhoE,
-                             D(s) ~ s * deltaEL - s * deltaLM - s * s * muLL - e * s * muLE,
-                             D(m) ~ s * deltaLM - muM * m,
-                             D(p) ~ p * p * rhoP - p * muP - e * p * muPE - s * p * muPL,
+                             D(x1) ~ a * x2,
+                             D(x2) ~ -(x1) - b * (x1^2 - 1) * (x2),
                         ]
 
 
 measured_quantities = [
-        y1 ~ n,
-        y2 ~ e,
-        y3 ~ s+m,
-        y4 ~ p,
+        y1 ~ x1,
+        y2 ~ x2,
 ]
 
 model, mq = create_ordered_ode_system("", states, parameters, equations, measured_quantities)
@@ -63,5 +58,5 @@ dat_str = ""
 for i=1:1001
   global dat_str = dat_str * string(data_sample["t"][i]) * ", " * join(collect(data_sample[ks[j]][i] for j=1:(length(ks)-1)), ", ") * "\n"
 end
-write("/home/ademin/no-matlab-no-worry/2025_05_10_20_18/files/data/crauste_0.csv", dat_str)
+write("/home/ademin/no-matlab-no-worry/2025_05_10_23_02/filetree/data_original/vanderpol_1.csv", dat_str)
 

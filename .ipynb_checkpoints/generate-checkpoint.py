@@ -115,7 +115,7 @@ OUTPUT:             {output_dir}
             settings.update({'data_filepath' : data_filepath})
             
             with open(args.config['TEMPLATE_GENERATION'], 'r') as template:
-                julia_file = chevron.render(template, settings)
+                julia_file = chevron.render(template, settings, warn=True)
             
             with open(data_generation_filepath, 'w') as output_file:
                 output_file.write(julia_file)

@@ -84,6 +84,7 @@ def get_settings(args, instance):
     settings = {
         "name": instance_name, #re.sub(".jl$", "" , instance_name),
         "states": states,
+        "data": '\n'.join([' '.join([str(instance['data'][j][i]) for j in range(1, len(instance['data']))]) for i in range(len(instance['data'][0]))]),
         "num_states": len(states),
         "measurements": measurements,
         "num_measurements": len(measurements),

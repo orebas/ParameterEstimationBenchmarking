@@ -60,7 +60,7 @@ OUTPUT:             {args.dir}
             settings["data_expr"] = instance["sciml_measurements"]
             fileext = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm'}
             with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'{instance["id"]}.{fileext[args.software]}', 'w') as output_file:
-                testfile = chevron.render(open(args.config['TEMPLATE_ESTIMATION'][args.software]), settings)
+                testfile = chevron.render(open(args.config['TEMPLATE_ESTIMATION'][args.software]), settings, warn=True)
                 output_file.write(testfile)
 
 def poll_all(procs):

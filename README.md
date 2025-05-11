@@ -89,8 +89,7 @@ $ python src/generate_data.py config/config.json config/systems.json
 $ ls
 2025_05_11_18_49  config  hpc  README.md  requirements.txt  src  templates
 
-$ python src/generate_scripts.py 2025_05_11_18_49 odepe
-$ python src/generate_scripts.py 2025_05_11_18_49 amigo2
+$ python src/generate_scripts.py 2025_05_11_18_49 pe
 
 $ git add . && git commit "Add data and scripts" && git push
 ```

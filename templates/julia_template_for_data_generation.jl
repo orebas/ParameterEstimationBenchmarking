@@ -27,10 +27,10 @@ measured_quantities = [
     {{/measured_quantities}}
 ]
 
-model, mq = create_ordered_ode_system("{{model_name}}", states, parameters, equations, measured_quantities)
+model, mq = create_ordered_ode_system("{{name}}", states, parameters, equations, measured_quantities)
 
 PEP = ParameterEstimationProblem(
-    "{{model_name}}",
+    "{{name}}",
     model,
     mq,
     nothing,

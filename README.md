@@ -25,6 +25,7 @@ Pkg.add("ParameterEstimation")
 Pkg.add("Distributions")
 Pkg.add("BenchmarkTools")
 Pkg.add("CSV")
+Pkg.add("OrderedCollections")
 ```
 
 Note: the Julia scripts use the global Julia environment.
@@ -32,11 +33,12 @@ Note: the Julia scripts use the global Julia environment.
 ## Usage Example
 
 The pipeline consists of three stages:
-- Generation
-- Estimation
-- Analysis
+1. Generation of data
+2. Generation of scripts for estimation
+3. Estimation
+4. Analysis
 
-### Generation
+### 1. Generation
 
 Run
 

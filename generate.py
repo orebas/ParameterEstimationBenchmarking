@@ -104,6 +104,8 @@ OUTPUT:             {output_dir}
             instance_name = instance_basename + str(i)
             data_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
+            log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".txt")
+ 
 
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
             state_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["state_variables"])).round(3).tolist()
@@ -112,7 +114,7 @@ OUTPUT:             {output_dir}
             instance_stash[instance_name] = instance
             
             settings = get_settings(args, instance)
-            settings.update({'data_filepath' : data_filepath})
+            settings.update({'data_filepath' : data_filepath.as_posix()})
             
             with open(args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)
@@ -121,17 +123,22 @@ OUTPUT:             {output_dir}
                 output_file.write(julia_file)
             
             print(instance_name)
-            cmd = shlex.split('julia ' + str(data_generation_filepath))
+            cmd = shlex.split('julia ' + data_generation_filepath.as_posix())
+            logs_io = open(log_filepath, 'a+')
             try:
-                output = subprocess.check_output(
+                output = subprocess.run(
                     cmd,
-                    stderr=subprocess.DEVNULL
+                    check=True,
+                    stdout=sys.stdout,
+                    stderr=sys.stdout
                 )
                 i += 1
             except subprocess.CalledProcessError as err:
                 warn("Error when running {}".format(cmd))
                 warn("Trying again with different parameter values.")
                 continue
+            finally:
+                logs_io.close()
 
     instances = {"instances":[]}
     print(f"""

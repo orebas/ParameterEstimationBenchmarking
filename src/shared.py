@@ -94,6 +94,7 @@ def get_settings(args, instance):
         "initial_conditions": initial_conditions,
         "time_start": instance["time"]["start"],
         "time_end": instance["time"]["end"],
+        "duration": instance["time"]["end"] - instance["time"]["start"],
         "time_count": instance["time"]["count"],
         "lower_bound": args.config['SEARCH_BOUNDS'][0],
         "upper_bound": args.config['SEARCH_BOUNDS'][1]

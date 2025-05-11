@@ -2,26 +2,21 @@
 
 import os
 import sys
-import re
 import json
 import numpy as np
 import shlex
 import subprocess
 import chevron
-from pprint import pprint
 import pandas as pd
 pd.set_option("display.precision",16)
-from collections import defaultdict
 
 import argparse
 from datetime import datetime
 from pathlib import Path
-from termcolor import colored
 
 from shared import warn, get_settings
     
 def generate_instance(args, system, instance_id, param_vals, initial_vals):
-    state_variables = system["state_variables"]
     state_values = { 
         varname: initial_vals[i] 
         for i, varname in enumerate(system["state_variables"]) 
@@ -70,10 +65,10 @@ CONFIG:             {args.config_path}
   NOISE_TYPE:       {args.config['NOISE_TYPE']}
   SEARCH_BOUNDS:    {args.config['SEARCH_BOUNDS']}
 
-OUTPUT:             {output_dir}
-  SCRIPTS:          {output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR']}
-  DATA:             {output_dir / args.config['FILETREE'] / args.config['DATA_DIR']}
-  HUGE_JSON:        {output_dir / 'huge_json.json'}
+OUTPUT:             {output_dir.as_posix()}
+  SCRIPTS:          {(output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR']).as_posix()}
+  DATA:             {(output_dir / args.config['FILETREE'] / args.config['DATA_DIR']).as_posix()}
+  HUGE_JSON:        {(output_dir / 'huge_json.json').as_posix()}
 """)
 
     # Create output directories
@@ -93,8 +88,7 @@ OUTPUT:             {output_dir}
         json.dump(args.systems, io, indent=2)
 
     # Generate data and populate instances
-    # instances = {"instances":[]}
-    instance_stash = defaultdict()
+    instance_stash = {}
     for system in args.systems["systems"]:
         print(system["name"])
         instance_basename = system["name"] + "_"
@@ -102,9 +96,9 @@ OUTPUT:             {output_dir}
         i = 0
         while i < args.config['NUM_TESTS']:        
             instance_name = instance_basename + str(i)
-            data_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
+            data_filepath = Path("..") / args.config['DATA_DIR'] / (instance_name + ".csv")
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
-            log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".txt")
+            log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
  
 
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
@@ -129,12 +123,13 @@ OUTPUT:             {output_dir}
                 output = subprocess.run(
                     cmd,
                     check=True,
-                    stdout=sys.stdout,
-                    stderr=sys.stdout
+                    stdout=logs_io,
+                    stderr=logs_io
                 )
                 i += 1
             except subprocess.CalledProcessError as err:
-                warn("Error when running {}".format(cmd))
+                warn("Error from {}".format(cmd))
+                warn("Logs written to {}".format(log_filepath.as_posix()))
                 warn("Trying again with different parameter values.")
                 continue
             finally:
@@ -170,7 +165,7 @@ OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DI
 
                 instance = {}
                 instance = instance | instance_stash[instance_name]
-                instance['id'] = mnemonic + "_" + instance['id']
+                instance['id'] = instance['id'] + "_" + mnemonic
                 instance['data'] = df.values.T.tolist()
                 instances['instances'].append(instance)
 

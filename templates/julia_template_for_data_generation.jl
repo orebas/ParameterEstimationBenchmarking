@@ -60,5 +60,5 @@ dat_str = ""
 for i=1:{{time_count}}
   global dat_str = dat_str * string(data_sample["t"][i]) * ", " * join(collect(data_sample[ks[j]][i] for j=1:(length(ks)-1)), ", ") * "\n"
 end
-write("{{data_filepath}}", dat_str)
+write(joinpath(@__DIR__, "{{data_filepath}}"), dat_str)
 

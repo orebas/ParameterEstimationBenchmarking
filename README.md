@@ -2,11 +2,15 @@
 
 ## Installation
 
-Possibly create a new environment:
+0. We use the following versions of software:
+    - Julia: 1.11
+    - Python: 3.10.0
+
+1. Possibly create a new environment:
 
 ```
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate   # On windows: .\venv\Scripts\activate
 ```
 
 Install Python packages:
@@ -15,7 +19,7 @@ Install Python packages:
 python -m pip install -r requirements.txt
 ```
 
-Install Julia packages:
+2. Install Julia packages:
 
 ```
 using Pkg;
@@ -26,57 +30,93 @@ Pkg.add("Distributions")
 Pkg.add("BenchmarkTools")
 Pkg.add("CSV")
 Pkg.add("OrderedCollections")
+# Possibly also:
+# Pkg.add("GaussianProcesses")
+# Pkg.add("Optim")
+# Pkg.add("LineSearches")
+# Pkg.add("AbstractAlgebra")
+# Pkg.add(url="https://github.com/orebas/ODEParameterEstimation")
 ```
 
 Note: the Julia scripts use the global Julia environment.
 
 ## Usage Example
 
-The pipeline consists of three stages:
+The pipeline consists of the following stages:
 1. Generation of data
 2. Generation of scripts for estimation
 3. Estimation
 4. Analysis
 
-### 1. Generation
+### 1. Generation of data
 
 Run
 
 ```
-python generate.py config/config.json config/systems.json
+python src/generate_data.py config/config.json config/systems.json
 ```
 
-- This creates directory `[DATE]` with data.
-- The main file is `[DATE]/instances.json`.
-- Possible to modify `config.json` and `systems.json`.
+- This creates a directory `[DATE]` with data.
+- It is possible to modify `config.json` and `systems.json`.
 
-### Estimation
+### 2. Generation of scripts for estimation
 
 Run
 
 ```
-python estimate.py "[DATE]" software
+python src/generate_scripts.py "[DATE]" software
 ```
 
-- This runs estimation for the `software`. Possible choices of `software` are:
+- This generates runnable scripts for estimation for the `software`. 
+    Possible choices of `software` are:
     - pe
     - odepe
     - amigo2
     - iqm
     - sciml
-- The main file is `[DATE]/software.json`.
 
-### Analysis
+### 3. Estimation
 
 Run
 
 ```
-python analyze.py "[DATE]"
+python src/estimate.py "[DATE]" software
 ```
 
-This will create the summary files in "[CURRENT_DATE]/results".
+### 4. Analysis
+
+Run
+
+```
+python src/analyze.py "[DATE]"
+```
 
 ## Running on HPC
+
+Two machines: `host` and `hpc`.
+
+- On `host`:
+
+```
+git clone https://github.com/sumiya11/no-matlab-no-worry
+cd no-matlab-no-worry
+
+python src/generate_data.py config/config.json config/systems.json
+
+python src/generate_scripts.py "[DATE]" odepe
+python src/generate_scripts.py "[DATE]" amigo2
+
+git add . && git commit "Add data and scripts" && git push
+```
+
+- On `hpc`:
+
+```
+git clone https://github.com/sumiya11/no-matlab-no-worry
+cd no-matlab-no-worry
+
+sbatch --array="0-20" hpc/array_job.s
+```
 
 
 

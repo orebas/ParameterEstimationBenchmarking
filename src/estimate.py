@@ -22,107 +22,66 @@ from datetime import datetime
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, get_settings
+from shared import warn, get_settings, AVAILABLE_SOFTWARE
 
-AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
-
-MAX_PROCS = 5
-
-def generate_runnable_files(args):
+def main_julia(args):
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
 
-    print(f"""
-###  GENERATING RUNNABLE FILES  ###
+    assert 0 <= args.array[0]
+    assert args.array[-1] < len(instances['instances'])
 
-SOFTWARE            {args.software}
-
-TEMPLATE            {args.config['TEMPLATE_ESTIMATION'][args.software]}
-
-OUTPUT:             {args.dir}
-    SCRIPTS:        {args.dir / args.config['FILETREE'] / args.software}
-""")
-
-    if os.path.exists(args.dir / args.config['FILETREE'] / args.software):
-        warn(f"Deleting existing {args.dir / args.config['FILETREE'] / args.software}")
-        shutil.rmtree(args.dir / args.config['FILETREE'] / args.software)
-        
-    shutil.copytree(args.dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'], args.dir / args.config['FILETREE'] / args.software)
-    
-    for instance in instances['instances']:
+    for index in args.array:
+        instance = instances['instances'][index]
         print(instance['id'])
-
-        if args.software in ['pe','odepe','sciml','amigo2']:
-            settings = get_settings(args, instance)
-            settings["data_filepath"] = 'data.csv'
-            settings["estimation_result_filepath"] = 'result.csv'
-            settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
-            settings["data_expr"] = instance["sciml_measurements"]
-            fileext = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm'}
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'{instance["id"]}.{fileext[args.software]}', 'w') as output_file:
-                testfile = chevron.render(open(args.config['TEMPLATE_ESTIMATION'][args.software]), settings, warn=True)
-                output_file.write(testfile)
-
-def poll_all(procs):
-    for p in list(procs):
-        poll = p['p'].poll()
-        if poll is not None:
-            procs.remove(p)
-            p['log_file'].close()
-            if p['p'].returncode != 0:
-                warn(f"Error running: {p['cmd']}.\nLogs written to: {p['log_filepath']}")
-
-def run_runnable_files(args):
-    with open(args.dir / 'huge_json.json', 'r') as io:
-        instances = json.load(io)
-
-        print(f"""
-###  RUNNING RUNNABLE FILES  ###
-
-SOFTWARE            {args.software}
-MAX_PROCS           {MAX_PROCS}
-
-OUTPUT:             {args.dir}
-    SCRIPTS:        {args.dir / args.config['FILETREE'] / args.software}
-    RESULTS:        {args.dir / args.config['FILETREE'] / args.software}
-    HUGE_JSON:      {args.dir / f'{args.software}_results.json'}
-""")
-
-    procs = []
-    for instance in instances['instances']:
-        while len(procs) >= MAX_PROCS:
-            poll_all(procs)
-
-        print("Running: %s" % ", ".join(list(map(lambda p: p['instance_id'], procs))))
-        
-        cmd = shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"{instance['id']}.jl"))
-        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.log'))
+        cmd = shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.jl"))
+        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
         log_file = open(log_filepath, "w")
         try:
-            p = Popen(cmd, stdout=log_file, stderr=log_file)
-            procs.append(dict(instance_id=instance['id'], cmd=cmd, p=p, log_file=log_file, log_filepath=log_filepath))
+            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
         except subprocess.CalledProcessError:
             warn(f"Error for {instance['id']}.")
+        finally:
+            log_file.close()
 
-    while len(procs) > 0:
-        poll_all(procs)
+def main_amigo2(args):
+    pass
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE
     
     args.dir = Path(args.dir)
-    
     with open(args.dir / 'config' / 'config.json', 'r') as io:
         args.config = json.load(io)
 
-    generate_runnable_files(args)
-    # run_runnable_files(args)
-    # collect_results(args)
+    assert (args.dir.resolve().absolute() / args.config['FILETREE'] / args.software).exists()
+
+    args.array = sum(map(lambda x: [int(x)] if '-' not in x else list(range(int(x.split('-')[0]), 1+int(x.split('-')[1]))), args.array.split(',')), [])
+    args.array = sorted(list(set(args.array)))
+
+    print(f"""
+###  RUNNING ESTIMATION SCRIPTS  ###
+
+SOFTWARE            {args.software}
+ARRAY               {args.array}
+DIR                 {args.dir}
+
+OUTPUT:             {args.dir}
+    RESULTS:        {args.dir / args.config['FILETREE'] / args.software}
+""")
+
+    if args.software in ['pe', 'sciml', 'odepe']:
+        main_julia(args)
+    elif args.software in ['amigo2']:
+        main_amigo2(args)
+    else:
+        exit(1)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("dir", help="The directory generated by generate.py.")
+    parser.add_argument("dir", help="The directory generated by generate_data.py.")
     parser.add_argument("software", help="The software to run estimation for. Possible choices are: {}.".format(', '.join(AVAILABLE_SOFTWARE)))
+    parser.add_argument("array", help="Array undices of jobs, e.g., 0,3,4-11")
     args = parser.parse_args()
     
     main(args)

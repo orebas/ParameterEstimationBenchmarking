@@ -1,5 +1,7 @@
 from termcolor import colored
 
+AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
+
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))
 

@@ -80,8 +80,10 @@ python src/generate_scripts.py "[DATE]" software
 Run
 
 ```
-python src/estimate.py "[DATE]" software
+python src/estimate.py "[DATE]" software 0,1,5-19
 ```
+
+where 0,1,5-19 is the array of job indices.
 
 ### 4. Analysis
 

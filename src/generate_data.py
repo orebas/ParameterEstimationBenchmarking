@@ -175,6 +175,8 @@ OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DI
 
     with open(output_dir / "huge_json.json", "w") as io:
         json.dump(instances, io, indent=None)
+
+    print(f"Generated instances: {len(instances['instances'])}")
         
 if __name__=='__main__':
     parser = argparse.ArgumentParser()

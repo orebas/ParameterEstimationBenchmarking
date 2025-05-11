@@ -4,38 +4,20 @@
 
 0. We use the following versions of software:
     - Julia: 1.11
-    - Python: 3.10.0
+    - Python: 3.9 or 3.10
 
-1. Possibly create a new environment:
-
-```
-python -m venv venv
-source venv/bin/activate   # On windows: .\venv\Scripts\activate
-```
-
-Install Python packages:
+1. Possibly create a new environment and install packages:
 
 ```
-python -m pip install -r requirements.txt
+$ python -m venv venv
+$ source venv/bin/activate   # On Windows: .\venv\Scripts\activate
+$ python -m pip install -r requirements.txt
 ```
 
 2. Install Julia packages:
 
 ```
-using Pkg;
-Pkg.add("ModelingToolkit")
-Pkg.add("DifferentialEquations")
-Pkg.add("ParameterEstimation")
-Pkg.add("Distributions")
-Pkg.add("BenchmarkTools")
-Pkg.add("CSV")
-Pkg.add("OrderedCollections")
-# Possibly also:
-# Pkg.add("GaussianProcesses")
-# Pkg.add("Optim")
-# Pkg.add("LineSearches")
-# Pkg.add("AbstractAlgebra")
-# Pkg.add(url="https://github.com/orebas/ODEParameterEstimation")
+$ julia hpc/setup_packages.jl
 ```
 
 Note: the Julia scripts use the global Julia environment.
@@ -53,7 +35,7 @@ The pipeline consists of the following stages:
 Run
 
 ```
-python src/generate_data.py config/config.json config/systems.json
+$ python src/generate_data.py config/config.json config/systems.json
 ```
 
 - This creates a directory `[DATE]` with data.
@@ -64,7 +46,7 @@ python src/generate_data.py config/config.json config/systems.json
 Run
 
 ```
-python src/generate_scripts.py "[DATE]" software
+$ python src/generate_scripts.py "[DATE]" software
 ```
 
 - This generates runnable scripts for estimation for the `software`. 
@@ -80,7 +62,7 @@ python src/generate_scripts.py "[DATE]" software
 Run
 
 ```
-python src/estimate.py "[DATE]" software 0,1,5-19
+$ python src/estimate.py "[DATE]" software 0,1,5-19
 ```
 
 where 0,1,5-19 is the array of job indices.
@@ -90,7 +72,7 @@ where 0,1,5-19 is the array of job indices.
 Run
 
 ```
-python src/analyze.py "[DATE]"
+$ python src/analyze.py "[DATE]"
 ```
 
 ## Running on HPC
@@ -100,25 +82,46 @@ Two machines: `host` and `hpc`.
 - On `host`:
 
 ```
-git clone https://github.com/sumiya11/no-matlab-no-worry
-cd no-matlab-no-worry
+$ git clone https://github.com/sumiya11/no-matlab-no-worry
+$ cd no-matlab-no-worry
 
-python src/generate_data.py config/config.json config/systems.json
+$ python src/generate_data.py config/config.json config/systems.json
+$ ls
+2025_05_11_18_49  config  hpc  README.md  requirements.txt  src  templates
 
-python src/generate_scripts.py "[DATE]" odepe
-python src/generate_scripts.py "[DATE]" amigo2
+$ python src/generate_scripts.py 2025_05_11_18_49 odepe
+$ python src/generate_scripts.py 2025_05_11_18_49 amigo2
 
-git add . && git commit "Add data and scripts" && git push
+$ git add . && git commit "Add data and scripts" && git push
 ```
 
 - On `hpc`:
 
 ```
-git clone https://github.com/sumiya11/no-matlab-no-worry
-cd no-matlab-no-worry
+$ git clone https://github.com/sumiya11/no-matlab-no-worry
+$ cd no-matlab-no-worry
 
-sbatch --array="0-20" hpc/array_job.s
+$ bash hpc/setup_python.s
+$ julia hpc/setup_packages.jl
+
+$ sbatch hpc/array_job.s
 ```
+
+and then, after jobs finish, (perhaps on a compute node)
+
+```
+$ python src/analyze.py 2025_05_11_18_49
+
+$ git add . && git commit "Add results" && git push
+```
+
+### Notes
+
+1. By default, .julia may be located in $HOME, and $HOME may limit the size/number of files.
+   To change the location of .julia to $SCRATCH, run `export JULIA_DEPOT_PATH=$SCRATCH`.
+   (and perhaps add the export to .bashrc).
+
+2.
 
 
 

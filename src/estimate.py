@@ -45,7 +45,23 @@ def main_julia(args):
             log_file.close()
 
 def main_amigo2(args):
-    pass
+    with open(args.dir / 'huge_json.json', 'r') as io:
+        instances = json.load(io)
+
+    assert 0 <= args.array[0]
+    assert args.array[-1] < len(instances['instances'])
+    for index in args.array:
+        instance = instances['instances'][index]
+        print(instance['id'])
+        cmd = shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')
+        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
+        log_file = open(log_filepath, "w")
+        try:
+            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
+        except subprocess.CalledProcessError:
+            warn(f"Error for {instance['id']}.")
+        finally:
+            log_file.close()
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE

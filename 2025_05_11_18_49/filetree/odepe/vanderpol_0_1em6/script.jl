@@ -130,24 +130,21 @@ pep = ParameterEstimationProblem(
     0
 )
 
-
-
-res = analyze_parameter_estimation_problem(
+(solutions_vector, besterror,
+    best_min_error,
+    best_mean_error,
+    best_median_error,
+    best_max_error,
+    best_approximation_error,
+    best_rms_error) = analyze_parameter_estimation_problem(
     pep,
     nooutput = true,
-    system_solver = solve_with_rs
-    )
-
-analysis_result, besterror = analyze_estimation_result(
-    pep,
-    res,
-    nooutput = true
+    system_solver = solve_with_rs,
 )
 
 table = merge(
-    Dict((string(x) => [each.states[x] for each in analysis_result] for x in states)),
-    Dict((string(x) => [each.parameters[x] for each in analysis_result] for x in parameters))
+    Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
+    Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
 )
 
 CSV.write(joinpath(@__DIR__, "result.csv"), table, header=string.(collect(keys(table))))
-

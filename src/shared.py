@@ -5,6 +5,9 @@ AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))
 
+def info(msg):
+    print(colored("[INFO] " + msg, "blue"))
+
 def get_settings(args, instance):
     state_variables = instance["state_variables"]
     states = []

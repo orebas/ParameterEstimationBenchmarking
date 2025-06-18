@@ -65,14 +65,17 @@ Run
 $ python src/estimate.py "[DATE]" software 0,1,5-19
 ```
 
-where 0,1,5-19 is the array of job indices.
+where 
 
-### 4. Analysis
+- software is one of the supported software (see above), 
+- 0,1,5-19 is the array of job indices.
+
+### 4. Collecting results
 
 Run
 
 ```
-$ python src/analyze.py "[DATE]"
+$ python src/collect_results.py "[DATE]"
 ```
 
 ## Running on HPC
@@ -109,7 +112,7 @@ $ sbatch hpc/array_job.s
 and then, after jobs finish, (perhaps on a compute node)
 
 ```
-$ python src/analyze.py 2025_05_11_18_49
+$ python src/collect_results.py 2025_05_11_18_49
 
 $ git add . && git commit "Add results" && git push
 ```

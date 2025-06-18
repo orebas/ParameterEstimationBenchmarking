@@ -60,7 +60,6 @@ OUTPUT:             {args.dir.as_posix()}
       continue
     print(software)
     for instance in instances['instances']:
-      print(instance['id'])
       if software in ("odepe", "pe", "sciml"):
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"result.csv"
         if not result_path.exists():
@@ -69,7 +68,6 @@ OUTPUT:             {args.dir.as_posix()}
         df = pd.read_csv(result_path, header=None, index_col=False)
         data = df.values.T.tolist()
         for i in range(len(data)):
-          print(data[i])
           data[i][0] = data[i][0].rstrip("(t)")
       else:
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"log.txt"
@@ -79,6 +77,7 @@ OUTPUT:             {args.dir.as_posix()}
         with open(result_path, 'r') as logs:
           output = logs.read()
         data = parse_output(output, software)
+      info(f"Found results for {software} / {instance['id']}")
       required_vars = [*instance['parameter_variables'], *instance['state_variables']]
       data = sorted(data, key=lambda pair: required_vars.index(pair[0]))
       assert set([pair[0] for pair in data]) == set(required_vars)
@@ -90,10 +89,12 @@ OUTPUT:             {args.dir.as_posix()}
       }
       results['results'].append(result)   
 
+  if (args.dir / "result.json").exists():
+      warn(f"Overwriting existing {args.dir / 'result.json'}")
   with open(args.dir / "result.json", "w") as io:
     json.dump(results, io, indent=None)
 
-    print(f"Generated results: {len(results['results'])}")
+  print(f"Collected results: {len(results['results'])}")
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -22,14 +22,11 @@ from datetime import datetime
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, get_settings, AVAILABLE_SOFTWARE
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE
 
 def main_julia(args):
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
-
-    assert 0 <= args.array[0]
-    assert args.array[-1] < len(instances['instances'])
 
     for index in args.array:
         instance = instances['instances'][index]
@@ -48,8 +45,23 @@ def main_amigo2(args):
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
 
-    assert 0 <= args.array[0]
-    assert args.array[-1] < len(instances['instances'])
+    for index in args.array:
+        instance = instances['instances'][index]
+        print(instance['id'])
+        cmd = shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')
+        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
+        log_file = open(log_filepath, "w")
+        try:
+            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
+        except subprocess.CalledProcessError:
+            warn(f"Error for {instance['id']}.")
+        finally:
+            log_file.close()
+
+def main_iqm(args):
+    with open(args.dir / 'huge_json.json', 'r') as io:
+        instances = json.load(io)
+
     for index in args.array:
         instance = instances['instances'][index]
         print(instance['id'])
@@ -70,10 +82,17 @@ def main(args):
     with open(args.dir / 'config' / 'config.json', 'r') as io:
         args.config = json.load(io)
 
-    assert (args.dir.resolve().absolute() / args.config['FILETREE'] / args.software).exists()
+    with open(args.dir / 'huge_json.json', 'r') as io:
+        instances = json.load(io)
+
+    info(f"There are {len(instances['instances'])} instances in total: {0}-{len(instances['instances'])-1}.")
 
     args.array = sum(map(lambda x: [int(x)] if '-' not in x else list(range(int(x.split('-')[0]), 1+int(x.split('-')[1]))), args.array.split(',')), [])
     args.array = sorted(list(set(args.array)))
+
+    assert 0 <= args.array[0]
+    assert args.array[-1] < len(instances['instances'])
+    assert (args.dir.resolve().absolute() / args.config['FILETREE'] / args.software).exists()
 
     print(f"""
 ###  RUNNING ESTIMATION SCRIPTS  ###
@@ -90,6 +109,8 @@ OUTPUT:             {args.dir}
         main_julia(args)
     elif args.software in ['amigo2']:
         main_amigo2(args)
+    elif args.software in ['iqm']:
+        main_iqm(args)
     else:
         exit(1)
     

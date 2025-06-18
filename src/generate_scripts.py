@@ -22,20 +22,27 @@ from datetime import datetime
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, get_settings, AVAILABLE_SOFTWARE
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE
 
 TEMPLATE_ESTIMATION = {
     "pe"     : "templates/julia_template_for_estimation.jl",
 	"odepe"  : "templates/julia_template_for_estimation_odepe.jl",
-    "amigo2" : "templates/amigo2.m.template" 
+    "amigo2" : "templates/amigo2.m.template",
+    "iqm"    : {
+        "script":   "templates/iqm.m.template",
+        "csv":      "templates/iqm_experiment.csv.template",
+        "exp":      "templates/iqm_experiment.exp.template",
+        "models":   "templates/iqm_model.txt.template"
+    }
 }
 
-FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm'}
+FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE
     
     args.dir = Path(args.dir)
+    parent = Path(__file__).parent.parent.resolve()
     
     with open(args.dir / 'config' / 'config.json', 'r') as io:
         args.config = json.load(io)
@@ -63,14 +70,31 @@ OUTPUT:             {args.dir}
     for instance in instances['instances']:
         print(instance['id'])
 
+        settings = get_settings(args, instance)
+        settings["data_filepath"] = 'data.csv'
+        settings["estimation_result_filepath"] = 'result.csv'
+        settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
+        settings["data_expr"] = instance["sciml_measurements"]
+        
         if args.software in ['pe','odepe','sciml','amigo2']:
-            settings = get_settings(args, instance)
-            settings["data_filepath"] = 'data.csv'
-            settings["estimation_result_filepath"] = 'result.csv'
-            settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
-            settings["data_expr"] = instance["sciml_measurements"]
             with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'script.{FILE_EXT[args.software]}', 'w') as output_file:
-                testfile = chevron.render(open(TEMPLATE_ESTIMATION[args.software]), settings, warn=True)
+                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]), settings, warn=True)
+                output_file.write(testfile)
+        elif args.software in ['iqm']:
+            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project', exist_ok=True)
+            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'models', exist_ok=True)
+            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data', exist_ok=True)
+            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'script.{FILE_EXT[args.software]}', 'w') as output_file:
+                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['script']), settings, warn=True)
+                output_file.write(testfile)
+            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.csv', 'w') as output_file:
+                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['csv']), settings)
+                output_file.write(testfile)
+            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.exp', 'w') as output_file:
+                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['exp']), settings)
+                output_file.write(testfile)
+            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'models' / 'models.txt', 'w') as output_file:
+                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['models']), settings)
                 output_file.write(testfile)
     
 if __name__ == "__main__":

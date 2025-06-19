@@ -1,0 +1,475 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2024 The MathWorks, Inc.
+             R2024a Update 6 (24.1.0.2689473) 64-bit (glnxa64)
+                               July 29, 2024
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 19-Jun-2025
+
+------>Pre processing....this may take a few seconds.
+
+
+------>Checking inputs....
+		Problem folder has not been provided. Default: Problem
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1076)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1076)
+In run (line 112)] 
+------> Generating C code ...
+
+
+------> Mexing files....
+
+Building with 'gcc'.
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c: In function 'simulate_amigo_model':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:278:11: warning: passing argument 1 of 'mexPrintf' from incompatible pointer type [-Wincompatible-pointer-types]
+  278 | mexPrintf(stderr,"\nSolver failed at flag = CVode(cvode_mem, tout, y, &t, CV_TSTOP_RETURN);. . .\n");
+      |           ^~~~~~
+      |           |
+      |           FILE *
+In file included from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/include/include_amigo/simulate_amigo_model.h:4,
+                 from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:1:
+/ext3/apps/matlab/2024a/extern/include/mex.h:192:18: note: expected 'const char *' but argument is of type 'FILE *'
+  192 |     const char  *fmt,   /* printf style format */
+      |     ~~~~~~~~~~~~~^~~
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c: In function 'mexFunction':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c:181:14: warning: assignment to 'mxArray *' {aka 'struct mxArray_tag *'} from incompatible pointer type 'double *' [-Wincompatible-pointer-types]
+  181 | stats_struct = mxGetPr(plhs[5]);
+      |              ^
+
+MEX completed successfully.
+
+
+------>Files generated....
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 19-Jun-2025
+
+------>Checking inputs....
+		Problem folder has not been provided. Default: Problem
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1077)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1077)
+In run (line 112)] 
+
+
+------> WARNING message
+
+		 You have not provided the sampling times.
+ 		 Equidistant sampling will be assumed for experiment 1
+		 Note however that you may modify your input file by adding
+		 inputs.exps.t_s{iexp}
+
+ans =
+
+    0.5000    0.5000
+
+[Warning: Directory already exists.] 
+[> In AMIGO_gen_obs (line 38)
+In AMIGO_PE (line 128)
+In script (line 1077)
+In run (line 112)] 
+[Warning: Name is nonexistent or not a directory:
+/scratch/ad7760/src/AMIGO2_R2025/Results/Problem/AMIGO_gen_obs_problem.m] 
+[> In path (line 109)
+In addpath>doPathAddition (line 126)
+In addpath (line 90)
+In AMIGO_gen_obs (line 109)
+In AMIGO_PE (line 128)
+In script (line 1077)
+In run (line 112)] 
+
+ans =
+
+    '/scratch/ad7760/src/AMIGO2_R2025/Results/Problem/AMIGO_gen_obs_problem.m'
+
+
+*************************************************************************
+
+
+------>IMPORTANT!!: Most of the optimization solvers have their own
+                    tunning parameters (options).
+                    Defaults have been assigned in the *NLPsolver*_options
+                    files. You may need to modify those settings for your
+                    particular problem, specially:
+                      - maximum number of function evaluations /iterations,
+                      - maximum computational time
+
+
+******************************************************************
+
+  Solving the NLP problem with
+		>Summary of selected eSS options: 
+ess_options.
+	dim_refset:	'auto'
+	inter_save:	0
+	iterprint:	1
+	local:	(1x1 struct)
+	log_var:	(1x4 double)
+	maxeval:	200000
+	maxtime:	600
+	ndiverse:	'auto'
+nl2sol_settings.
+	display:	2
+	grad:	[]
+	iterfun:	[]
+	maxfeval:	100000
+	maxiter:	100000
+	objrtol:	1e-13
+	tolafun:	1e-13
+	tolrfun:	1e-13
+
+		>Bounds on the unknowns:
+
+		v_guess(1)=0.500000;  v_min(1)=0.000000;  v_max(1)=1.000000;
+		v_guess(2)=0.500000;  v_min(2)=0.000000;  v_max(2)=1.000000;
+		v_guess(3)=0.500000;  v_min(3)=0.000000;  v_max(3)=1.000000;
+		v_guess(4)=0.500000;  v_min(4)=0.000000;  v_max(4)=1.000000;
+
+
+------------------------------------------------------------------------------ 
+ eSS R2019 - Enhanced Scatter Search    
+<c> IIM-CSIC, Vigo, Spain -  email: gingproc@iim.csic.es 
+------------------------------------------------------------------------------ 
+
+Refset size automatically calculated: 8
+Number of diverse solutions automatically calculated: 40
+
+
+-----------------------------------------------
+ Initial value problem related active settings
+-----------------------------------------------
+ivpsolver: cvodes
+RelTol: 1e-13
+AbsTol: 1e-13
+MaxStepSize: Inf
+MaxNumberOfSteps: 1e+06
+Initial Point (x_0): FEASIBLE SOLUTION. Objective function value: 654.503 
+Initial Pop: NFunEvals: 48  Bestf: 654.503      CPUTime: 37.049511    Var: 3.51376e+38 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 1 NFunEvals: 126  Bestf: 62.1263      CPUTime: 39.638645    Var: 107669 
+Call local solver: NL2SOL 
+Initial point function value: 62.126315 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           62.126
+    2           62.126
+    3           62.126
+    4           62.126
+    5           62.126
+    6          0.69657
+    7          0.69658
+    8          0.69658
+    9          0.69655
+ feval            sse
+   10          0.69656
+   11       1.8854e-05
+   12       1.8799e-05
+   13       1.8837e-05
+   14       1.8916e-05
+   15        1.886e-05
+   16       4.9564e-15
+   17       4.2782e-11
+   18       5.3372e-11
+   19       1.1874e-10
+ feval            sse
+   20       5.4505e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 4.95644e-15 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.329943  seconds 
+
+Iteration: 2 NFunEvals: 223  Bestf: 4.95644e-15      CPUTime: 40.056364    Var: 6903.84 
+Iteration: 3 NFunEvals: 288  Bestf: 4.95644e-15      CPUTime: 40.117316    Var: 1255.56 
+Iteration: 4 NFunEvals: 354  Bestf: 4.95644e-15      CPUTime: 40.177430    Var: 179.995 
+Iteration: 5 NFunEvals: 422  Bestf: 4.95644e-15      CPUTime: 40.252027    Var: 2.08344 
+Iteration: 6 NFunEvals: 501  Bestf: 4.95644e-15      CPUTime: 40.351502    Var: 0.331439 
+Iteration: 7 NFunEvals: 570  Bestf: 4.95644e-15      CPUTime: 40.586095    Var: 0.0051583 
+Iteration: 8 NFunEvals: 635  Bestf: 4.95644e-15      CPUTime: 40.675757    Var: 0.00016489 
+Iteration: 9 NFunEvals: 701  Bestf: 4.95644e-15      CPUTime: 40.734573    Var: 2.72538e-06 
+Iteration: 10 NFunEvals: 767  Bestf: 4.95644e-15      CPUTime: 40.793580    Var: 2.48077e-07 
+Iteration: 11 NFunEvals: 836  Bestf: 4.95644e-15      CPUTime: 40.889934    Var: 1247.27 
+Call local solver: NL2SOL 
+Initial point function value: 0.000431 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00043051
+    2       0.00043028
+    3       0.00043046
+    4       0.00043085
+    5       0.00043067
+    6       1.0403e-09
+    7       9.0049e-10
+    8       6.2676e-10
+    9       1.6556e-09
+ feval            sse
+   10       1.6115e-09
+   11       2.6468e-21
+   12       4.2885e-11
+   13       5.2776e-11
+   14       1.1903e-10
+   15       8.1827e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.64684e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019386  seconds 
+
+Iteration: 12 NFunEvals: 920  Bestf: 2.64684e-21      CPUTime: 41.005647    Var: 5016.2 
+Iteration: 13 NFunEvals: 986  Bestf: 2.64684e-21      CPUTime: 41.068973    Var: 1.2747 
+Iteration: 14 NFunEvals: 1055  Bestf: 2.64684e-21      CPUTime: 41.264782    Var: 1118.47 
+Iteration: 15 NFunEvals: 1123  Bestf: 2.64684e-21      CPUTime: 41.474237    Var: 5.56838 
+Iteration: 16 NFunEvals: 1191  Bestf: 2.64684e-21      CPUTime: 41.711110    Var: 17.3361 
+Iteration: 17 NFunEvals: 1261  Bestf: 2.64684e-21      CPUTime: 41.922234    Var: 0.246094 
+Iteration: 18 NFunEvals: 1327  Bestf: 2.64684e-21      CPUTime: 42.121531    Var: 9.64459e-05 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 19 NFunEvals: 1399  Bestf: 2.64684e-21      CPUTime: 42.393013    Var: 652.017 
+Iteration: 20 NFunEvals: 1462  Bestf: 2.64684e-21      CPUTime: 42.591586    Var: 0.054724 
+Iteration: 21 NFunEvals: 1527  Bestf: 2.64684e-21      CPUTime: 42.788362    Var: 0.00177937 
+Call local solver: NL2SOL 
+Initial point function value: 0.001581 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.001581
+    2         0.001581
+    3        0.0015808
+    4        0.0015814
+    5        0.0015809
+    6       1.3552e-08
+    7       1.2758e-08
+    8       1.1934e-08
+    9       1.5797e-08
+ feval            sse
+   10        1.546e-08
+   11       8.4577e-20
+   12       4.2824e-11
+   13       5.2772e-11
+   14       1.1904e-10
+   15       8.1831e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 8.45771e-20 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.052817  seconds 
+
+Iteration: 22 NFunEvals: 1616  Bestf: 2.64684e-21      CPUTime: 43.106774    Var: 115.713 
+Iteration: 23 NFunEvals: 1686  Bestf: 2.64684e-21      CPUTime: 43.331561    Var: 26.2796 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 24 NFunEvals: 1758  Bestf: 2.64684e-21      CPUTime: 43.543828    Var: 19.2819 
+Iteration: 25 NFunEvals: 1822  Bestf: 2.64684e-21      CPUTime: 43.685649    Var: 0.294629 
+Iteration: 26 NFunEvals: 1898  Bestf: 2.64684e-21      CPUTime: 43.802142    Var: 290.22 
+Iteration: 27 NFunEvals: 1962  Bestf: 2.64684e-21      CPUTime: 43.865611    Var: 1.63913 
+Iteration: 28 NFunEvals: 2027  Bestf: 2.64684e-21      CPUTime: 43.929540    Var: 0.0186501 
+Iteration: 29 NFunEvals: 2096  Bestf: 2.64684e-21      CPUTime: 43.988123    Var: 0.000401042 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 30 NFunEvals: 2165  Bestf: 2.64684e-21      CPUTime: 44.096820    Var: 6570.58 
+Iteration: 31 NFunEvals: 2228  Bestf: 2.64684e-21      CPUTime: 44.159898    Var: 317.861 
+Call local solver: NL2SOL 
+Initial point function value: 14.442354 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           14.442
+    2           14.442
+    3           14.442
+    4           14.442
+    5           14.442
+    6           2.9041
+    7           2.9041
+    8           2.9041
+    9           2.9041
+ feval            sse
+   10           2.9041
+   11          0.56757
+   12          0.56756
+   13          0.56755
+   14          0.56758
+   15          0.56758
+   16       0.00045239
+   17       0.00045226
+   18       0.00045208
+   19       0.00045274
+ feval            sse
+   20       0.00045272
+   21       2.6092e-10
+   22       2.1173e-10
+   23       7.9284e-11
+   24       6.4491e-10
+   25       5.9763e-10
+   26       1.0083e-21
+   27       3.9388e-11
+   28       5.2777e-11
+   29       1.1903e-10
+ feval            sse
+   30       8.1827e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.00833e-21 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.034675  seconds 
+
+Iteration: 32 NFunEvals: 2332  Bestf: 1.00833e-21      CPUTime: 44.265329    Var: 0.258504 
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 2.61861e-13, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 2.61861e-13, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+

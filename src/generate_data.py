@@ -45,10 +45,14 @@ def main(args):
         args.systems_path = args.systems
         args.systems = json.load(io)
         
-    # For a unique ID
-    identifier = datetime.now().strftime("%Y_%m_%d_%H_%M")
-    output_dir = Path(identifier).absolute().resolve()
-
+    # Form a unique ID
+    parent = Path(__file__).parent.parent.resolve()
+    if args.directory is None:
+        identifier = datetime.now().strftime("%Y_%m_%d_%H_%M")
+    else:
+        identifier = args.directory
+    output_dir = (parent / Path(identifier)).absolute().resolve()
+    
     print(f"""
 ###  GENERATING SYNTHETIC DATA  ###
 
@@ -110,7 +114,7 @@ OUTPUT:             {output_dir.as_posix()}
             settings = get_settings(args, instance)
             settings.update({'data_filepath' : data_filepath.as_posix()})
             
-            with open(args.config['TEMPLATE_GENERATION'], 'r') as template:
+            with open(parent / args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)
             
             with open(data_generation_filepath, 'w') as output_file:
@@ -182,6 +186,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="The file config.json")
     parser.add_argument("systems", help="The file systems.json")
+    parser.add_argument("-d", "--directory", help="The name of the generated directory")
     args = parser.parse_args()
     
     main(args)

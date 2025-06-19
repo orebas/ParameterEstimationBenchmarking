@@ -107,6 +107,7 @@ def get_settings(args, instance):
 
     if 'data' in instance:
         settings["data"] = '\n'.join([' '.join([str(instance['data'][j][i]) for j in range(1, len(instance['data']))]) for i in range(len(instance['data'][0]))])
+        settings["data_with_time"] = '\n'.join([','.join([str(instance['data'][j][i]) for j in range(0, len(instance['data']))]) for i in range(len(instance['data'][0]))])
 
     return settings
     

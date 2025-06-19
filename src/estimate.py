@@ -90,6 +90,7 @@ def main(args):
     args.array = sum(map(lambda x: [int(x)] if '-' not in x else list(range(int(x.split('-')[0]), 1+int(x.split('-')[1]))), args.array.split(',')), [])
     args.array = sorted(list(set(args.array)))
 
+    print(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software)
     assert 0 <= args.array[0]
     assert args.array[-1] < len(instances['instances'])
     assert (args.dir.resolve().absolute() / args.config['FILETREE'] / args.software).exists()

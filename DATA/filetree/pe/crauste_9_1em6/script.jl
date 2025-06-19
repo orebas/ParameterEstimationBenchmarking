@@ -1,0 +1,47 @@
+using ParameterEstimation
+using ModelingToolkit, DifferentialEquations
+using BenchmarkTools
+using CSV
+
+solver = Tsit5()
+
+name = "crauste"
+@parameters muN muEE muLE muLL muM muP muPE muPL deltaNE deltaEL deltaLM rhoE rhoP
+@variables t n(t) e(t) s(t) m(t) p(t) y1(t) y2(t) y3(t) y4(t)
+D = Differential(t)
+states = [n, e, s, m, p]
+parameters = [muN, muEE, muLE, muLL, muM, muP, muPE, muPL, deltaNE, deltaEL, deltaLM, rhoE, rhoP]
+@named model = ODESystem([
+                             D(n) ~ -1 * n * muN - n * p * deltaNE,
+                             D(e) ~ n * p * deltaNE - e * e * muEE - e * deltaEL + e * p * rhoE,
+                             D(s) ~ s * deltaEL - s * deltaLM - s * s * muLL - e * s * muLE,
+                             D(m) ~ s * deltaLM - muM * m,
+                             D(p) ~ p * p * rhoP - p * muP - e * p * muPE - s * p * muPL,
+                         ], t, states, parameters)
+measured_quantities = [
+        y1 ~ n,
+        y2 ~ e,
+        y3 ~ s+m,
+        y4 ~ p,
+]
+ic = [0.722, 0.308, 0.399, 0.57, 0.318]
+p_true = [0.144, 0.341, 0.31, 0.465, 0.647, 0.657, 0.327, 0.404, 0.245, 0.731, 0.145, 0.658, 0.723]
+
+p_constraints = Dict((muN=>(0.0, 1.0)), (muEE=>(0.0, 1.0)), (muLE=>(0.0, 1.0)), (muLL=>(0.0, 1.0)), (muM=>(0.0, 1.0)), (muP=>(0.0, 1.0)), (muPE=>(0.0, 1.0)), (muPL=>(0.0, 1.0)), (deltaNE=>(0.0, 1.0)), (deltaEL=>(0.0, 1.0)), (deltaLM=>(0.0, 1.0)), (rhoE=>(0.0, 1.0)), (rhoP=>(0.0, 1.0)))
+ic_constraints = Dict((n=>(0.0, 1.0)), (e=>(0.0, 1.0)), (s=>(0.0, 1.0)), (m=>(0.0, 1.0)), (p=>(0.0, 1.0)))
+ 
+time_interval = [-1.0, 1.0]
+datasize = 1001
+
+data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "data.csv"), Tuple, header=false))
+
+@time res = ParameterEstimation.estimate(model, measured_quantities, data_sample;
+            solver = solver, interpolators = Dict("AAA" => ParameterEstimation.aaad), parameter_constraints = p_constraints, ic_constraints = ic_constraints)
+
+table = merge(
+    Dict((string(x) => [each.states[x] for each in res] for x in states)),
+    Dict((string(x) => [each.parameters[x] for each in res] for x in parameters))
+)
+
+CSV.write(joinpath(@__DIR__, "result.csv"), table, header=string.(collect(keys(table))))
+

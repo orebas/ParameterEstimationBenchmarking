@@ -54,6 +54,7 @@ def main(args):
 ###  GENERATING RUNNABLE FILES  ###
 
 SOFTWARE            {args.software}
+PATH_TO_SRC         {args.config['PATH_TO_SRC']}
 
 TEMPLATE            {TEMPLATE_ESTIMATION[args.software]}
 
@@ -75,7 +76,8 @@ OUTPUT:             {args.dir}
         settings["estimation_result_filepath"] = 'result.csv'
         settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
         settings["data_expr"] = instance["sciml_measurements"]
-        
+        settings["path_to_src"] = args.config["PATH_TO_SRC"]
+
         if args.software in ['pe','odepe','sciml','amigo2']:
             with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'script.{FILE_EXT[args.software]}', 'w') as output_file:
                 testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]), settings, warn=True)

@@ -78,16 +78,19 @@ OUTPUT:             {args.dir.as_posix()}
           output = logs.read()
         data = parse_output(output, software)
       info(f"Found results for {software} / {instance['id']}")
-      required_vars = [*instance['parameter_variables'], *instance['state_variables']]
-      data = sorted(data, key=lambda pair: required_vars.index(pair[0]))
-      assert set([pair[0] for pair in data]) == set(required_vars)
-      result = {
-        'id': instance['id'],
-        'name' : instance['name'],
-        'software': software,
-        'result' : data
-      }
-      results['results'].append(result)   
+      try:
+        required_vars = [*instance['parameter_variables'], *instance['state_variables']]
+        data = sorted(data, key=lambda pair: required_vars.index(pair[0]))
+        assert set([pair[0] for pair in data]) == set(required_vars)
+        result = {
+            'id': instance['id'],
+            'name' : instance['name'],
+            'software': software,
+            'result' : data
+        }
+        results['results'].append(result)
+      except:
+        warn(f"Error while processing {software} / {instance['id']}")
 
   if (args.dir / "result.json").exists():
       warn(f"Overwriting existing {args.dir / 'result.json'}")

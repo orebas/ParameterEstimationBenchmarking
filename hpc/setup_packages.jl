@@ -12,5 +12,8 @@ Pkg.add("Optim")
 Pkg.add("LineSearches")
 Pkg.add("AbstractAlgebra")
 
-# Pkg.add(url="https://github.com/orebas/ODEParameterEstimation")
+Pkg.add(url="https://gitlab.inria.fr/ckatsama/mpfi.jl")
+Pkg.add(url="https://gitlab.inria.fr/pace/rs.jl")
+Pkg.add(url="https://gitlab.inria.fr/newrur/RationalUnivariateRepresentation.jl")
+Pkg.add(url="https://github.com/orebas/ODEParameterEstimation")
 

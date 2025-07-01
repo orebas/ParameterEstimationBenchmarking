@@ -13,7 +13,8 @@
 #SBATCH --array=0-49
 
 module purge
-module load matlab/2024a
+# module load matlab/2024a
+module load matlab/2021a
 
 export gcc=/usr/bin/gcc
 

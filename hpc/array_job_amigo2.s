@@ -14,9 +14,11 @@
 
 module purge
 # module load matlab/2024a
-module load matlab/2021a
+module load matlab/2025a
+# module load gcc/10.2.0
+module load gmp/gcc/6.2.1
 
-export gcc=/usr/bin/gcc
+# export gcc=/usr/bin/gcc
 
 # export MATLAB_PREFDIR=$(mktemp -d $SLURM_JOBTMP/matlab-XXXX)
 # export MATLAB_LOG_DIR=$SLURM_JOBTMP

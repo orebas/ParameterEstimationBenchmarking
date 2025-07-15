@@ -33,7 +33,8 @@ TEMPLATE_ESTIMATION = {
         "csv":      "templates/iqm_experiment.csv.template",
         "exp":      "templates/iqm_experiment.exp.template",
         "models":   "templates/iqm_model.txt.template"
-    }
+    },
+    "sciml" : "templates/julia_template_for_estimation_sciml.jl"
 }
 
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}

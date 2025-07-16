@@ -1,15 +1,26 @@
+clear
 addpath(genpath('/scratch/ad7760/src'))
 addpath(genpath("./"))
 %======================
 % PATHS RELATED DATA
 %======================
-inputs.pathd.results_folder='daisy-mamil4model'; % Folder to keep results
-inputs.pathd.short_name='daisy-mamil4';                 % To identify figures and reports
+% inputs.pathd.resultd_folder='hello';
+% results.pathd.results_folder='daisy-mamil4_1_0';
+% inputs_def.pathd.results_folder='daisy-mamil4_1_0';
+% inputs.pathd.runident='1exp';
+inputs.pathd.results_folder='daisy-mamil4_1_0'; % Folder to keep results
+inputs.pathd.short_name='daisy-mamil4_1_0';                 % To identify figures and reports
+% results.pathd.short_name='daisy-mamil4_1_0';
+% inputs_def.pathd.short_name='daisy-mamil4_1_0';
 %======================
 % MODEL RELATED DATA
 %======================
-clear
+% clear
+% inputs.model.input_model_type='charmodelC'; ---> inputs.model.input_model_type='charmodelM'; 
+% inputs.ivpsol.ivpsolver='cvodes'; --->   inputs.ivpsol.ivpsolver='ode15s';                   
+% inputs.ivpsol.senssolver='cvodes'; --->  inputs.ivpsol.senssolver='sensmat';
 inputs.model.input_model_type='charmodelC';           % Model type- C
+% inputs.model.input_model_type='charmodelM'
 inputs.model.n_st=4;                                  % Number of states:\\\
 inputs.model.n_par=7;                                 % Number of model parameters
 inputs.model.st_names=char('x1', 'x2', 'x3', 'x4');    % Names of the states

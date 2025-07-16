@@ -1,15 +1,26 @@
+clear
 addpath(genpath('/scratch/ad7760/src'))
 addpath(genpath("./"))
 %======================
 % PATHS RELATED DATA
 %======================
-inputs.pathd.results_folder='seirmodel'; % Folder to keep results
-inputs.pathd.short_name='seir';                 % To identify figures and reports
+% inputs.pathd.resultd_folder='hello';
+% results.pathd.results_folder='seir_4_1em6';
+% inputs_def.pathd.results_folder='seir_4_1em6';
+% inputs.pathd.runident='1exp';
+inputs.pathd.results_folder='seir_4_1em6'; % Folder to keep results
+inputs.pathd.short_name='seir_4_1em6';                 % To identify figures and reports
+% results.pathd.short_name='seir_4_1em6';
+% inputs_def.pathd.short_name='seir_4_1em6';
 %======================
 % MODEL RELATED DATA
 %======================
-clear
+% clear
+% inputs.model.input_model_type='charmodelC'; ---> inputs.model.input_model_type='charmodelM'; 
+% inputs.ivpsol.ivpsolver='cvodes'; --->   inputs.ivpsol.ivpsolver='ode15s';                   
+% inputs.ivpsol.senssolver='cvodes'; --->  inputs.ivpsol.senssolver='sensmat';
 inputs.model.input_model_type='charmodelC';           % Model type- C
+% inputs.model.input_model_type='charmodelM'
 inputs.model.n_st=4;                                  % Number of states:\\\
 inputs.model.n_par=3;                                 % Number of model parameters
 inputs.model.st_names=char('S', 'E', 'In', 'NN');    % Names of the states

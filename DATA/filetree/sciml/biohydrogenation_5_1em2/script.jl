@@ -36,13 +36,12 @@ data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(
 # p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
 p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
 prob = ODEProblem(complete(model), ic, time_interval, p_true)
-sol = solve(remake(prob, u0 = p_rand[1:length(ic)]), solver,
-            p = p_rand[(length(ic) + 1):end],
+sol = solve(remake(prob, u0 = p_rand[1:length(ic)], p = Dict(parameters .=> p_rand[(length(ic) + 1):end])), solver,
             saveat = sampling_times;
             abstol = 1e-13, reltol = 1e-13)
 
 function loss(p)
-    sol = solve(remake(prob; u0 = p[1:length(ic)]), Tsit5(), p = p[(length(ic) + 1):end],
+    sol = solve(remake(prob; u0 = p[1:length(ic)], p = Dict(parameters .=> p[(length(ic) + 1):end])), Tsit5(),
                 saveat = sampling_times;
                 abstol = 1e-13, reltol = 1e-13)
     data_true = [data_sample[v.rhs] for v in measured_quantities]
@@ -59,7 +58,7 @@ callback = function (p, l)
     return false
 end
 
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoForwardDiff() # Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 # optprob = Optimization.OptimizationProblem(optf, p_rand, lb = 0.0*ones(4+6), ub = 1.0*ones(4+6))
 optprob = Optimization.OptimizationProblem(optf, p_rand, lb = 0.0*ones(4+6), ub = 1.0*ones(4+6))

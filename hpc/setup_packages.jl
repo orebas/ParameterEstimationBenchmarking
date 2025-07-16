@@ -1,5 +1,7 @@
 using Pkg;
 
+Pkg.activate(joinpath(@__DIR__, "..", "..", "julia_env"))
+
 Pkg.add("ModelingToolkit")
 Pkg.add("DifferentialEquations")
 Pkg.add("ParameterEstimation")

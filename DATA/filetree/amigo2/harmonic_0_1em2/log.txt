@@ -1,0 +1,2477 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2024 The MathWorks, Inc.
+                  R2025a (25.1.0.2943329) 64-bit (glnxa64)
+                               April 16, 2025
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 16-Jul-2025
+
+------>Pre processing....this may take a few seconds.
+
+
+------>Checking inputs....
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1087)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1087)
+In run (line 112)] 
+------> Generating C code ...
+
+
+------> Mexing files....
+
+Building with 'gcc'.
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c: In function 'simulate_amigo_model':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:278:11: warning: passing argument 1 of 'mexPrintf' from incompatible pointer type [-Wincompatible-pointer-types]
+  278 | mexPrintf(stderr,"\nSolver failed at flag = CVode(cvode_mem, tout, y, &t, CV_TSTOP_RETURN);. . .\n");
+      |           ^~~~~~
+      |           |
+      |           FILE *
+In file included from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/include/include_amigo/simulate_amigo_model.h:4,
+                 from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:1:
+/ext3/apps/matlab/2025a/extern/include/mex.h:192:18: note: expected 'const char *' but argument is of type 'FILE *'
+  192 |     const char  *fmt,   /* printf style format */
+      |     ~~~~~~~~~~~~~^~~
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c: In function 'mexFunction':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c:181:14: warning: assignment to 'mxArray *' {aka 'struct mxArray_tag *'} from incompatible pointer type 'double *' [-Wincompatible-pointer-types]
+  181 | stats_struct = mxGetPr(plhs[5]);
+      |              ^
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c: In function 'cvProcessError':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c:8961:21: warning: format not a string literal and no format arguments [-Wformat-security]
+ 8961 |     fprintf(stderr, msg);
+      |                     ^~~
+
+MEX completed successfully.
+
+
+------>Files generated....
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 16-Jul-2025
+
+------>Checking inputs....
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1088)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1088)
+In run (line 112)] 
+
+
+------> WARNING message
+
+		 You have not provided the sampling times.
+ 		 Equidistant sampling will be assumed for experiment 1
+		 Note however that you may modify your input file by adding
+		 inputs.exps.t_s{iexp}
+
+ans =
+
+    0.5000    0.5000
+
+[Warning: Directory already exists.] 
+[> In AMIGO_gen_obs (line 38)
+In AMIGO_PE (line 128)
+In script (line 1088)
+In run (line 112)] 
+[Warning: Name is nonexistent or not a directory:
+/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_0_1em2/AMIGO_gen_obs_harmonic_0_1em2.m] 
+[> In path (line 109)
+In addpath (line 96)
+In AMIGO_gen_obs (line 109)
+In AMIGO_PE (line 128)
+In script (line 1088)
+In run (line 112)] 
+
+ans =
+
+    '/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_0_1em2/AMIGO_gen_obs_harmonic_0_1em2.m'
+
+
+*************************************************************************
+
+
+------>IMPORTANT!!: Most of the optimization solvers have their own
+                    tunning parameters (options).
+                    Defaults have been assigned in the *NLPsolver*_options
+                    files. You may need to modify those settings for your
+                    particular problem, specially:
+                      - maximum number of function evaluations /iterations,
+                      - maximum computational time
+
+
+******************************************************************
+
+  Solving the NLP problem with
+		>Summary of selected eSS options: 
+ess_options.
+	dim_refset:	'auto'
+	inter_save:	0
+	iterprint:	1
+	local:	(1x1 struct)
+	log_var:	(1x4 double)
+	maxeval:	200000
+	maxtime:	600
+	ndiverse:	'auto'
+nl2sol_settings.
+	display:	2
+	grad:	[]
+	iterfun:	[]
+	maxfeval:	100000
+	maxiter:	100000
+	objrtol:	1e-13
+	tolafun:	1e-13
+	tolrfun:	1e-13
+
+		>Bounds on the unknowns:
+
+		v_guess(1)=0.500000;  v_min(1)=0.000000;  v_max(1)=1.000000;
+		v_guess(2)=0.500000;  v_min(2)=0.000000;  v_max(2)=1.000000;
+		v_guess(3)=0.500000;  v_min(3)=0.000000;  v_max(3)=1.000000;
+		v_guess(4)=0.500000;  v_min(4)=0.000000;  v_max(4)=1.000000;
+
+
+------------------------------------------------------------------------------ 
+ eSS R2019 - Enhanced Scatter Search    
+<c> IIM-CSIC, Vigo, Spain -  email: gingproc@iim.csic.es 
+------------------------------------------------------------------------------ 
+
+Refset size automatically calculated: 8
+Number of diverse solutions automatically calculated: 40
+
+
+-----------------------------------------------
+ Initial value problem related active settings
+-----------------------------------------------
+ivpsolver: cvodes
+RelTol: 1e-13
+AbsTol: 1e-13
+MaxStepSize: Inf
+MaxNumberOfSteps: 1e+06
+Initial Point (x_0): FEASIBLE SOLUTION. Objective function value: 206.692 
+Initial Pop: NFunEvals: 48  Bestf: 53.6379      CPUTime: 28.854104    Var: 3.51376e+38 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 1 NFunEvals: 121  Bestf: 23.5549      CPUTime: 29.474271    Var: 6963.6 
+Call local solver: NL2SOL 
+Initial point function value: 23.554867 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           23.555
+    2           23.555
+    3           23.555
+    4           23.555
+    5           23.555
+    6           1.8023
+    7           1.8023
+    8           1.8023
+    9           1.8023
+ feval            sse
+   10           1.8023
+   11         0.089991
+   12         0.089991
+   13          0.08999
+   14         0.089993
+   15         0.089993
+   16         0.073117
+   17         0.073117
+   18         0.073117
+   19         0.073117
+ feval            sse
+   20         0.073117
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+   27         0.073116
+   28         0.073116
+   29         0.073116
+ feval            sse
+   30         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: Optimal
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.120787  seconds 
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 2 NFunEvals: 218  Bestf: 0.0731161      CPUTime: 29.660618    Var: 1110.93 
+Iteration: 3 NFunEvals: 283  Bestf: 0.0731161      CPUTime: 29.717794    Var: 135.318 
+Iteration: 4 NFunEvals: 353  Bestf: 0.0731161      CPUTime: 29.775640    Var: 10.5076 
+Iteration: 5 NFunEvals: 419  Bestf: 0.0731161      CPUTime: 29.839059    Var: 0.797053 
+Iteration: 6 NFunEvals: 486  Bestf: 0.0731161      CPUTime: 29.895715    Var: 0.00893528 
+Iteration: 7 NFunEvals: 554  Bestf: 0.0731161      CPUTime: 30.057826    Var: 0.00290774 
+Iteration: 8 NFunEvals: 623  Bestf: 0.0731161      CPUTime: 30.150070    Var: 4.73814e-06 
+Iteration: 9 NFunEvals: 687  Bestf: 0.0731161      CPUTime: 30.201692    Var: 6.01773e-07 
+Iteration: 10 NFunEvals: 756  Bestf: 0.0731161      CPUTime: 30.253995    Var: 8.27582e-08 
+Iteration: 11 NFunEvals: 828  Bestf: 0.0731161      CPUTime: 30.506500    Var: 1588.67 
+Call local solver: NL2SOL 
+Initial point function value: 128.930075 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           128.93
+    2           128.93
+    3           128.93
+    4           128.93
+    5           128.93
+    6           3.0697
+    7           3.0697
+    8           3.0697
+    9           3.0696
+ feval            sse
+   10           3.0696
+   11          0.12791
+   12          0.12791
+   13          0.12791
+   14          0.12792
+   15          0.12792
+   16         0.073121
+   17         0.073121
+   18         0.073121
+   19         0.073121
+ feval            sse
+   20         0.073121
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+   27         0.073116
+   28         0.073116
+   29         0.073116
+ feval            sse
+   30         0.073116
+   31         0.073116
+   32         0.073116
+   33         0.073116
+   34         0.073116
+   35         0.073116
+   36         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 7 iteration and 37 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 39 
+CPU Time of the local search: 0.034248  seconds 
+
+Iteration: 12 NFunEvals: 929  Bestf: 0.0731161      CPUTime: 30.622783    Var: 0.991926 
+Iteration: 13 NFunEvals: 996  Bestf: 0.0731161      CPUTime: 30.678910    Var: 0.0252655 
+Iteration: 14 NFunEvals: 1064  Bestf: 0.0731161      CPUTime: 30.863559    Var: 14.1788 
+Iteration: 15 NFunEvals: 1130  Bestf: 0.0731161      CPUTime: 31.037493    Var: 0.489086 
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 2.61861e-13, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 16 NFunEvals: 1201  Bestf: 0.0731161      CPUTime: 33.025793    Var: 21.7839 
+Iteration: 17 NFunEvals: 1274  Bestf: 0.0731161      CPUTime: 33.084338    Var: 15.9655 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 18 NFunEvals: 1344  Bestf: 0.0731161      CPUTime: 33.418097    Var: 924.277 
+Iteration: 19 NFunEvals: 1410  Bestf: 0.0731161      CPUTime: 33.616137    Var: 849.839 
+Iteration: 20 NFunEvals: 1480  Bestf: 0.0731161      CPUTime: 33.669860    Var: 6.89759 
+Iteration: 21 NFunEvals: 1549  Bestf: 0.0731161      CPUTime: 36.110962    Var: 36.5569 
+Call local solver: NL2SOL 
+Initial point function value: 3.495846 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           3.4958
+    2           3.4958
+    3           3.4958
+    4           3.4959
+    5           3.4959
+    6          0.55312
+    7          0.55312
+    8          0.55311
+    9          0.55313
+ feval            sse
+   10          0.55313
+   11         0.073604
+   12         0.073604
+   13         0.073604
+   14         0.073604
+   15         0.073604
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+   27         0.073116
+   28         0.073116
+   29         0.073116
+ feval            sse
+   30         0.073116
+   31         0.073116
+   32         0.073116
+   33         0.073116
+   34         0.073116
+   35         0.073116
+   36         0.073116
+   37         0.073116
+   38         0.073116
+   39         0.073116
+ feval            sse
+   40         0.073116
+   41         0.073116
+   42         0.073116
+   43         0.073116
+   44         0.073116
+   45         0.073116
+   46         0.073116
+   47         0.073116
+   48         0.073116
+   49         0.073116
+ feval            sse
+   50         0.073116
+   51         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 10 iteration and 52 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 54 
+CPU Time of the local search: 0.045308  seconds 
+
+Iteration: 22 NFunEvals: 1674  Bestf: 0.0731161      CPUTime: 36.220017    Var: 68.031 
+Iteration: 23 NFunEvals: 1747  Bestf: 0.0731161      CPUTime: 36.282122    Var: 6.48579 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 24 NFunEvals: 1819  Bestf: 0.0731161      CPUTime: 59.973982    Var: 656.573 
+Iteration: 25 NFunEvals: 1886  Bestf: 0.0731161      CPUTime: 60.036522    Var: 678.08 
+Iteration: 26 NFunEvals: 1952  Bestf: 0.0731161      CPUTime: 60.092539    Var: 37.7408 
+Iteration: 27 NFunEvals: 2018  Bestf: 0.0731161      CPUTime: 60.145090    Var: 0.6676 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 28 NFunEvals: 2090  Bestf: 0.0731161      CPUTime: 60.202564    Var: 376.481 
+Iteration: 29 NFunEvals: 2160  Bestf: 0.0731161      CPUTime: 60.253870    Var: 0.339477 
+Iteration: 30 NFunEvals: 2235  Bestf: 0.0731161      CPUTime: 60.313004    Var: 0.00112193 
+Iteration: 31 NFunEvals: 2299  Bestf: 0.0731161      CPUTime: 60.362680    Var: 9.4079e-06 
+Call local solver: NL2SOL 
+Initial point function value: 0.077010 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.07701
+    2          0.07701
+    3          0.07701
+    4          0.07701
+    5          0.07701
+    6         0.073116
+    7         0.073116
+    8         0.073116
+    9         0.073116
+ feval            sse
+   10         0.073116
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.019840  seconds 
+
+Iteration: 32 NFunEvals: 2389  Bestf: 0.0731161      CPUTime: 60.439037    Var: 1.93579e-06 
+Iteration: 33 NFunEvals: 2459  Bestf: 0.0731161      CPUTime: 60.492098    Var: 5.03835e-08 
+Iteration: 34 NFunEvals: 2524  Bestf: 0.0731161      CPUTime: 60.540622    Var: 1.48693e-09 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 35 NFunEvals: 2596  Bestf: 0.0731161      CPUTime: 61.416719    Var: 289.395 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 36 NFunEvals: 2662  Bestf: 0.0731161      CPUTime: 88.017276    Var: 1987.11 
+Iteration: 37 NFunEvals: 2726  Bestf: 0.0731161      CPUTime: 88.075187    Var: 2.46017 
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 2.61861e-13, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 38 NFunEvals: 2795  Bestf: 0.0731161      CPUTime: 88.296735    Var: 1127.89 
+Iteration: 39 NFunEvals: 2863  Bestf: 0.0731161      CPUTime: 88.354229    Var: 1.20623 
+Iteration: 40 NFunEvals: 2934  Bestf: 0.0731161      CPUTime: 88.413715    Var: 0.0208752 
+Iteration: 41 NFunEvals: 3000  Bestf: 0.0731161      CPUTime: 88.465053    Var: 0.000169174 
+Call local solver: NL2SOL 
+Initial point function value: 0.135718 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.13572
+    2          0.13572
+    3          0.13572
+    4          0.13571
+    5          0.13572
+    6          0.07331
+    7          0.07331
+    8          0.07331
+    9         0.073311
+ feval            sse
+   10         0.073311
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 27 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 29 
+CPU Time of the local search: 0.032727  seconds 
+
+Iteration: 42 NFunEvals: 3094  Bestf: 0.0731161      CPUTime: 88.551899    Var: 2.57781e-05 
+Iteration: 43 NFunEvals: 3162  Bestf: 0.0731161      CPUTime: 88.607149    Var: 3.55078e-06 
+Iteration: 44 NFunEvals: 3227  Bestf: 0.0731161      CPUTime: 88.656569    Var: 1.01765e-06 
+Iteration: 45 NFunEvals: 3288  Bestf: 0.0731161      CPUTime: 88.703070    Var: 1.0728e-07 
+Iteration: 46 NFunEvals: 3364  Bestf: 0.0731161      CPUTime: 88.768120    Var: 220.09 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 47 NFunEvals: 3437  Bestf: 0.0731161      CPUTime: 88.959556    Var: 130.991 
+Iteration: 48 NFunEvals: 3505  Bestf: 0.0731161      CPUTime: 89.019433    Var: 33.097 
+Iteration: 49 NFunEvals: 3574  Bestf: 0.0731161      CPUTime: 89.080686    Var: 224.662 
+Iteration: 50 NFunEvals: 3641  Bestf: 0.0731161      CPUTime: 89.138250    Var: 1.32503 
+Iteration: 51 NFunEvals: 3705  Bestf: 0.0731161      CPUTime: 89.192673    Var: 0.151621 
+Call local solver: NL2SOL 
+Initial point function value: 0.134892 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.13489
+    2          0.13489
+    3          0.13489
+    4          0.13489
+    5          0.13489
+    6         0.073175
+    7         0.073175
+    8         0.073174
+    9         0.073175
+ feval            sse
+   10         0.073175
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 27 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 29 
+CPU Time of the local search: 0.023612  seconds 
+
+Iteration: 52 NFunEvals: 3801  Bestf: 0.0731161      CPUTime: 89.277752    Var: 0.000213391 
+Iteration: 53 NFunEvals: 3874  Bestf: 0.0731161      CPUTime: 89.335503    Var: 2.17259e-05 
+Iteration: 54 NFunEvals: 3944  Bestf: 0.0731161      CPUTime: 89.389537    Var: 6.25667e-07 
+Iteration: 55 NFunEvals: 4010  Bestf: 0.0731161      CPUTime: 89.439905    Var: 3.16641e-08 
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 7.98352e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 56 NFunEvals: 4080  Bestf: 0.0731161      CPUTime: 89.501631    Var: 1708.7 
+Iteration: 57 NFunEvals: 4154  Bestf: 0.0731161      CPUTime: 89.583659    Var: 713.887 
+Iteration: 58 NFunEvals: 4228  Bestf: 0.0731161      CPUTime: 145.071226    Var: 2059.19 
+Iteration: 59 NFunEvals: 4293  Bestf: 0.0731161      CPUTime: 145.119638    Var: 468.372 
+Iteration: 60 NFunEvals: 4362  Bestf: 0.0731161      CPUTime: 145.172921    Var: 1.86973 
+Iteration: 61 NFunEvals: 4429  Bestf: 0.0731161      CPUTime: 145.290686    Var: 0.330236 
+Call local solver: NL2SOL 
+Initial point function value: 1.909771 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           1.9098
+    2           1.9098
+    3           1.9097
+    4           1.9098
+    5           1.9098
+    6          0.09385
+    7         0.093849
+    8         0.093849
+    9         0.093852
+ feval            sse
+   10         0.093852
+   11         0.073117
+   12         0.073117
+   13         0.073117
+   14         0.073117
+   15         0.073117
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: Optimal
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.023008  seconds 
+
+Iteration: 62 NFunEvals: 4527  Bestf: 0.0731161      CPUTime: 145.374088    Var: 0.0152384 
+Iteration: 63 NFunEvals: 4597  Bestf: 0.0731161      CPUTime: 145.430234    Var: 0.000419969 
+Iteration: 64 NFunEvals: 4662  Bestf: 0.0731161      CPUTime: 145.477071    Var: 1.65732e-05 
+Iteration: 65 NFunEvals: 4730  Bestf: 0.0731161      CPUTime: 145.531880    Var: 1.77297e-06 
+Iteration: 66 NFunEvals: 4797  Bestf: 0.0731161      CPUTime: 145.583366    Var: 4.47968e-08 
+Iteration: 67 NFunEvals: 4861  Bestf: 0.0731161      CPUTime: 145.629851    Var: 7.1435e-09 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 2.61861e-13, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 68 NFunEvals: 4929  Bestf: 0.0731161      CPUTime: 145.700233    Var: 2977.12 
+Iteration: 69 NFunEvals: 5003  Bestf: 0.0731161      CPUTime: 145.758015    Var: 1.53399 
+Iteration: 70 NFunEvals: 5074  Bestf: 0.0731161      CPUTime: 145.819004    Var: 2.78412 
+Iteration: 71 NFunEvals: 5143  Bestf: 0.0731161      CPUTime: 145.872293    Var: 120.302 
+Call local solver: NL2SOL 
+Initial point function value: 2.721067 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           2.7211
+    2           2.7211
+    3           2.7211
+    4           2.7211
+    5           2.7211
+    6         0.083949
+    7         0.083948
+    8         0.083948
+    9         0.083951
+ feval            sse
+   10          0.08395
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.022885  seconds 
+
+Iteration: 72 NFunEvals: 5237  Bestf: 0.0731161      CPUTime: 146.007720    Var: 209.017 
+Iteration: 73 NFunEvals: 5302  Bestf: 0.0731161      CPUTime: 146.057736    Var: 0.598761 
+Iteration: 74 NFunEvals: 5372  Bestf: 0.0731161      CPUTime: 146.112110    Var: 0.00713677 
+Iteration: 75 NFunEvals: 5436  Bestf: 0.0731161      CPUTime: 146.158260    Var: 0.000863191 
+Iteration: 76 NFunEvals: 5500  Bestf: 0.0731161      CPUTime: 146.204074    Var: 4.96015e-05 
+Iteration: 77 NFunEvals: 5564  Bestf: 0.0731161      CPUTime: 300.455041    Var: 57.8956 
+Iteration: 78 NFunEvals: 5632  Bestf: 0.0731161      CPUTime: 300.722123    Var: 183.198 
+Iteration: 79 NFunEvals: 5706  Bestf: 0.0731161      CPUTime: 300.778397    Var: 10.8501 
+Iteration: 80 NFunEvals: 5772  Bestf: 0.0731161      CPUTime: 300.834010    Var: 64.9715 
+Iteration: 81 NFunEvals: 5835  Bestf: 0.0731161      CPUTime: 300.886154    Var: 9.9056 
+Call local solver: NL2SOL 
+Initial point function value: 3.596834 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           3.5968
+    2           3.5968
+    3           3.5968
+    4           3.5969
+    5           3.5968
+    6         0.082209
+    7         0.082209
+    8         0.082207
+    9          0.08221
+ feval            sse
+   10         0.082211
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.022642  seconds 
+
+Iteration: 82 NFunEvals: 5932  Bestf: 0.0731161      CPUTime: 300.967748    Var: 0.237036 
+Iteration: 83 NFunEvals: 5999  Bestf: 0.0731161      CPUTime: 301.021899    Var: 0.0134298 
+Iteration: 84 NFunEvals: 6065  Bestf: 0.0731161      CPUTime: 301.077025    Var: 9.95355e-06 
+Iteration: 85 NFunEvals: 6137  Bestf: 0.0731161      CPUTime: 301.129398    Var: 5.99995e-08 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 86 NFunEvals: 6203  Bestf: 0.0731161      CPUTime: 301.182691    Var: 33.6649 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 87 NFunEvals: 6274  Bestf: 0.0731161      CPUTime: 301.241987    Var: 3.32206 
+Iteration: 88 NFunEvals: 6343  Bestf: 0.0731161      CPUTime: 311.144568    Var: 81.5631 
+Iteration: 89 NFunEvals: 6406  Bestf: 0.0731161      CPUTime: 311.196894    Var: 27.628 
+Iteration: 90 NFunEvals: 6472  Bestf: 0.0731161      CPUTime: 311.258525    Var: 182.933 
+Iteration: 91 NFunEvals: 6535  Bestf: 0.0731161      CPUTime: 311.313615    Var: 0.0778668 
+Call local solver: NL2SOL 
+Initial point function value: 0.075772 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.075772
+    2         0.075773
+    3         0.075772
+    4         0.075771
+    5         0.075772
+    6         0.073116
+    7         0.073116
+    8         0.073116
+    9         0.073116
+ feval            sse
+   10         0.073116
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.018520  seconds 
+
+Iteration: 92 NFunEvals: 6621  Bestf: 0.0731161      CPUTime: 311.385009    Var: 9.61914e-05 
+Iteration: 93 NFunEvals: 6686  Bestf: 0.0731161      CPUTime: 311.436300    Var: 3.63164e-08 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 94 NFunEvals: 6757  Bestf: 0.0731161      CPUTime: 584.260108    Var: 12997 
+Iteration: 95 NFunEvals: 6822  Bestf: 0.0731161      CPUTime: 585.923946    Var: 12.1426 
+Iteration: 96 NFunEvals: 6887  Bestf: 0.0731161      CPUTime: 585.976020    Var: 0.562816 
+Iteration: 97 NFunEvals: 6951  Bestf: 0.0731161      CPUTime: 586.023420    Var: 49.4459 
+Iteration: 98 NFunEvals: 7023  Bestf: 0.0731161      CPUTime: 586.080460    Var: 0.705983 
+Iteration: 99 NFunEvals: 7091  Bestf: 0.0731161      CPUTime: 586.133129    Var: 0.0101812 
+Iteration: 100 NFunEvals: 7160  Bestf: 0.0731161      CPUTime: 586.237960    Var: 12.4635 
+Iteration: 101 NFunEvals: 7235  Bestf: 0.0731161      CPUTime: 587.773667    Var: 14.7102 
+Call local solver: NL2SOL 
+Initial point function value: 7.395442 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           7.3954
+    2           7.3954
+    3           7.3954
+    4           7.3955
+    5           7.3954
+    6          0.42367
+    7          0.42366
+    8          0.42365
+    9          0.42368
+ feval            sse
+   10          0.42368
+   11         0.073701
+   12         0.073701
+   13         0.073701
+   14         0.073702
+   15         0.073702
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+   21         0.073116
+   22         0.073116
+   23         0.073116
+   24         0.073116
+   25         0.073116
+   26         0.073116
+   27         0.073116
+   28         0.073116
+   29         0.073116
+ feval            sse
+   30         0.073116
+   31         0.073116
+   32         0.073116
+   33         0.073116
+   34         0.073116
+   35         0.073116
+   36         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 7 iteration and 37 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 39 
+CPU Time of the local search: 0.032458  seconds 
+
+Iteration: 102 NFunEvals: 7340  Bestf: 0.0731161      CPUTime: 587.863424    Var: 1.81482 
+Iteration: 103 NFunEvals: 7411  Bestf: 0.0731161      CPUTime: 587.923649    Var: 0.121444 
+Iteration: 104 NFunEvals: 7478  Bestf: 0.0731161      CPUTime: 587.981018    Var: 5.48616 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 105 NFunEvals: 7545  Bestf: 0.0731161      CPUTime: 588.043672    Var: 443.748 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 106 NFunEvals: 7610  Bestf: 0.0731161      CPUTime: 588.565113    Var: 61.3843 
+Iteration: 107 NFunEvals: 7676  Bestf: 0.0731161      CPUTime: 588.615167    Var: 83.7165 
+Iteration: 108 NFunEvals: 7749  Bestf: 0.0731161      CPUTime: 588.671621    Var: 0.0647613 
+Iteration: 109 NFunEvals: 7814  Bestf: 0.0731161      CPUTime: 588.722841    Var: 7.34804 
+Iteration: 110 NFunEvals: 7884  Bestf: 0.0731161      CPUTime: 588.774517    Var: 0.0171905 
+Iteration: 111 NFunEvals: 7949  Bestf: 0.0731161      CPUTime: 588.824905    Var: 0.000462844 
+Call local solver: NL2SOL 
+Initial point function value: 0.075321 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.075321
+    2         0.075321
+    3         0.075321
+    4         0.075322
+    5         0.075321
+    6         0.073116
+    7         0.073116
+    8         0.073116
+    9         0.073116
+ feval            sse
+   10         0.073116
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: Optimal
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.018592  seconds 
+
+Iteration: 112 NFunEvals: 8038  Bestf: 0.0731161      CPUTime: 588.894744    Var: 2.58094e-07 
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 6.20627e-19, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 113 NFunEvals: 8103  Bestf: 0.0731161      CPUTime: 588.949867    Var: 71.8664 
+Iteration: 114 NFunEvals: 8173  Bestf: 0.0731161      CPUTime: 589.008798    Var: 0.318588 
+Iteration: 115 NFunEvals: 8242  Bestf: 0.0731161      CPUTime: 589.071116    Var: 238.483 
+Iteration: 116 NFunEvals: 8312  Bestf: 0.0731161      CPUTime: 590.118175    Var: 860.477 
+Iteration: 117 NFunEvals: 8378  Bestf: 0.0731161      CPUTime: 590.169227    Var: 102.627 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 118 NFunEvals: 8446  Bestf: 0.0731161      CPUTime: 590.226395    Var: 1033.35 
+Iteration: 119 NFunEvals: 8510  Bestf: 0.0731161      CPUTime: 590.282917    Var: 0.314223 
+Iteration: 120 NFunEvals: 8579  Bestf: 0.0731161      CPUTime: 590.339350    Var: 0.0111552 
+Iteration: 121 NFunEvals: 8648  Bestf: 0.0731161      CPUTime: 590.391275    Var: 0.000811377 
+Call local solver: NL2SOL 
+Initial point function value: 0.083763 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.083763
+    2         0.083761
+    3         0.083763
+    4         0.083763
+    5         0.083762
+    6         0.073116
+    7         0.073116
+    8         0.073116
+    9         0.073116
+ feval            sse
+   10         0.073116
+   11         0.073116
+   12         0.073116
+   13         0.073116
+   14         0.073116
+   15         0.073116
+   16         0.073116
+   17         0.073116
+   18         0.073116
+   19         0.073116
+ feval            sse
+   20         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: Optimal
+Local solution function value: 0.0731161 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.018228  seconds 
+
+Iteration: 122 NFunEvals: 8737  Bestf: 0.0731161      CPUTime: 590.462356    Var: 4.85846e-06 
+Iteration: 123 NFunEvals: 8803  Bestf: 0.0731161      CPUTime: 590.519052    Var: 46.3232 
+Iteration: 124 NFunEvals: 8872  Bestf: 0.0731161      CPUTime: 590.577148    Var: 28.9981 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 125 NFunEvals: 8941  Bestf: 0.0731161      CPUTime: 590.970877    Var: 49.9974 
+Iteration: 126 NFunEvals: 9015  Bestf: 0.0731161      CPUTime: 596.662302    Var: 63.6473 
+Iteration: 127 NFunEvals: 9081  Bestf: 0.0731161      CPUTime: 596.709838    Var: 0.0202209 
+Iteration: 128 NFunEvals: 9148  Bestf: 0.0731161      CPUTime: 596.758379    Var: 0.0020373 
+
+[CVODES WARNING]  CVode
+  Internal t = 0 and h = 0 are such that t + h = t on the next step. The solver will continue anyway.
+
+
+[CVODES ERROR]  CVode
+  At t = 0 and h = 0, the corrector convergence test failed repeatedly or with |h| = hmin.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -4
+
+Iteration: 129 NFunEvals: 9219  Bestf: 0.0731161      CPUTime: 604.503730    Var: 25.0679 
+
+Final local refinement with: NL2SOL 
+Initial point function value: 0.073116 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.073116
+    2         0.073116
+    3         0.073116
+    4         0.073116
+    5         0.073116
+    6         0.073116
+
+ *** SUCCESSFUL TERMINATION ***
+ *** both x and relative function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 1 iteration and 7 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 0.073116 
+Number of function evaluations in the local search: 9 
+CPU Time of the local search: 0.007902  seconds 
+
+Maximum computation time achieved
+Best solution value		0.0731161
+Decision vector
+	0.227524
+	0.629035
+	0.451937
+	0.160947
+CPU time		604.52
+Number of function evaluations		9229
+Execution of script mklJac as a function is not supported:
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/numericalDifferentiation/mklJac.m
+
+
+------> Computing Correlation Matrix for unknowns...
+
+---------------------------------------------------
+Local sensitivity problem related active settings
+---------------------------------------------------
+senssolver: cvodes
+ivp_RelTol: 1e-13
+ivp_AbsTol: 1e-13
+sens_RelTol: ~1e-13
+sensmex: cvodesg_harmonic_0_1em2
+MaxStepSize: Inf
+MaxNumberOfSteps: 1e+06
+sens_RelTol: ~1e-13
+
+[CVODES ERROR]  CVode
+  At t = 0.775976, mxstep steps taken before reaching tout.
+
+
+SUNDIALS_ERROR: CVode() failed with flag = -1
+
+
+
+------>An error was obtained when computing sensitivities.
+
+
+       Sorry, it was not possible to compute Cramer-Rao confidence intervals.
+
+--------------------------------------------------------------------------
+		
+Experiment 1: 
+		inputs.exp_data{1}=[
+		0.453743  0.161577
+		0.447536  0.160073
+		0.450058  0.162845
+		0.454264  0.166303
+		0.453947  0.169781
+		0.456833  0.167026
+		0.453249  0.169682
+		0.449115  0.169893
+		0.451614  0.173945
+		0.441071  0.172238
+		0.450948  0.175792
+		0.453397  0.179383
+		0.453855  0.17886
+		0.448663  0.180355
+		0.458858  0.184695
+		0.451842  0.182768
+		0.453569  0.186926
+		0.451847  0.182303
+		0.45054  0.19086
+		0.451491  0.184745
+		0.452151  0.188533
+		0.454735  0.191269
+		0.452567  0.194164
+		0.45006  0.194074
+		0.450345  0.195658
+		0.448633  0.193104
+		0.459743  0.200848
+		0.455533  0.200573
+		0.451624  0.202355
+		0.44773  0.203526
+		0.445869  0.205069
+		0.449662  0.205749
+		0.442934  0.211803
+		0.45196  0.209049
+		0.446399  0.211665
+		0.452034  0.210669
+		0.445273  0.211693
+		0.445701  0.211361
+		0.448822  0.212903
+		0.453357  0.214788
+		0.447199  0.215887
+		0.449003  0.217134
+		0.444347  0.219001
+		0.446445  0.22271
+		0.44729  0.226614
+		0.447343  0.224834
+		0.442035  0.230223
+		0.439052  0.231038
+		0.453331  0.22982
+		0.442378  0.23165
+		0.44801  0.234647
+		0.441613  0.23427
+		0.454384  0.231999
+		0.455161  0.238374
+		0.434806  0.240897
+		0.451604  0.237569
+		0.455408  0.239499
+		0.452881  0.241608
+		0.449022  0.243619
+		0.444777  0.243315
+		0.440261  0.247081
+		0.441857  0.245807
+		0.45091  0.249097
+		0.440342  0.246585
+		0.442771  0.253026
+		0.443959  0.25428
+		0.436418  0.252694
+		0.448181  0.263233
+		0.448151  0.258548
+		0.435591  0.255253
+		0.450755  0.263904
+		0.442208  0.264116
+		0.447042  0.263023
+		0.443379  0.266631
+		0.444015  0.266207
+		0.447398  0.26582
+		0.440737  0.268407
+		0.442966  0.277139
+		0.445187  0.273312
+		0.446834  0.26879
+		0.440438  0.278594
+		0.444487  0.274852
+		0.446112  0.275668
+		0.435848  0.276501
+		0.440655  0.279754
+		0.436997  0.283851
+		0.443458  0.278803
+		0.432674  0.281054
+		0.439099  0.283507
+		0.444242  0.286569
+		0.44805  0.29162
+		0.446905  0.291283
+		0.439334  0.289709
+		0.440267  0.295359
+		0.443397  0.291998
+		0.438899  0.30102
+		0.438541  0.298342
+		0.447773  0.303296
+		0.442669  0.298001
+		0.442873  0.300821
+		0.439247  0.30252
+		0.43922  0.304519
+		0.44332  0.305862
+		0.437101  0.309415
+		0.436954  0.303376
+		0.450159  0.314649
+		0.439922  0.312992
+		0.439225  0.313423
+		0.440401  0.315625
+		0.448501  0.321212
+		0.439807  0.321811
+		0.440495  0.322185
+		0.442285  0.325082
+		0.445092  0.326666
+		0.440634  0.323428
+		0.438429  0.325283
+		0.434643  0.327183
+		0.440856  0.324594
+		0.440573  0.333186
+		0.439081  0.321462
+		0.441267  0.331049
+		0.439598  0.32702
+		0.437795  0.334782
+		0.438458  0.332507
+		0.435872  0.336704
+		0.441238  0.338528
+		0.44209  0.338581
+		0.443935  0.340573
+		0.432338  0.341692
+		0.432376  0.341666
+		0.440786  0.347189
+		0.435109  0.345822
+		0.432487  0.351486
+		0.435704  0.344959
+		0.435605  0.356351
+		0.432271  0.349254
+		0.430166  0.359718
+		0.436125  0.35826
+		0.434488  0.361275
+		0.43039  0.360704
+		0.440833  0.357831
+		0.431804  0.36482
+		0.430698  0.361904
+		0.445872  0.365668
+		0.437917  0.364242
+		0.432443  0.359868
+		0.435069  0.368685
+		0.439345  0.369289
+		0.432927  0.371208
+		0.434782  0.363124
+		0.43675  0.369848
+		0.442203  0.375589
+		0.42515  0.371581
+		0.437437  0.373157
+		0.436328  0.376329
+		0.435082  0.380685
+		0.427747  0.374053
+		0.438339  0.382139
+		0.439716  0.388367
+		0.432827  0.389675
+		0.426248  0.386764
+		0.42591  0.386526
+		0.428343  0.392369
+		0.438929  0.396587
+		0.43464  0.394316
+		0.430839  0.397448
+		0.4329  0.398785
+		0.42759  0.394602
+		0.429685  0.397448
+		0.42957  0.399759
+		0.427852  0.404992
+		0.42795  0.4055
+		0.428956  0.400551
+		0.435199  0.403879
+		0.435393  0.412762
+		0.428389  0.401587
+		0.427542  0.405733
+		0.431021  0.405268
+		0.435847  0.41478
+		0.429613  0.408383
+		0.426609  0.418797
+		0.434452  0.412847
+		0.422586  0.417481
+		0.429236  0.418588
+		0.417151  0.419355
+		0.421568  0.417596
+		0.430753  0.419372
+		0.425451  0.420786
+		0.424581  0.429056
+		0.421999  0.425962
+		0.421467  0.431358
+		0.421963  0.430281
+		0.431841  0.425465
+		0.415184  0.427365
+		0.420057  0.437087
+		0.418298  0.439277
+		0.419958  0.435908
+		0.418948  0.440141
+		0.424644  0.444566
+		0.425354  0.439739
+		0.427352  0.435569
+		0.433584  0.443486
+		0.423336  0.434778
+		0.421696  0.44395
+		0.415918  0.439188
+		0.426064  0.452415
+		0.423417  0.445095
+		0.416365  0.453988
+		0.43078  0.457645
+		0.422452  0.448161
+		0.423634  0.460445
+		0.423222  0.460997
+		0.425866  0.456878
+		0.415571  0.460857
+		0.426933  0.464236
+		0.431685  0.463835
+		0.426136  0.458213
+		0.422818  0.463114
+		0.428566  0.474167
+		0.41274  0.47183
+		0.424408  0.470518
+		0.418092  0.466678
+		0.426709  0.467067
+		0.420426  0.474039
+		0.40978  0.475352
+		0.42371  0.475987
+		0.421013  0.47982
+		0.416467  0.476753
+		0.420916  0.48922
+		0.419204  0.471914
+		0.412604  0.472288
+		0.411217  0.478902
+		0.417679  0.483292
+		0.425182  0.482766
+		0.418955  0.479739
+		0.417604  0.483504
+		0.417857  0.495037
+		0.414375  0.497489
+		0.416779  0.49352
+		0.417716  0.497898
+		0.416539  0.497114
+		0.411735  0.495169
+		0.411815  0.496633
+		0.414602  0.497899
+		0.413325  0.493225
+		0.420263  0.500623
+		0.405953  0.500189
+		0.416793  0.506447
+		0.415959  0.505796
+		0.417859  0.501178
+		0.41255  0.515266
+		0.410044  0.51225
+		0.406637  0.510068
+		0.407061  0.512365
+		0.412787  0.512246
+		0.417868  0.51158
+		0.414507  0.518853
+		0.412943  0.512175
+		0.415236  0.523418
+		0.407763  0.522471
+		0.413819  0.523978
+		0.409908  0.517122
+		0.414354  0.518833
+		0.417777  0.516403
+		0.40758  0.525841
+		0.404095  0.534276
+		0.410319  0.528391
+		0.40545  0.532071
+		0.410092  0.532502
+		0.405425  0.533821
+		0.406999  0.535614
+		0.410497  0.526619
+		0.41689  0.540255
+		0.41094  0.53846
+		0.406112  0.537914
+		0.410009  0.542717
+		0.405381  0.543814
+		0.409271  0.543428
+		0.411103  0.541244
+		0.408205  0.541815
+		0.398365  0.545542
+		0.409231  0.548889
+		0.403564  0.555441
+		0.4108  0.547471
+		0.411158  0.563072
+		0.405436  0.558775
+		0.409939  0.561267
+		0.397866  0.55819
+		0.413049  0.553144
+		0.403935  0.556369
+		0.40184  0.562994
+		0.399297  0.559054
+		0.4055  0.555468
+		0.402894  0.56156
+		0.401585  0.562385
+		0.404709  0.570005
+		0.413629  0.56272
+		0.4102  0.563775
+		0.402263  0.565168
+		0.404398  0.573676
+		0.404847  0.570719
+		0.401799  0.57702
+		0.393961  0.569623
+		0.399914  0.5747
+		0.391323  0.570504
+		0.394129  0.591139
+		0.405284  0.588135
+		0.405637  0.57461
+		0.398415  0.578746
+		0.393162  0.579372
+		0.401488  0.588654
+		0.39803  0.586639
+		0.404821  0.58938
+		0.392918  0.582683
+		0.402526  0.591522
+		0.397584  0.590199
+		0.393799  0.593133
+		0.391942  0.599264
+		0.392275  0.598046
+		0.395221  0.591962
+		0.396146  0.605624
+		0.395252  0.601155
+		0.39455  0.60538
+		0.391936  0.614046
+		0.395644  0.596596
+		0.396606  0.601194
+		0.384361  0.599583
+		0.393626  0.608491
+		0.395596  0.601329
+		0.392029  0.61671
+		0.404678  0.612754
+		0.394359  0.61105
+		0.39185  0.60995
+		0.388846  0.603285
+		0.393968  0.611897
+		0.400587  0.622627
+		0.389367  0.618873
+		0.38485  0.611553
+		0.386771  0.62227
+		0.39575  0.613591
+		0.394659  0.618407
+		0.387488  0.631533
+		0.390629  0.628383
+		0.387844  0.616877
+		0.386298  0.628855
+		0.392118  0.624099
+		0.392906  0.635173
+		0.399601  0.631412
+		0.393081  0.642775
+		0.387672  0.637264
+		0.388405  0.648755
+		0.386686  0.64178
+		0.39055  0.646967
+		0.383609  0.626695
+		0.381847  0.636215
+		0.388176  0.647435
+		0.385614  0.639146
+		0.381435  0.637206
+		0.388461  0.653131
+		0.381892  0.648851
+		0.381576  0.630471
+		0.38459  0.633698
+		0.377883  0.647527
+		0.38325  0.655605
+		0.388745  0.663177
+		0.384809  0.646
+		0.378232  0.647125
+		0.379037  0.659762
+		0.381889  0.661661
+		0.380625  0.664998
+		0.380042  0.65822
+		0.383899  0.663077
+		0.381926  0.662755
+		0.376923  0.664904
+		0.38264  0.658038
+		0.380215  0.664513
+		0.372925  0.666419
+		0.38191  0.665796
+		0.379016  0.668123
+		0.388038  0.669031
+		0.375479  0.669678
+		0.378344  0.670131
+		0.384435  0.674999
+		0.379378  0.673048
+		0.378835  0.675528
+		0.383112  0.674007
+		0.380259  0.684214
+		0.378007  0.674267
+		0.380099  0.68608
+		0.376936  0.680289
+		0.376952  0.678439
+		0.365908  0.680345
+		0.373994  0.682757
+		0.375949  0.68081
+		0.375175  0.681907
+		0.372593  0.706768
+		0.371425  0.696261
+		0.377938  0.692008
+		0.373312  0.690443
+		0.369513  0.697748
+		0.377442  0.692469
+		0.377304  0.702232
+		0.375685  0.696734
+		0.370689  0.690579
+		0.37378  0.70543
+		0.37148  0.703335
+		0.369984  0.698683
+		0.368152  0.710708
+		0.370854  0.705479
+		0.369394  0.70665
+		0.374025  0.708492
+		0.365224  0.698937
+		0.377123  0.698784
+		0.369912  0.701227
+		0.366418  0.698887
+		0.36472  0.721806
+		0.361114  0.707077
+		0.366331  0.714263
+		0.372835  0.720071
+		0.364332  0.702239
+		0.365025  0.708991
+		0.364356  0.719086
+		0.360467  0.727442
+		0.366461  0.726943
+		0.364041  0.730239
+		0.365761  0.733455
+		0.36432  0.725806
+		0.361395  0.715908
+		0.362772  0.731507
+		0.362672  0.731988
+		0.362094  0.724949
+		0.35961  0.74806
+		0.359488  0.744995
+		0.358711  0.736601
+		0.362458  0.738369
+		0.364519  0.729636
+		0.362978  0.742843
+		0.363787  0.734907
+		0.355573  0.73322
+		0.365325  0.735943
+		0.356073  0.739293
+		0.365813  0.736565
+		0.357011  0.743483
+		0.356581  0.746815
+		0.354705  0.743692
+		0.357086  0.755282
+		0.357411  0.748944
+		0.354401  0.742724
+		0.359092  0.747949
+		0.35243  0.745848
+		0.355121  0.754048
+		0.357896  0.758445
+		0.356862  0.761451
+		0.351713  0.77007
+		0.355588  0.752047
+		0.350887  0.758953
+		0.357814  0.760448
+		0.353944  0.759499
+		0.352159  0.764836
+		0.35087  0.76142
+		0.353557  0.761036
+		0.351972  0.759187
+		0.347506  0.768104
+		0.348622  0.748467
+		0.351837  0.774385
+		0.351219  0.765953
+		0.352056  0.777574
+		0.349836  0.776114
+		0.35622  0.757478
+		0.35057  0.775716
+		0.351447  0.770934
+		0.352958  0.775693
+		0.352517  0.777368
+		0.350413  0.771394
+		0.354506  0.782317
+		0.354314  0.776596
+		0.344949  0.784559
+		0.346378  0.785393
+		0.351458  0.780405
+		0.340866  0.79433
+		0.348237  0.786037
+		0.341328  0.79253
+		0.340527  0.788536
+		0.342841  0.797286
+		0.342639  0.790886
+		0.344594  0.798508
+		0.346183  0.795267
+		0.345483  0.789637
+		0.341225  0.799881
+		0.341722  0.784089
+		0.341202  0.802524
+		0.345062  0.809898
+		0.34314  0.793098
+		0.337608  0.80195
+		0.337141  0.79058
+		0.346103  0.800568
+		0.33795  0.799308
+		0.336545  0.799146
+		0.34187  0.805591
+		0.336789  0.805538
+		0.337098  0.829864
+		0.34085  0.809653
+		0.33921  0.822207
+		0.337645  0.794973
+		0.330904  0.817312
+		0.334892  0.810013
+		0.330454  0.818675
+		0.337022  0.805013
+		0.328843  0.82241
+		0.333207  0.823309
+		0.336632  0.828662
+		0.332661  0.821121
+		0.337295  0.824255
+		0.328575  0.812735
+		0.340071  0.815596
+		0.337501  0.818145
+		0.330388  0.824719
+		0.33419  0.815404
+		0.332119  0.821816
+		0.333157  0.829711
+		0.341407  0.825023
+		0.322724  0.835267
+		0.332392  0.819233
+		0.323782  0.831252
+		0.331799  0.831456
+		0.329533  0.830249
+		0.325908  0.84589
+		0.329365  0.838258
+		0.32561  0.829688
+		0.330007  0.8474
+		0.328971  0.850017
+		0.324663  0.830347
+		0.328341  0.854697
+		0.324333  0.844905
+		0.323467  0.844375
+		0.323353  0.852416
+		0.320943  0.847384
+		0.323456  0.855311
+		0.326447  0.832865
+		0.322369  0.844521
+		0.324114  0.832601
+		0.328759  0.836468
+		0.323685  0.848247
+		0.322436  0.845602
+		0.322015  0.851631
+		0.321563  0.84582
+		0.319256  0.859059
+		0.318867  0.864164
+		0.320963  0.858794
+		0.320332  0.878318
+		0.320319  0.860466
+		0.319639  0.866912
+		0.323492  0.871224
+		0.324987  0.872236
+		0.325785  0.87076
+		0.316828  0.869926
+		0.316892  0.874545
+		0.313865  0.865844
+		0.31168  0.878315
+		0.315765  0.863045
+		0.312947  0.860418
+		0.314944  0.875265
+		0.316522  0.871602
+		0.320556  0.870821
+		0.310955  0.872981
+		0.314061  0.887531
+		0.315686  0.886775
+		0.316896  0.884313
+		0.313217  0.871338
+		0.311125  0.873226
+		0.313045  0.884672
+		0.309437  0.887503
+		0.308693  0.882391
+		0.312056  0.889286
+		0.306039  0.890012
+		0.312133  0.876519
+		0.308563  0.877833
+		0.306122  0.893523
+		0.309544  0.88316
+		0.308316  0.878466
+		0.308087  0.895455
+		0.305733  0.879987
+		0.313964  0.878501
+		0.300196  0.88012
+		0.303673  0.904758
+		0.307935  0.90436
+		0.297221  0.884341
+		0.30332  0.900757
+		0.305807  0.904105
+		0.30525  0.908959
+		0.303576  0.90586
+		0.305096  0.90202
+		0.305034  0.90731
+		0.30161  0.904741
+		0.296785  0.918707
+		0.299197  0.905992
+		0.298223  0.892863
+		0.299088  0.91457
+		0.292952  0.904882
+		0.299322  0.905427
+		0.296516  0.902727
+		0.302618  0.906658
+		0.294811  0.925448
+		0.299736  0.915802
+		0.298051  0.924805
+		0.299609  0.925345
+		0.294885  0.918421
+		0.296719  0.902915
+		0.294403  0.906354
+		0.292897  0.913505
+		0.296558  0.921409
+		0.293782  0.918216
+		0.290483  0.909502
+		0.296464  0.928137
+		0.294186  0.907871
+		0.291131  0.921591
+		0.290584  0.934764
+		0.289164  0.916696
+		0.290252  0.934611
+		0.295085  0.922957
+		0.294695  0.918497
+		0.291596  0.95205
+		0.298192  0.934101
+		0.296379  0.924829
+		0.29218  0.919913
+		0.291022  0.934262
+		0.280545  0.948569
+		0.28905  0.920911
+		0.284431  0.951501
+		0.285477  0.950996
+		0.286738  0.92143
+		0.284483  0.949602
+		0.285325  0.942745
+		0.285177  0.940671
+		0.282014  0.937482
+		0.286122  0.939636
+		0.286267  0.943043
+		0.284531  0.954673
+		0.2835  0.942359
+		0.282665  0.945698
+		0.282994  0.946876
+		0.284538  0.950749
+		0.277429  0.950786
+		0.280965  0.944925
+		0.277661  0.95204
+		0.278761  0.958728
+		0.278968  0.9562
+		0.2774  0.964708
+		0.276555  0.933073
+		0.276631  0.945895
+		0.279921  0.958958
+		0.274472  0.962851
+		0.274014  0.959728
+		0.275819  0.963671
+		0.276539  0.963374
+		0.27559  0.958984
+		0.275476  0.950828
+		0.280341  0.965118
+		0.272684  0.963063
+		0.274129  0.974639
+		0.266929  0.970704
+		0.273231  0.970589
+		0.275437  0.949592
+		0.273267  0.954935
+		0.270801  0.974737
+		0.273708  0.98928
+		0.268394  0.956371
+		0.267202  0.978305
+		0.270081  0.976772
+		0.264396  0.977646
+		0.26933  0.972625
+		0.264961  0.967077
+		0.266354  0.950034
+		0.269565  0.964786
+		0.268686  0.97603
+		0.266604  0.985891
+		0.266061  0.993513
+		0.266938  0.952061
+		0.261129  0.989613
+		0.260431  0.988194
+		0.263088  0.984823
+		0.264605  0.984789
+		0.262064  0.992751
+		0.261967  0.990564
+		0.259632  0.988309
+		0.26243  0.985309
+		0.262313  0.96742
+		0.259531  0.98607
+		0.262772  0.980718
+		0.264476  0.983356
+		0.265371  0.985058
+		0.258346  0.994472
+		0.263151  0.993707
+		0.25958  0.984985
+		0.260611  0.99838
+		0.253432  0.974514
+		0.259989  0.999101
+		0.257347  0.994548
+		0.251869  0.981782
+		0.254013  0.994008
+		0.253531  1.0027
+		0.25164  0.987001
+		0.254743  0.989933
+		0.255763  1.01884
+		0.258893  1.00999
+		0.25435  0.985673
+		0.249246  1.01206
+		0.256569  1.00454
+		0.254159  1.01484
+		0.249717  1.00218
+		0.248686  1.01785
+		0.249446  1.00724
+		0.250543  1.01271
+		0.249046  0.999954
+		0.250738  0.997911
+		0.246456  1.00088
+		0.246779  1.01082
+		0.247616  1.00309
+		0.246512  1.00351
+		0.248188  1.01196
+		0.248832  1.01784
+		0.241797  1.02519
+		0.245151  1.00867
+		0.245855  1.00852
+		0.248283  1.03052
+		0.238801  1.0288
+		0.24446  1.01676
+		0.243937  1.01958
+		0.244859  1.01419
+		0.244575  1.02156
+		0.23947  1.02477
+		0.242858  1.03737
+		0.243165  1.00317
+		0.240665  1.02292
+		0.242998  1.02009
+		0.237463  1.03013
+		0.242045  1.03037
+		0.234379  1.01451
+		0.238523  1.03151
+		0.239865  1.03425
+		0.235355  1.03102
+		0.232742  1.01852
+		0.237235  1.04823
+		0.236107  1.03914
+		0.235227  1.02815
+		0.234057  1.0036
+		0.235879  1.03928
+		0.234217  1.03862
+		0.234334  1.05393
+		0.234474  1.03117
+		0.230965  1.04919
+		0.230856  1.02911
+		0.228962  1.02592
+		0.231841  1.023
+		0.225883  1.04245
+		0.225502  1.05832
+		0.228968  1.03028
+		0.23007  1.0305
+		0.228637  1.04124
+		0.227265  1.05291
+		0.228781  1.04295
+		0.223735  1.03729
+		0.225203  1.04507
+		0.22603  1.04299
+		0.227249  1.0545
+		0.21977  1.04467
+		0.224915  1.0427
+		0.227045  1.05678
+		0.228822  1.04658
+		0.225182  1.05857
+		0.225027  1.07582
+		0.222002  1.05923
+		0.221687  1.06124
+		0.22077  1.03674
+		0.216072  1.03476
+		0.218279  1.07488
+		0.218728  1.02963
+		0.222419  1.05206
+		0.218098  1.07172
+		0.216894  1.02733
+		0.21469  1.03807
+		0.217477  1.06904
+		0.218773  1.04731
+		0.216033  1.03836
+		0.214047  1.05412
+		0.209982  1.05686
+		0.218544  1.05264
+		0.213139  1.06169
+		0.216337  1.07774
+		0.212399  1.06678
+		0.214777  1.06738
+		0.215125  1.07367
+		0.213537  1.0703
+		0.208099  1.07779
+		0.212242  1.07757
+		0.210446  1.06601
+		0.209955  1.08185
+		0.209589  1.06614
+		0.206537  1.07888
+		0.209509  1.07839
+		0.210365  1.06732
+		0.209384  1.06763
+		0.206519  1.07807
+		0.20815  1.08253
+		0.20174  1.07438
+		0.205231  1.07155
+		0.204481  1.06328
+		0.203369  1.08642
+		0.204801  1.08824
+		0.203142  1.08213
+		0.205772  1.06405
+		0.203708  1.07445
+		0.202183  1.07159
+		0.200068  1.08494
+		0.196654  1.08034
+		0.199526  1.07879
+		0.199705  1.06577
+		0.196028  1.10383
+		0.198154  1.08509
+		0.197564  1.07749
+		0.198691  1.09413
+		0.197401  1.07689
+		0.195026  1.07284
+		0.195502  1.08518
+		0.194713  1.08336
+		0.196005  1.09736
+		0.19607  1.0876
+		0.190931  1.10052
+		0.192146  1.08342
+		0.194551  1.09344
+		0.192134  1.09799
+		0.192442  1.08806
+		0.191792  1.08097
+		0.189969  1.08617
+		0.191606  1.08992
+		0.185863  1.08971
+		0.189174  1.0892
+		0.190187  1.08314
+		0.18909  1.10524
+		0.188866  1.09672
+		0.190503  1.09562
+		0.186832  1.07599
+		0.187743  1.07922
+		0.187092  1.09515
+		0.187491  1.11649
+		0.186868  1.10342
+		0.186704  1.12171
+		0.185933  1.10021
+		0.182768  1.10375
+		0.182322  1.08979
+		0.183958  1.11213
+		0.182134  1.09577
+		0.180396  1.11398
+		0.182447  1.10989
+		0.181275  1.10421
+		0.180451  1.1104
+		0.177989  1.1094
+		0.178573  1.10516
+		0.1769  1.09967
+		0.179066  1.10293
+		0.179124  1.1068
+		0.175615  1.11524
+		0.173353  1.10614
+		0.174532  1.10045
+		0.17851  1.11515
+		0.175082  1.09573
+		0.175882  1.11228
+		0.174103  1.11027
+		0.174294  1.11691
+		0.1705  1.10844
+		0.171644  1.13936
+		0.173302  1.1312
+		0.172033  1.11674
+		0.171272  1.11467
+		0.169375  1.12558
+		0.168644  1.09472
+		0.168801  1.1207
+		0.170792  1.12062
+		0.169342  1.10791
+		0.166089  1.10803
+		0.16934  1.11764
+		0.170947  1.10704
+		0.167368  1.12216
+		0.16532  1.13161
+		0.167306  1.12838
+		0.165498  1.11206
+		0.164884  1.12052
+		0.163521  1.11982
+		0.16421  1.12109
+		0.163815  1.13183
+		0.161977  1.1173
+		0.162914  1.14028
+		0.161339  1.11962
+		0.163161  1.13489
+		0.158723  1.11578
+		0.159681  1.12926
+		0.159312  1.14367
+		0.159004  1.1332
+		0.157395  1.13445
+		0.161266  1.14058
+		0.158406  1.13786
+		0.15739  1.12876
+		0.159568  1.13198
+		0.157758  1.13638
+		0.155924  1.14326
+		0.156118  1.12877
+		0.1558  1.14847
+		0.155889  1.13279
+		0.154575  1.15852
+		0.153409  1.1436
+		0.150738  1.13213
+		0.148892  1.14106
+		0.151921  1.12247
+		0.153477  1.14818
+		0.149191  1.13091
+		0.15093  1.15971
+		0.148055  1.13777
+		0.148504  1.16241
+		0.149385  1.14366
+		0.147922  1.15955
+		0.148812  1.15462
+		0.145867  1.14728
+		0.146007  1.1393
+		0.145437  1.11876
+		0.144034  1.1403
+		0.141125  1.14846
+		0.143645  1.13281
+		0.144855  1.15264
+		0.142835  1.14145
+		0.143186  1.13539
+		0.143271  1.15118
+		0.142294  1.13871
+		0.141756  1.17511
+		0.143154  1.16211
+		0.137791  1.1308
+		0.137834  1.14321
+		0.140443  1.1426
+		0.136244  1.15774
+		0.137414  1.14219
+		0.137369  1.15153
+		0.136584  1.15044
+		0.13669  1.1378
+		0.137937  1.1342
+		0.137096  1.16593
+		0.135439  1.14473
+		0.136152  1.14892
+		0.132125  1.15901
+		0.134229  1.14229
+		0.132323  1.1494
+		0.135482  1.15039
+		0.129494  1.15542
+		0.130356  1.16089
+		0.133617  1.1386
+		0.128105  1.15614
+		0.128679  1.17255
+		0.130092  1.16692
+		0.130159  1.15684
+		0.125511  1.14608
+		0.126939  1.1367
+		0.128639  1.15342
+		0.126942  1.15699
+		0.127437  1.16481
+		0.126381  1.14003
+		0.124447  1.14361
+		0.125508  1.16518
+		0.124799  1.18163
+		0.121037  1.16312
+		0.122563  1.15149
+		0.123071  1.18204
+		0.120712  1.15118
+		0.121487  1.17218
+		0.120503  1.15585
+		0.118068  1.16295
+		0.119281  1.17443
+		0.1163  1.17083
+		0.11887  1.17296
+		0.117824  1.17009
+		0.11666  1.15681
+		0.114884  1.17031
+		0.117355  1.14777
+		0.114479  1.178
+		0.114932  1.16981
+		0.114731  1.14901
+		0.114072  1.17593
+		0.115834  1.16076
+		0.114576  1.18124
+		0.114116  1.18481
+		0.11366  1.17765
+		0.112555  1.16897
+		0.110822  1.17388
+		0.111194  1.17752
+		0.110595  1.17858
+		0.108464  1.17807
+		0.107932  1.17949
+		0.106101  1.17222
+		0.107911  1.17626
+		0.107898  1.17224
+		0.109059  1.16356
+		0.108275  1.16769
+		0.105425  1.18405
+		0.104202  1.18424
+		];
+
+
+
+---------------------------------------------------------------------------------------------
+>>>>    Mean / Maximum value of the residuals in percentage (100*(data-model)/data):
+
+		Experiment 1 : 
+		 Observable 1 -->  mean error: 0.808324 %	 max error: 3.127644 %
+		 Observable 2 -->  mean error: 0.772134 %	 max error: 2.977300 %
+
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------
+>>>>    Maximum absolute value of the residuals (data-model):
+
+		Experiment 1 : 
+		 Observable 1 -->  max residual: 0.012225 max data: 0.459743
+		 Observable 2 -->  max residual: 0.030587 max data: 1.184814
+
+--------------------------------------------------------------------------	   
+
+>>>> Best objective function: 0.073116 
+	   
+
+>>>> Computational cost: 604.520487 s
+> 99.66% of successful simulationn
+> 0.00% of successful sensitivity calculations
+
+
+>>> Estimated global parameters: 
+
+	a : 2.2752e-01 
+	b : 6.2904e-01 
+
+
+>>> Estimated global initial conditions: 
+
+	x1 : 4.5194e-01
+	x2 : 1.6095e-01
+
+
+------>Plotting results....
+
+
+
+------>Results (report and struct_results.mat) and plots were kept in the directory:
+
+		/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_0_1em2/PE_harmonic_0_1em2_eSS_run1
+
+		Click <a href="matlab: cd('/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_0_1em2/PE_harmonic_0_1em2_eSS_run1')">here</a> to go to the results folder or <a href="matlab: load('/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_0_1em2/PE_harmonic_0_1em2_eSS_run1/strreport_harmonic_0_1em2_run1.mat')">here</a> to load the results.
+
+ans =
+
+    0.2275    0.6290
+
+
+ans =
+
+    0.4519    0.1609
+
+
+
+Time: 922.7286264896393
+===END===

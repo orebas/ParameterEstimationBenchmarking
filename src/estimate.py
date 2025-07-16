@@ -19,60 +19,36 @@ pd.set_option("display.precision",16)
 
 import argparse
 from datetime import datetime
+import time
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, info, get_settings, AVAILABLE_SOFTWARE
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, END_OF_LOG
 
-def main_julia(args):
+def get_cmd(args, instance):
+    if args.software in ['pe','odepe','sciml']:
+        return shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.jl"))
+    elif args.software in ['amigo2', 'iqm']:
+        return shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')
+    else:
+        warn(f"Do not know this software: {args.software}")
+
+def _main(args):
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
-
     for index in args.array:
         instance = instances['instances'][index]
         print(instance['id'])
-        cmd = shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.jl"))
+        cmd = get_cmd(args, instance) 
         log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
         log_file = open(log_filepath, "w")
+        start_time = time.time()
         try:
             p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
         except subprocess.CalledProcessError:
             warn(f"Error for {instance['id']}.")
         finally:
-            log_file.close()
-
-def main_amigo2(args):
-    with open(args.dir / 'huge_json.json', 'r') as io:
-        instances = json.load(io)
-
-    for index in args.array:
-        instance = instances['instances'][index]
-        print(instance['id'])
-        cmd = shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')
-        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
-        log_file = open(log_filepath, "w")
-        try:
-            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
-        except subprocess.CalledProcessError:
-            warn(f"Error for {instance['id']}.")
-        finally:
-            log_file.close()
-
-def main_iqm(args):
-    with open(args.dir / 'huge_json.json', 'r') as io:
-        instances = json.load(io)
-
-    for index in args.array:
-        instance = instances['instances'][index]
-        print(instance['id'])
-        cmd = shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')
-        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
-        log_file = open(log_filepath, "w")
-        try:
-            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
-        except subprocess.CalledProcessError:
-            warn(f"Error for {instance['id']}.")
-        finally:
+            print(f"\n\nTime: {time.time() - start_time}\n{END_OF_LOG}", file=log_file)
             log_file.close()
 
 def main(args):
@@ -105,15 +81,8 @@ DIR                 {args.dir}
 OUTPUT:             {args.dir}
     RESULTS:        {args.dir / args.config['FILETREE'] / args.software}
 """)
-
-    if args.software in ['pe', 'sciml', 'odepe']:
-        main_julia(args)
-    elif args.software in ['amigo2']:
-        main_amigo2(args)
-    elif args.software in ['iqm']:
-        main_iqm(args)
-    else:
-        exit(1)
+    
+    _main(args)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

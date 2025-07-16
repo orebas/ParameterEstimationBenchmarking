@@ -13,21 +13,13 @@
 #SBATCH --array=0-49
 
 module purge
-# module load matlab/2024a
-module load matlab/2021a
-# module load gcc/10.2.0
-
-export gcc=/usr/bin/gcc
-
-g++ --version
-gcc --version
-
-# export MATLAB_PREFDIR=$(mktemp -d $SLURM_JOBTMP/matlab-XXXX)
-# export MATLAB_LOG_DIR=$SLURM_JOBTMP
+module load matlab/2025a
+module load anaconda3/2024.02
 
 cd $SCRATCH
 
+source activate env/
 source venv/bin/activate
 
-python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/DATA iqm $SLURM_ARRAY_TASK_ID
+python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/$1 iqm $SLURM_ARRAY_TASK_ID
 

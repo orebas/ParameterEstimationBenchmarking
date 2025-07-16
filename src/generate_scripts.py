@@ -25,7 +25,7 @@ from termcolor import colored
 from shared import warn, info, get_settings, AVAILABLE_SOFTWARE
 
 TEMPLATE_ESTIMATION = {
-    "pe"     : "templates/julia_template_for_estimation.jl",
+    "pe"     : "templates/julia_template_for_estimation_pe.jl",
 	"odepe"  : "templates/julia_template_for_estimation_odepe.jl",
     "amigo2" : "templates/amigo2.m.template",
     "iqm"    : {
@@ -40,8 +40,13 @@ TEMPLATE_ESTIMATION = {
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}
 
 def main(args):
-    assert args.software in AVAILABLE_SOFTWARE
+    assert args.software in AVAILABLE_SOFTWARE or args.software == 'all'
     
+    if args.software == 'all':
+        args.software = AVAILABLE_SOFTWARE
+    else:
+        args.software = [args.software]
+
     args.dir = Path(args.dir)
     parent = Path(__file__).parent.parent.resolve()
     
@@ -50,61 +55,62 @@ def main(args):
         
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
-
-    print(f"""
+    
+    for software in args.software:
+        print(f"""
 ###  GENERATING RUNNABLE FILES  ###
 
-SOFTWARE            {args.software}
+SOFTWARE            {software}
 PATH_TO_SRC         {args.config['PATH_TO_SRC']}
 
-TEMPLATE            {TEMPLATE_ESTIMATION[args.software]}
+TEMPLATE            {TEMPLATE_ESTIMATION[software]}
 
 OUTPUT:             {args.dir}
-    SCRIPTS:        {args.dir / args.config['FILETREE'] / args.software}
+    SCRIPTS:        {args.dir / args.config['FILETREE'] / software}
 """)
 
-    if os.path.exists(args.dir / args.config['FILETREE'] / args.software):
-        warn(f"Deleting existing {args.dir / args.config['FILETREE'] / args.software}")
-        shutil.rmtree(args.dir / args.config['FILETREE'] / args.software)
+        if os.path.exists(args.dir / args.config['FILETREE'] / software):
+            warn(f"Deleting existing {args.dir / args.config['FILETREE'] / software}")
+            shutil.rmtree(args.dir / args.config['FILETREE'] / software)
         
-    shutil.copytree(args.dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'], args.dir / args.config['FILETREE'] / args.software)
+        shutil.copytree(args.dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'], args.dir / args.config['FILETREE'] / software)
     
-    for instance in instances['instances']:
-        print(instance['id'])
+        for instance in instances['instances']:
+            print(instance['id'])
 
-        settings = get_settings(args, instance)
-        settings["id"] = instance["id"]
-        settings["data_filepath"] = 'data.csv'
-        settings["estimation_result_filepath"] = 'result.csv'
-        settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
-        settings["data_expr"] = instance["sciml_measurements"]
-        settings["path_to_src"] = args.config["PATH_TO_SRC"]
+            settings = get_settings(args, instance)
+            settings["id"] = instance["id"]
+            settings["data_filepath"] = 'data.csv'
+            settings["estimation_result_filepath"] = 'result.csv'
+            settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
+            settings["data_expr"] = instance["sciml_measurements"]
+            settings["path_to_src"] = args.config["PATH_TO_SRC"]
 
-        if args.software in ['pe','odepe','sciml','amigo2']:
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'script.{FILE_EXT[args.software]}', 'w') as output_file:
-                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]), settings, warn=True)
-                output_file.write(testfile)
-        elif args.software in ['iqm']:
-            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project', exist_ok=True)
-            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'models', exist_ok=True)
-            os.makedirs(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data', exist_ok=True)
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / f'script.{FILE_EXT[args.software]}', 'w') as output_file:
-                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['script']), settings, warn=True)
-                output_file.write(testfile)
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.csv', 'w') as output_file:
-                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['csv']), settings)
-                output_file.write(testfile)
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.exp', 'w') as output_file:
-                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['exp']), settings)
-                output_file.write(testfile)
-            with open(args.dir / args.config['FILETREE'] / args.software / instance['id'] / 'project' / 'models' / 'models.txt', 'w') as output_file:
-                testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[args.software]['models']), settings)
-                output_file.write(testfile)
+            if software in ['pe','odepe','sciml','amigo2']:
+                with open(args.dir / args.config['FILETREE'] / software / instance['id'] / f'script.{FILE_EXT[software]}', 'w') as output_file:
+                    testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]), settings, warn=True)
+                    output_file.write(testfile)
+            elif software in ['iqm']:
+                os.makedirs(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project', exist_ok=True)
+                os.makedirs(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project' / 'models', exist_ok=True)
+                os.makedirs(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project' / 'experiments' / 'data', exist_ok=True)
+                with open(args.dir / args.config['FILETREE'] / software / instance['id'] / f'script.{FILE_EXT[software]}', 'w') as output_file:
+                    testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]['script']), settings, warn=True)
+                    output_file.write(testfile)
+                with open(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.csv', 'w') as output_file:
+                    testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]['csv']), settings)
+                    output_file.write(testfile)
+                with open(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project' / 'experiments' / 'data' / 'experiment.exp', 'w') as output_file:
+                    testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]['exp']), settings)
+                    output_file.write(testfile)
+                with open(args.dir / args.config['FILETREE'] / software / instance['id'] / 'project' / 'models' / 'models.txt', 'w') as output_file:
+                    testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]['models']), settings)
+                    output_file.write(testfile)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
-    parser.add_argument("software", help="The software to generate scripts for. Possible choices are: {}.".format(', '.join(AVAILABLE_SOFTWARE)))
+    parser.add_argument("-s", "--software", help="The software to generate scripts for. Possible choices are: {}.".format(', '.join(AVAILABLE_SOFTWARE)), required=False, default='all')
     args = parser.parse_args()
     
     main(args)

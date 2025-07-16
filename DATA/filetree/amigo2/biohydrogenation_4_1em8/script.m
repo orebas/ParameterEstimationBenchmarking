@@ -1,15 +1,26 @@
+clear
 addpath(genpath('/scratch/ad7760/src'))
 addpath(genpath("./"))
 %======================
 % PATHS RELATED DATA
 %======================
-inputs.pathd.results_folder='biohydrogenationmodel'; % Folder to keep results
-inputs.pathd.short_name='biohydrogenation';                 % To identify figures and reports
+% inputs.pathd.resultd_folder='hello';
+% results.pathd.results_folder='biohydrogenation_4_1em8';
+% inputs_def.pathd.results_folder='biohydrogenation_4_1em8';
+% inputs.pathd.runident='1exp';
+inputs.pathd.results_folder='biohydrogenation_4_1em8'; % Folder to keep results
+inputs.pathd.short_name='biohydrogenation_4_1em8';                 % To identify figures and reports
+% results.pathd.short_name='biohydrogenation_4_1em8';
+% inputs_def.pathd.short_name='biohydrogenation_4_1em8';
 %======================
 % MODEL RELATED DATA
 %======================
-clear
+% clear
+% inputs.model.input_model_type='charmodelC'; ---> inputs.model.input_model_type='charmodelM'; 
+% inputs.ivpsol.ivpsolver='cvodes'; --->   inputs.ivpsol.ivpsolver='ode15s';                   
+% inputs.ivpsol.senssolver='cvodes'; --->  inputs.ivpsol.senssolver='sensmat';
 inputs.model.input_model_type='charmodelC';           % Model type- C
+% inputs.model.input_model_type='charmodelM'
 inputs.model.n_st=4;                                  % Number of states:\\\
 inputs.model.n_par=6;                                 % Number of model parameters
 inputs.model.st_names=char('x4', 'x5', 'x6', 'x7');    % Names of the states

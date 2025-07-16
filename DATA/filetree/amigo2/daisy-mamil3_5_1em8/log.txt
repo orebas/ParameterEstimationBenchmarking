@@ -1,8 +1,8 @@
 
                             < M A T L A B (R) >
                   Copyright 1984-2024 The MathWorks, Inc.
-             R2024a Update 6 (24.1.0.2689473) 64-bit (glnxa64)
-                               July 29, 2024
+                  R2025a (25.1.0.2943329) 64-bit (glnxa64)
+                               April 16, 2025
 
  
 To get started, type doc.
@@ -15,13 +15,12 @@ For product information, visit www.mathworks.com.
      AMIGO2_R2025 [Jan 2025]      
 *********************************** 
 
-*Date: 19-Jun-2025
+*Date: 16-Jul-2025
 
 ------>Pre processing....this may take a few seconds.
 
 
 ------>Checking inputs....
-		Problem folder has not been provided. Default: Problem
 ------> WARNING message
 
 		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
@@ -31,13 +30,13 @@ compatible with charmodelC and sbmlmodel, cvodes]
 [> In AMIGO_check_IVPsolver (line 24)
 In AMIGO_check_model (line 387)
 In AMIGO_Prep (line 55)
-In script (line 1076)
+In script (line 1087)
 In run (line 112)] 
 [Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
 [> In AMIGO_check_IVPsolver (line 31)
 In AMIGO_check_model (line 387)
 In AMIGO_Prep (line 55)
-In script (line 1076)
+In script (line 1087)
 In run (line 112)] 
 ------> Generating C code ...
 
@@ -53,7 +52,7 @@ Building with 'gcc'.
       |           FILE *
 In file included from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/include/include_amigo/simulate_amigo_model.h:4,
                  from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:1:
-/ext3/apps/matlab/2024a/extern/include/mex.h:192:18: note: expected 'const char *' but argument is of type 'FILE *'
+/ext3/apps/matlab/2025a/extern/include/mex.h:192:18: note: expected 'const char *' but argument is of type 'FILE *'
   192 |     const char  *fmt,   /* printf style format */
       |     ~~~~~~~~~~~~~^~~
 
@@ -61,6 +60,11 @@ In file included from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes
 /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c:181:14: warning: assignment to 'mxArray *' {aka 'struct mxArray_tag *'} from incompatible pointer type 'double *' [-Wincompatible-pointer-types]
   181 | stats_struct = mxGetPr(plhs[5]);
       |              ^
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c: In function 'cvProcessError':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c:8961:21: warning: format not a string literal and no format arguments [-Wformat-security]
+ 8961 |     fprintf(stderr, msg);
+      |                     ^~~
 
 MEX completed successfully.
 
@@ -73,10 +77,9 @@ MEX completed successfully.
      AMIGO2_R2025 [Jan 2025]      
 *********************************** 
 
-*Date: 19-Jun-2025
+*Date: 16-Jul-2025
 
 ------>Checking inputs....
-		Problem folder has not been provided. Default: Problem
 ------> WARNING message
 
 		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
@@ -86,13 +89,13 @@ compatible with charmodelC and sbmlmodel, cvodes]
 [> In AMIGO_check_IVPsolver (line 24)
 In AMIGO_check_model (line 387)
 In AMIGO_PE (line 83)
-In script (line 1077)
+In script (line 1088)
 In run (line 112)] 
 [Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
 [> In AMIGO_check_IVPsolver (line 31)
 In AMIGO_check_model (line 387)
 In AMIGO_PE (line 83)
-In script (line 1077)
+In script (line 1088)
 In run (line 112)] 
 
 
@@ -110,21 +113,20 @@ ans =
 [Warning: Directory already exists.] 
 [> In AMIGO_gen_obs (line 38)
 In AMIGO_PE (line 128)
-In script (line 1077)
+In script (line 1088)
 In run (line 112)] 
 [Warning: Name is nonexistent or not a directory:
-/scratch/ad7760/src/AMIGO2_R2025/Results/Problem/AMIGO_gen_obs_problem.m] 
+/scratch/ad7760/src/AMIGO2_R2025/Results/daisy-mamil3_5_1em8/AMIGO_gen_obs_daisy-mamil3_5_1em8.m] 
 [> In path (line 109)
-In addpath>doPathAddition (line 126)
-In addpath (line 90)
+In addpath (line 96)
 In AMIGO_gen_obs (line 109)
 In AMIGO_PE (line 128)
-In script (line 1077)
+In script (line 1088)
 In run (line 112)] 
 
 ans =
 
-    '/scratch/ad7760/src/AMIGO2_R2025/Results/Problem/AMIGO_gen_obs_problem.m'
+    '/scratch/ad7760/src/AMIGO2_R2025/Results/daisy-mamil3_5_1em8/AMIGO_gen_obs_daisy-mamil3_5_1em8.m'
 
 
 *************************************************************************
@@ -191,4 +193,32 @@ RelTol: 1e-13
 AbsTol: 1e-13
 MaxStepSize: Inf
 MaxNumberOfSteps: 1e+06
-malloc(): invalid size (unsorted)
+{Error using feval
+Invalid function name 'cvodesg_daisy-mamil3_5_1em8'.
+
+Error in AMIGO_ivpsol (line 430)
+        [yteor, privstruct.iflag, sens,  privstruct.ivpsol.dxdt{iexp}]=feval(inputs.ivpsol.ivpmex,...
+                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AMIGO_PEcost (line 160)
+                AMIGO_ivpsol(inputs,...
+                ^^^^^^^^^^^^^^^^^^^^^^^
+Error in ess_kernel (line 457)
+        [f,g,R]=feval(fobj,randx,varargin{:});
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AMIGO_call_OPTsolver (line 233)
+                [res_ssm]=ess_kernel(problem,inputs.nlpsol.eSS,inputs,results,privstruct);
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in AMIGO_PE (line 181)
+[results,privstruct]=AMIGO_call_OPTsolver(...
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+Error in script (line 1088)
+[PEresults] = AMIGO_PE(inputs);
+              ^^^^^^^^^^^^^^^^
+Error in run (line 112)
+evalin('caller', strcat(scriptStem, ';'));
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
+>> 
+
+Time: 45.090492248535156
+===END===

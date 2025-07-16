@@ -15,8 +15,9 @@
 module purge
 # module load matlab/2024a
 module load matlab/2025a
+module load anaconda3/2024.02
 # module load gcc/10.2.0
-module load gmp/gcc/6.2.1
+# module load gmp/gcc/6.2.1
 
 # export gcc=/usr/bin/gcc
 
@@ -25,7 +26,8 @@ module load gmp/gcc/6.2.1
 
 cd $SCRATCH
 
+source activate env/
 source venv/bin/activate
 
-python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/DATA amigo2 $SLURM_ARRAY_TASK_ID
+python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/EXAMPLE amigo2 $SLURM_ARRAY_TASK_ID
 

@@ -73,6 +73,7 @@ OUTPUT:             {args.dir}
         print(instance['id'])
 
         settings = get_settings(args, instance)
+        settings["id"] = instance["id"]
         settings["data_filepath"] = 'data.csv'
         settings["estimation_result_filepath"] = 'result.csv'
         settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]

@@ -38,7 +38,7 @@ paramdatalocal = {
 % Initial conditions (always experiment dependend)
 % Names         Lower bounds  Upper bounds
 icdata = {
-'V' 0.0 1.0
+'VV' 0.0 1.0
 'R' 0.0 1.0
 };
 

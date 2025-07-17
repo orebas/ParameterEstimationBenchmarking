@@ -94,14 +94,14 @@ solver = Vern9()
 
 name = "fitzhugh_nagumo"
 parameters = @parameters g a b 
-states = @variables  V(t) R(t)
+states = @variables  VV(t) R(t)
 observables = @variables  y1(t)
 state_equations = [
-    D(V) ~ g * (V - V^3 / 3 + R),
-    D(R) ~ 1 / g * (V - a + b * R),
+    D(VV) ~ g * (VV - VV^3 / 3 + R),
+    D(R) ~ 1 / g * (VV - a + b * R),
 ]
 measured_quantities = [
-    y1 ~ V,
+    y1 ~ VV,
 ]
 ic = [0.116, 0.766]
 p_true = [0.84, 0.157, 0.17]

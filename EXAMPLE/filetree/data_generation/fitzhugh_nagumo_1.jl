@@ -11,19 +11,19 @@ const t = ModelingToolkit.t_nounits
 const D = ModelingToolkit.D_nounits
 
 parameters = @parameters g a b
-states = @variables V(t) R(t) 
+states = @variables VV(t) R(t) 
 observables = @variables y1(t)
 p_true = [0.84, 0.157, 0.17]
 ic = [0.116, 0.766]
 
 equations =             [
-                             D(V) ~ g * (V - V^3 / 3 + R),
-                             D(R) ~ 1 / g * (V - a + b * R),
+                             D(VV) ~ g * (VV - VV^3 / 3 + R),
+                             D(R) ~ 1 / g * (VV - a + b * R),
                         ]
 
 
 measured_quantities = [
-        y1 ~ V,
+        y1 ~ VV,
 ]
 
 model, mq = create_ordered_ode_system("fitzhugh_nagumo", states, parameters, equations, measured_quantities)

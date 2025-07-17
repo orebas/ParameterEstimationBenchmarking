@@ -9,22 +9,22 @@ solver = Tsit5()
 
 name = "fitzhugh_nagumo"
 @parameters g a b
-@variables t V(t) R(t) y1(t)
+@variables t VV(t) R(t) y1(t)
 D = Differential(t)
-states = [V, R]
+states = [VV, R]
 parameters = [g, a, b]
 @named model = ODESystem([
-                             D(V) ~ g * (V - V^3 / 3 + R),
-                             D(R) ~ 1 / g * (V - a + b * R),
+                             D(VV) ~ g * (VV - VV^3 / 3 + R),
+                             D(R) ~ 1 / g * (VV - a + b * R),
                          ], t, states, parameters)
 measured_quantities = [
-        y1 ~ V,
+        y1 ~ VV,
 ]
 ic = [0.523, 0.554]
 p_true = [0.871, 0.407, 0.733]
 
 p_constraints = Dict((g=>(0.0, 1.0)), (a=>(0.0, 1.0)), (b=>(0.0, 1.0)))
-ic_constraints = Dict((V=>(0.0, 1.0)), (R=>(0.0, 1.0)))
+ic_constraints = Dict((VV=>(0.0, 1.0)), (R=>(0.0, 1.0)))
  
 time_interval = [-1.0, 1.0]
 datasize = 1001

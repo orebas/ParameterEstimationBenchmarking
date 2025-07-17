@@ -9,17 +9,17 @@ using CSV
 solver = Vern9()
 
 @parameters g a b
-@variables t V(t) R(t) y1(t)
+@variables t VV(t) R(t) y1(t)
 D = Differential(t)
 # TODO
-states = [V, R]
+states = [VV, R]
 parameters = [g, a, b]
 @named model = ODESystem([
-                             D(V) ~ g * (V - V^3 / 3 + R),
-                             D(R) ~ 1 / g * (V - a + b * R),
+                             D(VV) ~ g * (VV - VV^3 / 3 + R),
+                             D(R) ~ 1 / g * (VV - a + b * R),
                          ], t, states, parameters)
 measured_quantities = [
-        y1 ~ V,
+        y1 ~ VV,
 ]
 
 ic = [0.523, 0.554]

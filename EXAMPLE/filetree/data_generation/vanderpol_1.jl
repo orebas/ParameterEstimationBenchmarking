@@ -1,3 +1,5 @@
+using Pkg; Pkg.activate(joinpath(dirname(dirname(dirname(@__DIR__))), string(:julia_env)))
+
 using ModelingToolkit, DifferentialEquations
 using ODEParameterEstimation, Distributions
 using OrderedCollections

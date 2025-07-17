@@ -1,3 +1,5 @@
+using Pkg; Pkg.activate({{julia_env_path}})
+
 using ParameterEstimation
 using ModelingToolkit, DifferentialEquations
 using BenchmarkTools

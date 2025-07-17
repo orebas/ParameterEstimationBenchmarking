@@ -85,6 +85,7 @@ OUTPUT:             {args.dir}
             settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
             settings["data_expr"] = instance["sciml_measurements"]
             settings["path_to_src"] = args.config["PATH_TO_SRC"]
+            settings.update({'julia_env_path' : 'joinpath(dirname(dirname(dirname(dirname(@__DIR__)))), string(:julia_env))'})
 
             if software in ['pe','odepe','sciml','amigo2']:
                 with open(args.dir / args.config['FILETREE'] / software / instance['id'] / f'script.{FILE_EXT[software]}', 'w') as output_file:

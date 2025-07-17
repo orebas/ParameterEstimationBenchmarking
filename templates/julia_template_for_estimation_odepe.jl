@@ -1,4 +1,6 @@
- using ODEParameterEstimation
+using Pkg; Pkg.activate({{julia_env_path}})
+
+using ODEParameterEstimation
 using ModelingToolkit, DifferentialEquations
 using BenchmarkTools
 using OrderedCollections

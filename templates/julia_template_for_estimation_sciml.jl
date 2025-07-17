@@ -1,7 +1,8 @@
+using Pkg; Pkg.activate({{julia_env_path}})
+
 using ModelingToolkit, DifferentialEquations, Optimization, OptimizationPolyalgorithms,
-      OptimizationOptimJL, SciMLSensitivity, ForwardDiff, Plots
+      OptimizationOptimJL, SciMLSensitivity, ForwardDiff
 using Distributions, Random, StaticArrays
-using JLD2, FileIO
 
 using CSV
 

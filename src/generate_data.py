@@ -69,6 +69,9 @@ CONFIG:             {args.config_path}
   NOISE_TYPE:       {args.config['NOISE_TYPE']}
   SEARCH_BOUNDS:    {args.config['SEARCH_BOUNDS']}
 
+ENV:
+  JULIA             {(parent / "julia_env").as_posix()}
+
 OUTPUT:             {output_dir.as_posix()}
   SCRIPTS:          {(output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR']).as_posix()}
   DATA:             {(output_dir / args.config['FILETREE'] / args.config['DATA_DIR']).as_posix()}
@@ -112,8 +115,9 @@ OUTPUT:             {output_dir.as_posix()}
             instance_stash[instance_name] = instance
             
             settings = get_settings(args, instance)
-            settings.update({'data_filepath' : data_filepath.as_posix()})
-            
+            settings.update({'data_filepath'  : data_filepath.as_posix()})
+            settings.update({'julia_env_path' : 'joinpath(dirname(dirname(dirname(@__DIR__))), string(:julia_env))'})
+
             with open(parent / args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)
             

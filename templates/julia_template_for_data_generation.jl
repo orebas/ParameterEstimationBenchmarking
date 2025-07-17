@@ -1,3 +1,5 @@
+using Pkg; Pkg.activate({{julia_env_path}})
+
 using ModelingToolkit, DifferentialEquations
 using ODEParameterEstimation, Distributions
 using OrderedCollections

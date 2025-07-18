@@ -4,6 +4,9 @@ AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
 
 END_OF_LOG = "===END==="
 
+STDOUT_FILENAME = "stdout.txt"
+STDERR_FILENAME = "stderr.txt"
+
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))
 

@@ -1,3 +1,5 @@
+using Pkg; Pkg.activate(joinpath(dirname(dirname(dirname(dirname(@__DIR__)))), string(:julia_env)))
+
 using ParameterEstimation
 using ModelingToolkit, DifferentialEquations
 using BenchmarkTools

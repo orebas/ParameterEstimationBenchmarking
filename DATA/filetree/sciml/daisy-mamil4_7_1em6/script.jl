@@ -1,7 +1,8 @@
+using Pkg; Pkg.activate(joinpath(dirname(dirname(dirname(dirname(@__DIR__)))), string(:julia_env)))
+
 using ModelingToolkit, DifferentialEquations, Optimization, OptimizationPolyalgorithms,
-      OptimizationOptimJL, SciMLSensitivity, ForwardDiff, Plots
+      OptimizationOptimJL, SciMLSensitivity, ForwardDiff
 using Distributions, Random, StaticArrays
-using JLD2, FileIO
 
 using CSV
 

@@ -62,7 +62,7 @@ OUTPUT:             {args.dir.as_posix()}
     print(software)
     for instance in instances['instances']:
       # Verify logs
-      log_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"log.txt"
+      log_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
       if not log_path.exists():
         warn(f"Results for {software} / {instance['id']} not found.")
         continue
@@ -87,7 +87,7 @@ OUTPUT:             {args.dir.as_posix()}
         for i in range(len(data)):
           data[i][0] = data[i][0].rstrip("(t)")
       else:
-        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"log.txt"
+        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
         if not result_path.exists():
           warn(f"Results for {software} / {instance['id']} not found.")
           continue

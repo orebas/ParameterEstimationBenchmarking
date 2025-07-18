@@ -23,7 +23,7 @@ import time
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, END_OF_LOG
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, END_OF_LOG, STDOUT_FILENAME, STDERR_FILENAME
 
 def get_cmd(args, instance):
     if args.software in ['pe','odepe','sciml']:
@@ -40,16 +40,19 @@ def _main(args):
         instance = instances['instances'][index]
         print(instance['id'])
         cmd = get_cmd(args, instance) 
-        log_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / ('log' + '.txt'))
-        log_file = open(log_filepath, "w")
+        stdout_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / STDOUT_FILENAME)
+        stdout_file = open(stdout_filepath, "w")
+        stderr_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / STDERR_FILENAME)
+        stderr_file = open(stderr_filepath, "w")
         start_time = time.time()
         try:
-            p = subprocess.run(cmd, stdout=log_file, stderr=log_file)
+            p = subprocess.run(cmd, stdout=stdout_file, stderr=stderr_file)
         except subprocess.CalledProcessError:
             warn(f"Error for {instance['id']}.")
         finally:
-            print(f"\n\nTime: {time.time() - start_time}\n{END_OF_LOG}", file=log_file)
-            log_file.close()
+            print(f"\n\nTime: {time.time() - start_time}\n{END_OF_LOG}", file=stdout_file)
+            stdout_file.close()
+            stderr_file.close()
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE

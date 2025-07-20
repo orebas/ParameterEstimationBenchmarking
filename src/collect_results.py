@@ -148,6 +148,9 @@ OUTPUT:             {args.dir.as_posix()}
   print("DataFrame header:")
   print(df.head())
   print("DataFrame columns:", df.columns)
+  
+  if (args.dir / "result.csv").exists():
+      warn(f"Overwriting existing {args.dir / 'result.csv'}")
   df.to_csv((args.dir / 'result.csv').as_posix())
 
 if __name__ == "__main__":

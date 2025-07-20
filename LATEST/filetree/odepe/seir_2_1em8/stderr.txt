@@ -1,0 +1,59 @@
+  Activating project at `/scratch/ad7760/no-matlab-no-worry/julia_env`
+ERROR: LoadError: MethodError: no method matching Float64(::Num)
+The type `Float64` exists, but no method is defined for this combination of argument types when trying to construct it.
+
+Closest candidates are:
+  (::Type{T})(::Real, !Matched::RoundingMode) where T<:AbstractFloat
+   @ Base rounding.jl:265
+  (::Type{T})(::T) where T<:Number
+   @ Core boot.jl:900
+  Float64(!Matched::Float32)
+   @ Base float.jl:341
+  ...
+
+Stacktrace:
+  [1] convert(::Type{Float64}, x::Num)
+    @ Base ./number.jl:7
+  [2] setindex!(A::Memory{Float64}, x::Num, i1::Int64)
+    @ Base ./genericmemory.jl:243
+  [3] unsafe_copyto!(dest::Memory{Float64}, doffs::Int64, src::Memory{Any}, soffs::Int64, n::Int64)
+    @ Base ./genericmemory.jl:153
+  [4] unsafe_copyto!
+    @ ./genericmemory.jl:133 [inlined]
+  [5] _copyto_impl!
+    @ ./array.jl:308 [inlined]
+  [6] copyto!
+    @ ./array.jl:294 [inlined]
+  [7] copyto!
+    @ ./array.jl:319 [inlined]
+  [8] copyto_axcheck!
+    @ ./abstractarray.jl:1167 [inlined]
+  [9] Matrix{Float64}(x::Matrix{Any})
+    @ Base ./array.jl:626
+ [10] multipoint_numerical_jacobian(model::ODESystem, measured_quantities::Vector{Equation}, max_deriv_level::Int64, max_num_points::Int64, unident_dict::Dict{Any, Any}, varlist::Vector{Num}, param_dict::Dict{SymbolicUtils.BasicSymbolic{Real}, Float64}, ic_dict_vector::Vector{Any}, values_dict::OrderedDict{SymbolicUtils.BasicSymbolic{Real}, Float64}, DD::Symbol)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation.jl:414
+ [11] multipoint_numerical_jacobian(model::ODESystem, measured_quantities::Vector{Equation}, max_deriv_level::Int64, max_num_points::Int64, unident_dict::Dict{Any, Any}, varlist::Vector{Num}, param_dict::Dict{SymbolicUtils.BasicSymbolic{Real}, Float64}, ic_dict_vector::Vector{Any}, values_dict::OrderedDict{SymbolicUtils.BasicSymbolic{Real}, Float64})
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation.jl:369
+ [12] multipoint_local_identifiability_analysis(model::ODESystem, measured_quantities::Vector{Equation}, max_num_points::Int64, reltol::Float64, abstol::Float64)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation.jl:524
+ [13] multipoint_local_identifiability_analysis
+    @ /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation.jl:480 [inlined]
+ [14] determine_optimal_points_count(model::ODESystem, measured_quantities::Vector{Equation}, max_num_points::Int64, t_vector::Vector{Float64}, nooutput::Bool)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation.jl:180
+ [15] setup_parameter_estimation(PEP::ParameterEstimationProblem; max_num_points::Int64, point_hint::Float64, nooutput::Bool, interpolator::Function)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation_helpers.jl:46
+ [16] setup_parameter_estimation
+    @ /scratch/ad7760/ODEParameterEstimation/src/core/parameter_estimation_helpers.jl:27 [inlined]
+ [17] multipoint_parameter_estimation(PEP::ParameterEstimationProblem; system_solver::Function, max_num_points::Int64, interpolator::Function, nooutput::Bool, diagnostics::Bool, diagnostic_data::ParameterEstimationProblem, polish_solutions::Bool, polish_maxiters::Int64, polish_method::Type, point_hint::Float64)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/multipoint_estimation.jl:50
+ [18] multipoint_parameter_estimation
+    @ /scratch/ad7760/ODEParameterEstimation/src/core/multipoint_estimation.jl:25 [inlined]
+ [19] #multishot_parameter_estimation#161
+    @ /scratch/ad7760/ODEParameterEstimation/src/core/multipoint_estimation.jl:131 [inlined]
+ [20] multishot_parameter_estimation
+    @ /scratch/ad7760/ODEParameterEstimation/src/core/multipoint_estimation.jl:107 [inlined]
+ [21] analyze_parameter_estimation_problem(PEP::ParameterEstimationProblem; interpolator::Function, max_num_points::Int64, nooutput::Bool, system_solver::Function, abstol::Float64, reltol::Float64, trap_debug::Bool, diagnostics::Bool, polish_method::Type, polish_maxiters::Int64, try_more_methods::Bool, shooting_points::Int64)
+    @ ODEParameterEstimation /scratch/ad7760/ODEParameterEstimation/src/core/analysis_utils.jl:365
+ [22] top-level scope
+    @ /scratch/ad7760/no-matlab-no-worry/NEW_DATA/filetree/odepe/seir_2_1em8/script.jl:56
+in expression starting at /scratch/ad7760/no-matlab-no-worry/NEW_DATA/filetree/odepe/seir_2_1em8/script.jl:56

@@ -1,0 +1,4218 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2024 The MathWorks, Inc.
+                  R2025a (25.1.0.2943329) 64-bit (glnxa64)
+                               April 16, 2025
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 19-Jul-2025
+
+------>Pre processing....this may take a few seconds.
+
+
+------>Checking inputs....
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1087)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_Prep (line 55)
+In script (line 1087)
+In run (line 112)] 
+------> Generating C code ...
+
+
+------> Mexing files....
+
+Building with 'gcc'.
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c: In function 'simulate_amigo_model':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:278:11: warning: passing argument 1 of 'mexPrintf' from incompatible pointer type [-Wincompatible-pointer-types]
+  278 | mexPrintf(stderr,"\nSolver failed at flag = CVode(cvode_mem, tout, y, &t, CV_TSTOP_RETURN);. . .\n");
+      |           ^~~~~~
+      |           |
+      |           FILE *
+In file included from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/include/include_amigo/simulate_amigo_model.h:4,
+                 from /scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_amigo/simulate_amigo_model.c:1:
+/ext3/apps/matlab/2025a/extern/include/mex.h:192:18: note: expected 'const char *' but argument is of type 'FILE *'
+  192 |     const char  *fmt,   /* printf style format */
+      |     ~~~~~~~~~~~~~^~~
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c: In function 'mexFunction':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_interface/interface_with_matlab.c:181:14: warning: assignment to 'mxArray *' {aka 'struct mxArray_tag *'} from incompatible pointer type 'double *' [-Wincompatible-pointer-types]
+  181 | stats_struct = mxGetPr(plhs[5]);
+      |              ^
+
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c: In function 'cvProcessError':
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/IVP_solvers/cvodes/C_src4Amigo/src/src_cvodes/cvodes.c:8961:21: warning: format not a string literal and no format arguments [-Wformat-security]
+ 8961 |     fprintf(stderr, msg);
+      |                     ^~~
+
+MEX completed successfully.
+
+
+------>Files generated....
+
+
+*********************************** 
+     AMIGO2, Copyright @CSIC      
+     AMIGO2_R2025 [Jan 2025]      
+*********************************** 
+
+*Date: 19-Jul-2025
+
+------>Checking inputs....
+------> WARNING message
+
+		 AMIGO_check_model: You did not specify inputs.model.exe_type, standard will be assumed
+
+[Warning: AMIGO_check_IVPsolver: Changing ivp solver to the only option
+compatible with charmodelC and sbmlmodel, cvodes] 
+[> In AMIGO_check_IVPsolver (line 24)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1088)
+In run (line 112)] 
+[Warning: AMIGO_check_IVPsolver: Changing sensitivities solver to, cvodes] 
+[> In AMIGO_check_IVPsolver (line 31)
+In AMIGO_check_model (line 387)
+In AMIGO_PE (line 83)
+In script (line 1088)
+In run (line 112)] 
+
+
+------> WARNING message
+
+		 You have not provided the sampling times.
+ 		 Equidistant sampling will be assumed for experiment 1
+		 Note however that you may modify your input file by adding
+		 inputs.exps.t_s{iexp}
+
+ans =
+
+    0.5000    0.5000
+
+[Warning: Directory already exists.] 
+[> In AMIGO_gen_obs (line 38)
+In AMIGO_PE (line 128)
+In script (line 1088)
+In run (line 112)] 
+[Warning: Name is nonexistent or not a directory:
+/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_8_0/AMIGO_gen_obs_harmonic_8_0.m] 
+[> In path (line 109)
+In addpath (line 96)
+In AMIGO_gen_obs (line 109)
+In AMIGO_PE (line 128)
+In script (line 1088)
+In run (line 112)] 
+
+ans =
+
+    '/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_8_0/AMIGO_gen_obs_harmonic_8_0.m'
+
+
+*************************************************************************
+
+
+------>IMPORTANT!!: Most of the optimization solvers have their own
+                    tunning parameters (options).
+                    Defaults have been assigned in the *NLPsolver*_options
+                    files. You may need to modify those settings for your
+                    particular problem, specially:
+                      - maximum number of function evaluations /iterations,
+                      - maximum computational time
+
+
+******************************************************************
+
+  Solving the NLP problem with
+		>Summary of selected eSS options: 
+ess_options.
+	dim_refset:	'auto'
+	inter_save:	0
+	iterprint:	1
+	local:	(1x1 struct)
+	log_var:	(1x4 double)
+	maxeval:	200000
+	maxtime:	600
+	ndiverse:	'auto'
+nl2sol_settings.
+	display:	2
+	grad:	[]
+	iterfun:	[]
+	maxfeval:	100000
+	maxiter:	100000
+	objrtol:	1e-13
+	tolafun:	1e-13
+	tolrfun:	1e-13
+
+		>Bounds on the unknowns:
+
+		v_guess(1)=0.500000;  v_min(1)=0.000000;  v_max(1)=1.000000;
+		v_guess(2)=0.500000;  v_min(2)=0.000000;  v_max(2)=1.000000;
+		v_guess(3)=0.500000;  v_min(3)=0.000000;  v_max(3)=1.000000;
+		v_guess(4)=0.500000;  v_min(4)=0.000000;  v_max(4)=1.000000;
+
+
+------------------------------------------------------------------------------ 
+ eSS R2019 - Enhanced Scatter Search    
+<c> IIM-CSIC, Vigo, Spain -  email: gingproc@iim.csic.es 
+------------------------------------------------------------------------------ 
+
+Refset size automatically calculated: 8
+Number of diverse solutions automatically calculated: 40
+
+
+-----------------------------------------------
+ Initial value problem related active settings
+-----------------------------------------------
+ivpsolver: cvodes
+RelTol: 1e-13
+AbsTol: 1e-13
+MaxStepSize: Inf
+MaxNumberOfSteps: 1e+06
+Initial Point (x_0): FEASIBLE SOLUTION. Objective function value: 1038.6 
+Initial Pop: NFunEvals: 48  Bestf: 199.966      CPUTime: 29.751511    Var: 3.51376e+38 
+Iteration: 1 NFunEvals: 138  Bestf: 79.6222      CPUTime: 31.839003    Var: 1766.61 
+Call local solver: NL2SOL 
+Initial point function value: 79.622187 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           79.622
+    2           79.624
+    3           79.616
+    4           79.603
+    5           79.622
+    6           41.334
+    7           41.334
+    8           41.334
+    9           41.334
+ feval            sse
+   10           41.334
+   11           24.265
+   12           24.265
+   13           24.265
+   14           24.265
+   15           24.265
+   16            21.78
+   17            21.78
+   18            21.78
+   19            21.78
+ feval            sse
+   20            21.78
+   21           20.121
+   22           20.121
+   23           20.121
+   24           20.121
+   25           20.121
+   26           11.268
+   27          0.90585
+   28          0.90585
+   29          0.90586
+ feval            sse
+   30          0.90585
+   31          0.90584
+   32        0.0035948
+   33        0.0035954
+   34        0.0035943
+   35        0.0035946
+   36         0.003595
+   37       2.0761e-08
+   38       2.1256e-08
+   39        2.093e-08
+ feval            sse
+   40        1.997e-08
+   41       2.0323e-08
+   42       1.7074e-19
+   43       3.2094e-11
+   44       1.8419e-11
+   45       9.4113e-12
+   46       2.2703e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 8 iteration and 47 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.70741e-19 
+Number of function evaluations in the local search: 49 
+CPU Time of the local search: 0.179270  seconds 
+
+Iteration: 2 NFunEvals: 264  Bestf: 1.70741e-19      CPUTime: 32.110252    Var: 1650.65 
+Iteration: 3 NFunEvals: 327  Bestf: 1.70741e-19      CPUTime: 32.173773    Var: 199.364 
+Iteration: 4 NFunEvals: 392  Bestf: 1.70741e-19      CPUTime: 32.241576    Var: 49.9497 
+Iteration: 5 NFunEvals: 455  Bestf: 1.70741e-19      CPUTime: 32.317205    Var: 0.702291 
+Iteration: 6 NFunEvals: 519  Bestf: 1.70741e-19      CPUTime: 32.433810    Var: 0.119266 
+Iteration: 7 NFunEvals: 586  Bestf: 1.70741e-19      CPUTime: 32.635661    Var: 0.0103769 
+Iteration: 8 NFunEvals: 656  Bestf: 1.70741e-19      CPUTime: 32.713315    Var: 0.000131856 
+Iteration: 9 NFunEvals: 718  Bestf: 1.70741e-19      CPUTime: 32.780383    Var: 1.23786e-05 
+Iteration: 10 NFunEvals: 782  Bestf: 1.70741e-19      CPUTime: 32.847754    Var: 8.17683e-08 
+Iteration: 11 NFunEvals: 845  Bestf: 1.70741e-19      CPUTime: 32.915601    Var: 6.18742e-09 
+Call local solver: NL2SOL 
+Initial point function value: 0.000213 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00021317
+    2       0.00021311
+    3       0.00021341
+    4       0.00021327
+    5       0.00021303
+    6       4.9426e-10
+    7        2.413e-10
+    8       7.6415e-10
+    9       7.8573e-10
+ feval            sse
+   10       3.5076e-10
+   11       5.3662e-21
+   12       4.7439e-11
+   13       4.1306e-11
+   14       5.4483e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.36623e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.021673  seconds 
+
+Iteration: 12 NFunEvals: 932  Bestf: 5.36623e-21      CPUTime: 33.066808    Var: 557.122 
+Iteration: 13 NFunEvals: 995  Bestf: 5.36623e-21      CPUTime: 33.287877    Var: 176.011 
+Iteration: 14 NFunEvals: 1065  Bestf: 5.36623e-21      CPUTime: 33.586672    Var: 796.379 
+Iteration: 15 NFunEvals: 1137  Bestf: 5.36623e-21      CPUTime: 33.843848    Var: 17.1718 
+Iteration: 16 NFunEvals: 1201  Bestf: 5.36623e-21      CPUTime: 34.087387    Var: 235.912 
+Iteration: 17 NFunEvals: 1264  Bestf: 5.36623e-21      CPUTime: 34.306048    Var: 130.93 
+Iteration: 18 NFunEvals: 1329  Bestf: 5.36623e-21      CPUTime: 34.542630    Var: 0.037322 
+Iteration: 19 NFunEvals: 1396  Bestf: 5.36623e-21      CPUTime: 34.761314    Var: 7.22494e-05 
+Iteration: 20 NFunEvals: 1466  Bestf: 5.36623e-21      CPUTime: 35.005346    Var: 4.25393 
+Iteration: 21 NFunEvals: 1533  Bestf: 5.36623e-21      CPUTime: 35.244693    Var: 0.000112769 
+Call local solver: NL2SOL 
+Initial point function value: 0.001198 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        0.0011982
+    2        0.0011982
+    3        0.0011982
+    4        0.0011987
+    5        0.0011986
+    6       1.4889e-08
+    7       1.3829e-08
+    8       1.5368e-08
+    9       1.6741e-08
+ feval            sse
+   10       1.5208e-08
+   11       3.1575e-20
+   12       4.7155e-11
+   13        4.131e-11
+   14       5.4442e-11
+   15       6.3766e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 3.15751e-20 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.084110  seconds 
+
+Iteration: 22 NFunEvals: 1622  Bestf: 5.36623e-21      CPUTime: 36.668410    Var: 151.549 
+Iteration: 23 NFunEvals: 1687  Bestf: 5.36623e-21      CPUTime: 36.741905    Var: 1.86322 
+Iteration: 24 NFunEvals: 1756  Bestf: 5.36623e-21      CPUTime: 36.820897    Var: 26.8817 
+Iteration: 25 NFunEvals: 1822  Bestf: 5.36623e-21      CPUTime: 36.895495    Var: 0.24578 
+Iteration: 26 NFunEvals: 1887  Bestf: 5.36623e-21      CPUTime: 36.967935    Var: 10.513 
+Iteration: 27 NFunEvals: 1952  Bestf: 5.36623e-21      CPUTime: 37.040015    Var: 0.0384423 
+Iteration: 28 NFunEvals: 2014  Bestf: 5.36623e-21      CPUTime: 37.106882    Var: 0.000146358 
+Iteration: 29 NFunEvals: 2079  Bestf: 5.36623e-21      CPUTime: 37.178714    Var: 261.261 
+Iteration: 30 NFunEvals: 2151  Bestf: 5.36623e-21      CPUTime: 37.255802    Var: 2621.2 
+Iteration: 31 NFunEvals: 2216  Bestf: 5.36623e-21      CPUTime: 37.760158    Var: 22.3866 
+Call local solver: NL2SOL 
+Initial point function value: 3.576718 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           3.5767
+    2           3.5767
+    3           3.5767
+    4           3.5767
+    5           3.5767
+    6          0.89923
+    7          0.89924
+    8          0.89922
+    9          0.89923
+ feval            sse
+   10          0.89925
+   11          0.00173
+   12        0.0017305
+   13        0.0017297
+   14        0.0017296
+   15        0.0017303
+   16       5.9014e-09
+   17       5.6494e-09
+   18       6.3613e-09
+   19       5.5078e-09
+ feval            sse
+   20        4.907e-09
+   21       8.5025e-20
+   22       3.2092e-11
+   23       1.8419e-11
+   24       3.1082e-11
+   25       6.3771e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 8.5025e-20 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.032633  seconds 
+
+Iteration: 32 NFunEvals: 2315  Bestf: 5.36623e-21      CPUTime: 37.877589    Var: 1.28866 
+Iteration: 33 NFunEvals: 2378  Bestf: 5.36623e-21      CPUTime: 37.950449    Var: 0.134485 
+Iteration: 34 NFunEvals: 2440  Bestf: 5.36623e-21      CPUTime: 38.021211    Var: 0.00411431 
+Iteration: 35 NFunEvals: 2507  Bestf: 5.36623e-21      CPUTime: 38.098109    Var: 0.00124345 
+Iteration: 36 NFunEvals: 2571  Bestf: 5.36623e-21      CPUTime: 38.169890    Var: 1.57499e-05 
+Iteration: 37 NFunEvals: 2635  Bestf: 5.36623e-21      CPUTime: 38.238167    Var: 1.52037e-06 
+Iteration: 38 NFunEvals: 2704  Bestf: 5.36623e-21      CPUTime: 38.314869    Var: 613.42 
+Iteration: 39 NFunEvals: 2768  Bestf: 5.36623e-21      CPUTime: 38.388603    Var: 0.0909194 
+Iteration: 40 NFunEvals: 2841  Bestf: 5.36623e-21      CPUTime: 38.477150    Var: 356.524 
+Iteration: 41 NFunEvals: 2918  Bestf: 5.36623e-21      CPUTime: 39.349808    Var: 618.421 
+Call local solver: NL2SOL 
+Initial point function value: 23.099709 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1             23.1
+    2             23.1
+    3           23.099
+    4             23.1
+    5             23.1
+    6           6.3815
+    7           6.3815
+    8           6.3815
+    9           6.3815
+ feval            sse
+   10           6.3815
+   11          0.12805
+   12          0.12805
+   13          0.12804
+   14          0.12804
+   15          0.12805
+   16       4.4137e-05
+   17       4.4085e-05
+   18       4.4188e-05
+   19       4.4133e-05
+ feval            sse
+   20       4.4039e-05
+   21       3.3344e-12
+   22       5.3378e-11
+   23       1.2599e-11
+   24       2.3208e-12
+   25       1.3987e-11
+   26       5.2859e-21
+   27       3.2089e-11
+   28       1.8421e-11
+   29       2.0149e-11
+ feval            sse
+   30       8.9674e-12
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28586e-21 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.046551  seconds 
+
+Iteration: 42 NFunEvals: 3022  Bestf: 5.28586e-21      CPUTime: 39.503182    Var: 7.6222 
+Iteration: 43 NFunEvals: 3082  Bestf: 5.28586e-21      CPUTime: 39.571682    Var: 1.50922 
+Iteration: 44 NFunEvals: 3148  Bestf: 5.28586e-21      CPUTime: 39.636872    Var: 0.0278545 
+Iteration: 45 NFunEvals: 3216  Bestf: 5.28586e-21      CPUTime: 39.711963    Var: 0.00294858 
+Iteration: 46 NFunEvals: 3282  Bestf: 5.28586e-21      CPUTime: 39.789300    Var: 33.6601 
+Iteration: 47 NFunEvals: 3346  Bestf: 5.28586e-21      CPUTime: 39.864802    Var: 4.76911 
+Iteration: 48 NFunEvals: 3416  Bestf: 5.28586e-21      CPUTime: 39.939811    Var: 0.935179 
+Iteration: 49 NFunEvals: 3481  Bestf: 5.28586e-21      CPUTime: 49.941726    Var: 312.914 
+Iteration: 50 NFunEvals: 3546  Bestf: 5.28586e-21      CPUTime: 50.011372    Var: 0.0124616 
+Iteration: 51 NFunEvals: 3615  Bestf: 5.28586e-21      CPUTime: 50.092203    Var: 78.1617 
+Call local solver: NL2SOL 
+Initial point function value: 108.404235 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1            108.4
+    2            108.4
+    3            108.4
+    4            108.4
+    5            108.4
+    6           7.1632
+    7           7.1632
+    8           7.1632
+    9           7.1632
+ feval            sse
+   10           7.1632
+   11          0.22339
+   12          0.22339
+   13          0.22339
+   14          0.22339
+   15          0.22338
+   16       7.7331e-05
+   17       7.7353e-05
+   18       7.7348e-05
+   19       7.7284e-05
+ feval            sse
+   20        7.725e-05
+   21        2.553e-12
+   22       4.7609e-11
+   23       9.0568e-12
+   24       1.2149e-11
+   25       8.8884e-11
+   26       5.2858e-21
+   27       3.2089e-11
+   28       2.0244e-11
+   29       9.4131e-12
+ feval            sse
+   30        1.445e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: Optimal
+Local solution function value: 5.2858e-21 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.036064  seconds 
+
+Iteration: 52 NFunEvals: 3711  Bestf: 5.2858e-21      CPUTime: 50.203769    Var: 0.495833 
+Iteration: 53 NFunEvals: 3779  Bestf: 5.2858e-21      CPUTime: 50.274132    Var: 75.7881 
+Iteration: 54 NFunEvals: 3848  Bestf: 5.2858e-21      CPUTime: 50.378742    Var: 28.1556 
+Iteration: 55 NFunEvals: 3911  Bestf: 5.2858e-21      CPUTime: 50.452244    Var: 0.0635665 
+Iteration: 56 NFunEvals: 3974  Bestf: 5.2858e-21      CPUTime: 50.525496    Var: 0.0408722 
+Iteration: 57 NFunEvals: 4042  Bestf: 5.2858e-21      CPUTime: 50.604026    Var: 0.000248702 
+Iteration: 58 NFunEvals: 4111  Bestf: 5.2858e-21      CPUTime: 50.678544    Var: 1.39731e-06 
+Iteration: 59 NFunEvals: 4180  Bestf: 5.2858e-21      CPUTime: 50.766125    Var: 2121.61 
+Iteration: 60 NFunEvals: 4248  Bestf: 5.2858e-21      CPUTime: 50.989637    Var: 112.45 
+Iteration: 61 NFunEvals: 4312  Bestf: 5.2858e-21      CPUTime: 53.036125    Var: 5112.52 
+Call local solver: NL2SOL 
+Initial point function value: 18.823795 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           18.824
+    2           18.824
+    3           18.824
+    4           18.824
+    5           18.824
+    6          0.31158
+    7          0.31158
+    8          0.31158
+    9          0.31159
+ feval            sse
+   10          0.31158
+   11        0.0001155
+   12       0.00011562
+   13       0.00011544
+   14       0.00011539
+   15       0.00011556
+   16       1.3664e-10
+   17       8.0844e-11
+   18       2.0563e-10
+   19       3.5729e-10
+ feval            sse
+   20       2.3058e-10
+   21       5.3917e-21
+   22       4.7439e-11
+   23       4.1309e-11
+   24       2.6308e-11
+   25       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.39165e-21 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.030354  seconds 
+
+Iteration: 62 NFunEvals: 4410  Bestf: 5.2858e-21      CPUTime: 53.147619    Var: 693.346 
+Iteration: 63 NFunEvals: 4477  Bestf: 5.2858e-21      CPUTime: 53.222362    Var: 14.1578 
+Iteration: 64 NFunEvals: 4540  Bestf: 5.2858e-21      CPUTime: 53.294845    Var: 0.0281745 
+Iteration: 65 NFunEvals: 4606  Bestf: 5.2858e-21      CPUTime: 53.370282    Var: 0.000777183 
+Iteration: 66 NFunEvals: 4670  Bestf: 5.2858e-21      CPUTime: 53.439381    Var: 5.44371e-06 
+Iteration: 67 NFunEvals: 4736  Bestf: 5.2858e-21      CPUTime: 53.507441    Var: 1.10083e-06 
+Iteration: 68 NFunEvals: 4804  Bestf: 5.2858e-21      CPUTime: 53.576151    Var: 1.54792e-07 
+Iteration: 69 NFunEvals: 4871  Bestf: 5.2858e-21      CPUTime: 53.655381    Var: 168.262 
+Iteration: 70 NFunEvals: 4943  Bestf: 5.2858e-21      CPUTime: 60.728778    Var: 11.2686 
+Iteration: 71 NFunEvals: 5014  Bestf: 5.2858e-21      CPUTime: 60.829844    Var: 53.6582 
+Call local solver: NL2SOL 
+Initial point function value: 1.288477 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           1.2885
+    2           1.2885
+    3           1.2885
+    4           1.2885
+    5           1.2885
+    6          0.33098
+    7          0.33098
+    8          0.33098
+    9          0.33098
+ feval            sse
+   10          0.33098
+   11        0.0041772
+   12        0.0041763
+   13        0.0041781
+   14        0.0041777
+   15        0.0041764
+   16       2.5077e-08
+   17       2.4237e-08
+   18       2.6395e-08
+   19       2.4157e-08
+ feval            sse
+   20       2.2888e-08
+   21       1.2821e-18
+   22       3.2102e-11
+   23       1.8413e-11
+   24       2.4379e-11
+   25       6.3776e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.28205e-18 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.035210  seconds 
+
+Iteration: 72 NFunEvals: 5107  Bestf: 5.2858e-21      CPUTime: 60.944059    Var: 219.183 
+Iteration: 73 NFunEvals: 5171  Bestf: 5.2858e-21      CPUTime: 61.018904    Var: 2.72427 
+Iteration: 74 NFunEvals: 5242  Bestf: 5.2858e-21      CPUTime: 61.103748    Var: 96.4835 
+Iteration: 75 NFunEvals: 5308  Bestf: 5.2858e-21      CPUTime: 61.178097    Var: 35.396 
+Iteration: 76 NFunEvals: 5374  Bestf: 5.2858e-21      CPUTime: 61.245598    Var: 35.1063 
+Iteration: 77 NFunEvals: 5438  Bestf: 5.2858e-21      CPUTime: 61.309666    Var: 2.5184 
+Iteration: 78 NFunEvals: 5508  Bestf: 5.2858e-21      CPUTime: 61.387608    Var: 0.0485159 
+Iteration: 79 NFunEvals: 5571  Bestf: 5.2858e-21      CPUTime: 61.452756    Var: 0.000522837 
+Iteration: 80 NFunEvals: 5642  Bestf: 5.2858e-21      CPUTime: 61.841205    Var: 5137.35 
+Iteration: 81 NFunEvals: 5707  Bestf: 5.2858e-21      CPUTime: 62.264134    Var: 394.664 
+Call local solver: NL2SOL 
+Initial point function value: 9.583285 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           9.5833
+    2           9.5833
+    3           9.5832
+    4           9.5833
+    5           9.5833
+    6           1.2317
+    7           1.2317
+    8           1.2317
+    9           1.2317
+ feval            sse
+   10           1.2317
+   11        0.0026335
+   12        0.0026331
+   13         0.002634
+   14        0.0026335
+   15        0.0026328
+   16       1.1253e-08
+   17       1.1794e-08
+   18       1.1284e-08
+   19        1.018e-08
+ feval            sse
+   20       1.0602e-08
+   21       1.3989e-20
+   22       3.2088e-11
+   23       2.9839e-11
+   24       3.0052e-11
+   25       6.3767e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.39887e-20 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.031087  seconds 
+
+Iteration: 82 NFunEvals: 5801  Bestf: 5.2858e-21      CPUTime: 62.370614    Var: 0.260308 
+Iteration: 83 NFunEvals: 5866  Bestf: 5.2858e-21      CPUTime: 62.447455    Var: 773.853 
+Iteration: 84 NFunEvals: 5926  Bestf: 5.2858e-21      CPUTime: 62.515184    Var: 0.496815 
+Iteration: 85 NFunEvals: 5986  Bestf: 5.2858e-21      CPUTime: 62.584363    Var: 0.00199905 
+Iteration: 86 NFunEvals: 6052  Bestf: 5.2858e-21      CPUTime: 62.657073    Var: 0.000144725 
+Iteration: 87 NFunEvals: 6115  Bestf: 5.2858e-21      CPUTime: 62.721351    Var: 7.39472e-05 
+Iteration: 88 NFunEvals: 6178  Bestf: 5.2858e-21      CPUTime: 62.791730    Var: 4.92673e-06 
+Iteration: 89 NFunEvals: 6244  Bestf: 5.2858e-21      CPUTime: 62.857830    Var: 5.29086e-07 
+Iteration: 90 NFunEvals: 6309  Bestf: 5.2858e-21      CPUTime: 62.933683    Var: 2.63341 
+Iteration: 91 NFunEvals: 6373  Bestf: 5.2858e-21      CPUTime: 63.023332    Var: 59.0319 
+Call local solver: NL2SOL 
+Initial point function value: 0.000090 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       8.9589e-05
+    2        8.957e-05
+    3       8.9683e-05
+    4       8.9731e-05
+    5       8.9626e-05
+    6       5.5709e-11
+    7       1.8546e-10
+    8       9.5725e-12
+    9       1.0101e-10
+ feval            sse
+   10       2.3004e-10
+   11       5.3013e-21
+   12        4.744e-11
+   13       4.1309e-11
+   14       5.4483e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.30128e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.046810  seconds 
+
+Iteration: 92 NFunEvals: 6455  Bestf: 5.2858e-21      CPUTime: 63.144668    Var: 0.653298 
+Iteration: 93 NFunEvals: 6521  Bestf: 5.2858e-21      CPUTime: 63.222368    Var: 5.61951e-05 
+Iteration: 94 NFunEvals: 6591  Bestf: 5.2858e-21      CPUTime: 63.943727    Var: 181.671 
+Iteration: 95 NFunEvals: 6657  Bestf: 5.2858e-21      CPUTime: 64.017197    Var: 20.6516 
+Iteration: 96 NFunEvals: 6728  Bestf: 5.2858e-21      CPUTime: 64.098260    Var: 138.709 
+Iteration: 97 NFunEvals: 6796  Bestf: 5.2858e-21      CPUTime: 64.169593    Var: 49.3986 
+Iteration: 98 NFunEvals: 6861  Bestf: 5.2858e-21      CPUTime: 64.241511    Var: 0.0983221 
+Iteration: 99 NFunEvals: 6926  Bestf: 5.2858e-21      CPUTime: 64.316534    Var: 0.000204671 
+Iteration: 100 NFunEvals: 6996  Bestf: 5.2858e-21      CPUTime: 76.471484    Var: 1.48338 
+Iteration: 101 NFunEvals: 7065  Bestf: 5.2858e-21      CPUTime: 84.086993    Var: 0.30046 
+Call local solver: NL2SOL 
+Initial point function value: 0.000446 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00044607
+    2       0.00044628
+    3       0.00044556
+    4       0.00044584
+    5       0.00044624
+    6       4.4272e-09
+    7       3.6337e-09
+    8       5.2757e-09
+    9       4.7802e-09
+ feval            sse
+   10       3.5943e-09
+   11       2.7257e-20
+   12       4.7439e-11
+   13       4.1309e-11
+   14       5.4481e-11
+   15       6.3766e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.7257e-20 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019859  seconds 
+
+Iteration: 102 NFunEvals: 7150  Bestf: 5.2858e-21      CPUTime: 84.186060    Var: 5056.81 
+Iteration: 103 NFunEvals: 7222  Bestf: 5.2858e-21      CPUTime: 131.595651    Var: 497.406 
+Iteration: 104 NFunEvals: 7291  Bestf: 5.2858e-21      CPUTime: 131.695437    Var: 40.6747 
+Iteration: 105 NFunEvals: 7355  Bestf: 5.2858e-21      CPUTime: 131.766375    Var: 6.10006 
+Iteration: 106 NFunEvals: 7421  Bestf: 5.2858e-21      CPUTime: 131.841784    Var: 0.0603343 
+Iteration: 107 NFunEvals: 7487  Bestf: 5.2858e-21      CPUTime: 131.915098    Var: 81.4751 
+Iteration: 108 NFunEvals: 7551  Bestf: 5.2858e-21      CPUTime: 131.980413    Var: 81.6211 
+Iteration: 109 NFunEvals: 7618  Bestf: 5.2858e-21      CPUTime: 132.047001    Var: 128.017 
+Iteration: 110 NFunEvals: 7691  Bestf: 5.2858e-21      CPUTime: 132.125560    Var: 29.9318 
+Iteration: 111 NFunEvals: 7761  Bestf: 5.2858e-21      CPUTime: 132.205487    Var: 9.40993 
+Call local solver: NL2SOL 
+Initial point function value: 1.242155 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           1.2422
+    2           1.2421
+    3           1.2422
+    4           1.2421
+    5           1.2421
+    6         0.021164
+    7         0.021163
+    8         0.021166
+    9         0.021164
+ feval            sse
+   10         0.021162
+   11       8.6926e-07
+   12       8.7964e-07
+   13       8.6005e-07
+   14       8.6058e-07
+   15        8.761e-07
+   16        1.251e-15
+   17       3.2084e-11
+   18       3.4945e-11
+   19       3.8121e-11
+ feval            sse
+   20       6.3367e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.25095e-15 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.025001  seconds 
+
+Iteration: 112 NFunEvals: 7851  Bestf: 5.2858e-21      CPUTime: 144.509056    Var: 4.75724 
+Iteration: 113 NFunEvals: 7917  Bestf: 5.2858e-21      CPUTime: 236.582071    Var: 16.7125 
+Iteration: 114 NFunEvals: 7983  Bestf: 5.2858e-21      CPUTime: 236.675368    Var: 1248.64 
+Iteration: 115 NFunEvals: 8050  Bestf: 5.2858e-21      CPUTime: 236.749970    Var: 1.8927 
+Iteration: 116 NFunEvals: 8110  Bestf: 5.2858e-21      CPUTime: 236.820847    Var: 0.00781902 
+Iteration: 117 NFunEvals: 8174  Bestf: 5.2858e-21      CPUTime: 236.895361    Var: 6.15999e-05 
+Iteration: 118 NFunEvals: 8238  Bestf: 5.2858e-21      CPUTime: 236.960112    Var: 1.72749e-06 
+Iteration: 119 NFunEvals: 8301  Bestf: 5.2858e-21      CPUTime: 237.027343    Var: 2.25921 
+Iteration: 120 NFunEvals: 8367  Bestf: 5.2858e-21      CPUTime: 237.096291    Var: 0.114754 
+Iteration: 121 NFunEvals: 8434  Bestf: 5.2858e-21      CPUTime: 237.167898    Var: 0.0162804 
+Call local solver: NL2SOL 
+Initial point function value: 0.000362 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00036167
+    2       0.00036163
+    3        0.0003615
+    4       0.00036209
+    5       0.00036187
+    6       2.4609e-09
+    7       1.8333e-09
+    8       3.0239e-09
+    9       2.9784e-09
+ feval            sse
+   10       2.0351e-09
+   11       1.8411e-20
+   12       4.7117e-11
+   13        4.115e-11
+   14       5.4292e-11
+   15       6.3767e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.84111e-20 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019635  seconds 
+
+Iteration: 122 NFunEvals: 8520  Bestf: 5.2858e-21      CPUTime: 238.628492    Var: 694.69 
+Iteration: 123 NFunEvals: 8585  Bestf: 5.2858e-21      CPUTime: 238.696047    Var: 3.87251 
+Iteration: 124 NFunEvals: 8652  Bestf: 5.2858e-21      CPUTime: 238.770171    Var: 0.349509 
+Iteration: 125 NFunEvals: 8716  Bestf: 5.2858e-21      CPUTime: 238.844231    Var: 97.8479 
+Iteration: 126 NFunEvals: 8782  Bestf: 5.2858e-21      CPUTime: 238.916953    Var: 2.59098 
+Iteration: 127 NFunEvals: 8848  Bestf: 5.2858e-21      CPUTime: 238.989641    Var: 173.105 
+Iteration: 128 NFunEvals: 8916  Bestf: 5.2858e-21      CPUTime: 239.058273    Var: 58.0451 
+Iteration: 129 NFunEvals: 8980  Bestf: 5.2858e-21      CPUTime: 239.130510    Var: 7.35219 
+Iteration: 130 NFunEvals: 9048  Bestf: 5.2858e-21      CPUTime: 239.206443    Var: 0.603646 
+Iteration: 131 NFunEvals: 9117  Bestf: 5.2858e-21      CPUTime: 239.313918    Var: 31.8164 
+Call local solver: NL2SOL 
+Initial point function value: 0.003565 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        0.0035645
+    2        0.0035642
+    3        0.0035657
+    4        0.0035641
+    5        0.0035636
+    6       5.5495e-08
+    7       5.5316e-08
+    8       5.4636e-08
+    9       5.8276e-08
+ feval            sse
+   10       5.8118e-08
+   11       2.6758e-18
+   12       4.7458e-11
+   13       4.0901e-11
+   14       5.4215e-11
+   15       6.3773e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.67577e-18 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019043  seconds 
+
+Iteration: 132 NFunEvals: 9205  Bestf: 5.2858e-21      CPUTime: 239.412641    Var: 4.74828 
+Iteration: 133 NFunEvals: 9271  Bestf: 5.2858e-21      CPUTime: 239.484479    Var: 80.3836 
+Iteration: 134 NFunEvals: 9344  Bestf: 5.2858e-21      CPUTime: 239.567780    Var: 198.906 
+Iteration: 135 NFunEvals: 9411  Bestf: 5.2858e-21      CPUTime: 239.641449    Var: 3.65098 
+Iteration: 136 NFunEvals: 9478  Bestf: 5.2858e-21      CPUTime: 239.714095    Var: 0.00191632 
+Iteration: 137 NFunEvals: 9543  Bestf: 5.2858e-21      CPUTime: 239.787993    Var: 3.48512e-05 
+Iteration: 138 NFunEvals: 9612  Bestf: 5.2858e-21      CPUTime: 239.959458    Var: 65.607 
+Iteration: 139 NFunEvals: 9677  Bestf: 5.2858e-21      CPUTime: 240.029858    Var: 1.7574 
+Iteration: 140 NFunEvals: 9738  Bestf: 5.2858e-21      CPUTime: 240.099335    Var: 34.4112 
+Iteration: 141 NFunEvals: 9803  Bestf: 5.2858e-21      CPUTime: 241.103736    Var: 1834.28 
+Call local solver: NL2SOL 
+Initial point function value: 0.141981 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.14198
+    2          0.14198
+    3          0.14198
+    4          0.14198
+    5          0.14198
+    6       0.00032319
+    7       0.00032302
+    8       0.00032324
+    9       0.00032346
+ feval            sse
+   10       0.00032323
+   11        3.491e-12
+   12       5.3064e-11
+   13        2.936e-11
+   14       7.6115e-11
+   15       8.9344e-11
+   16       5.2865e-21
+   17       4.7313e-11
+   18       3.8547e-11
+   19       5.4475e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28654e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.024279  seconds 
+
+Iteration: 142 NFunEvals: 9890  Bestf: 5.2858e-21      CPUTime: 241.196172    Var: 61.7788 
+Iteration: 143 NFunEvals: 9951  Bestf: 5.2858e-21      CPUTime: 241.260898    Var: 0.622392 
+Iteration: 144 NFunEvals: 10016  Bestf: 5.2858e-21      CPUTime: 241.332172    Var: 57.4001 
+Iteration: 145 NFunEvals: 10081  Bestf: 5.2858e-21      CPUTime: 241.402456    Var: 3.38698 
+Iteration: 146 NFunEvals: 10147  Bestf: 5.2858e-21      CPUTime: 241.476597    Var: 0.000219116 
+Iteration: 147 NFunEvals: 10216  Bestf: 5.2858e-21      CPUTime: 241.563028    Var: 1173.54 
+Iteration: 148 NFunEvals: 10282  Bestf: 5.2858e-21      CPUTime: 241.631876    Var: 196.767 
+Iteration: 149 NFunEvals: 10353  Bestf: 5.2858e-21      CPUTime: 241.710297    Var: 14.8015 
+Iteration: 150 NFunEvals: 10421  Bestf: 5.2858e-21      CPUTime: 241.781675    Var: 0.262888 
+Iteration: 151 NFunEvals: 10487  Bestf: 5.2858e-21      CPUTime: 241.853345    Var: 314.451 
+Call local solver: NL2SOL 
+Initial point function value: 0.155236 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.15524
+    2          0.15524
+    3          0.15523
+    4          0.15523
+    5          0.15524
+    6        5.419e-05
+    7       5.4242e-05
+    8       5.4177e-05
+    9        5.409e-05
+ feval            sse
+   10       5.4155e-05
+   11       1.2305e-12
+   12       2.8935e-11
+   13        5.007e-11
+   14       5.5441e-11
+   15       5.1887e-11
+   16       5.2855e-21
+   17       4.1556e-11
+   18        3.651e-11
+   19       4.7385e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28548e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.024819  seconds 
+
+Iteration: 152 NFunEvals: 10582  Bestf: 5.28548e-21      CPUTime: 241.953234    Var: 1883.69 
+Iteration: 153 NFunEvals: 10652  Bestf: 5.28548e-21      CPUTime: 242.028362    Var: 0.600859 
+Iteration: 154 NFunEvals: 10723  Bestf: 5.28548e-21      CPUTime: 242.109663    Var: 0.00342216 
+Iteration: 155 NFunEvals: 10793  Bestf: 5.28548e-21      CPUTime: 242.186125    Var: 6.6837e-07 
+Iteration: 156 NFunEvals: 10860  Bestf: 5.28548e-21      CPUTime: 242.326019    Var: 234.858 
+Iteration: 157 NFunEvals: 10927  Bestf: 5.28548e-21      CPUTime: 242.415137    Var: 262.299 
+Iteration: 158 NFunEvals: 10993  Bestf: 5.28548e-21      CPUTime: 242.488343    Var: 47.0803 
+Iteration: 159 NFunEvals: 11059  Bestf: 5.28548e-21      CPUTime: 242.561590    Var: 39.5569 
+Iteration: 160 NFunEvals: 11123  Bestf: 5.28548e-21      CPUTime: 242.634182    Var: 42.7336 
+Iteration: 161 NFunEvals: 11190  Bestf: 5.28548e-21      CPUTime: 242.714366    Var: 3.31354 
+Call local solver: NL2SOL 
+Initial point function value: 0.191118 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.19112
+    2          0.19112
+    3          0.19112
+    4          0.19112
+    5          0.19112
+    6       0.00063825
+    7       0.00063792
+    8       0.00063849
+    9       0.00063853
+ feval            sse
+   10       0.00063806
+   11       6.8969e-10
+   12       4.8279e-10
+   13       1.0333e-09
+   14       7.2839e-10
+   15       3.7138e-10
+   16       5.8889e-21
+   17       4.1939e-11
+   18       4.1201e-11
+   19       5.1651e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.88889e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.024445  seconds 
+
+Iteration: 162 NFunEvals: 11276  Bestf: 5.28548e-21      CPUTime: 242.811770    Var: 0.154617 
+Iteration: 163 NFunEvals: 11342  Bestf: 5.28548e-21      CPUTime: 242.889394    Var: 0.0295776 
+Iteration: 164 NFunEvals: 11408  Bestf: 5.28548e-21      CPUTime: 242.969141    Var: 343.969 
+Iteration: 165 NFunEvals: 11473  Bestf: 5.28548e-21      CPUTime: 243.043403    Var: 0.630959 
+Iteration: 166 NFunEvals: 11538  Bestf: 5.28548e-21      CPUTime: 243.113196    Var: 0.000918735 
+Iteration: 167 NFunEvals: 11606  Bestf: 5.28548e-21      CPUTime: 243.187626    Var: 4.8488e-05 
+Iteration: 168 NFunEvals: 11675  Bestf: 5.28548e-21      CPUTime: 243.262875    Var: 12759.2 
+Iteration: 169 NFunEvals: 11746  Bestf: 5.28548e-21      CPUTime: 243.336423    Var: 143.503 
+Iteration: 170 NFunEvals: 11817  Bestf: 5.28548e-21      CPUTime: 243.460450    Var: 3.36726 
+Iteration: 171 NFunEvals: 11880  Bestf: 5.28548e-21      CPUTime: 243.590972    Var: 0.290604 
+Call local solver: NL2SOL 
+Initial point function value: 1.329818 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           1.3298
+    2           1.3298
+    3           1.3298
+    4           1.3298
+    5           1.3298
+    6          0.11742
+    7          0.11742
+    8          0.11742
+    9          0.11742
+ feval            sse
+   10          0.11742
+   11       3.7412e-05
+   12       3.7483e-05
+   13       3.7356e-05
+   14       3.7376e-05
+   15       3.7482e-05
+   16       2.2353e-12
+   17       4.7802e-11
+   18       2.3529e-11
+   19       3.0028e-12
+ feval            sse
+   20       5.7758e-11
+   21       5.2855e-21
+   22       3.7009e-11
+   23       2.2466e-11
+   24       2.7375e-11
+   25       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28546e-21 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.032064  seconds 
+
+Iteration: 172 NFunEvals: 11976  Bestf: 5.28546e-21      CPUTime: 243.714186    Var: 0.00139726 
+Iteration: 173 NFunEvals: 12043  Bestf: 5.28546e-21      CPUTime: 243.875991    Var: 142.305 
+Iteration: 174 NFunEvals: 12113  Bestf: 5.28546e-21      CPUTime: 243.953380    Var: 0.0248816 
+Iteration: 175 NFunEvals: 12181  Bestf: 5.28546e-21      CPUTime: 244.028383    Var: 334.545 
+Iteration: 176 NFunEvals: 12250  Bestf: 5.28546e-21      CPUTime: 244.104098    Var: 15.2018 
+Iteration: 177 NFunEvals: 12324  Bestf: 5.28546e-21      CPUTime: 244.185751    Var: 65.7732 
+Iteration: 178 NFunEvals: 12390  Bestf: 5.28546e-21      CPUTime: 244.255800    Var: 66.7824 
+Iteration: 179 NFunEvals: 12458  Bestf: 5.28546e-21      CPUTime: 244.486445    Var: 1131.29 
+Iteration: 180 NFunEvals: 12526  Bestf: 5.28546e-21      CPUTime: 245.736117    Var: 329.494 
+Iteration: 181 NFunEvals: 12602  Bestf: 5.28546e-21      CPUTime: 245.823379    Var: 0.064372 
+Call local solver: NL2SOL 
+Initial point function value: 0.548855 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.54885
+    2          0.54886
+    3          0.54883
+    4          0.54885
+    5          0.54886
+    6        0.0014937
+    7        0.0014933
+    8        0.0014941
+    9        0.0014936
+ feval            sse
+   10        0.0014931
+   11       2.8372e-09
+   12       3.5447e-09
+   13       2.4408e-09
+   14       2.1796e-09
+   15       3.0897e-09
+   16       2.0043e-20
+   17       3.2088e-11
+   18        4.131e-11
+   19       5.4455e-11
+ feval            sse
+   20       6.3766e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.00427e-20 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.025062  seconds 
+
+Iteration: 182 NFunEvals: 12689  Bestf: 5.28546e-21      CPUTime: 245.918527    Var: 0.00064528 
+Iteration: 183 NFunEvals: 12759  Bestf: 5.28546e-21      CPUTime: 245.989312    Var: 1.01329e-05 
+Iteration: 184 NFunEvals: 12822  Bestf: 5.28546e-21      CPUTime: 246.052678    Var: 2.66264e-06 
+Iteration: 185 NFunEvals: 12884  Bestf: 5.28546e-21      CPUTime: 246.120965    Var: 231.635 
+Iteration: 186 NFunEvals: 12954  Bestf: 5.28546e-21      CPUTime: 246.209827    Var: 491.271 
+Iteration: 187 NFunEvals: 13021  Bestf: 5.28546e-21      CPUTime: 246.286014    Var: 120.778 
+Iteration: 188 NFunEvals: 13088  Bestf: 5.28546e-21      CPUTime: 246.362234    Var: 1.09402 
+Iteration: 189 NFunEvals: 13159  Bestf: 5.28546e-21      CPUTime: 246.443684    Var: 0.10562 
+Iteration: 190 NFunEvals: 13227  Bestf: 5.28546e-21      CPUTime: 246.522255    Var: 0.00827314 
+Iteration: 191 NFunEvals: 13294  Bestf: 5.28546e-21      CPUTime: 246.612206    Var: 0.000521192 
+Call local solver: NL2SOL 
+Initial point function value: 0.046256 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.046256
+    2         0.046256
+    3         0.046256
+    4          0.04626
+    5         0.046258
+    6       6.2671e-05
+    7       6.2566e-05
+    8       6.2758e-05
+    9       6.2743e-05
+ feval            sse
+   10        6.259e-05
+   11       7.7507e-12
+   12       2.8244e-11
+   13       7.8726e-11
+   14       5.3711e-11
+   15       3.0498e-11
+   16        5.287e-21
+   17       4.4034e-11
+   18       4.0677e-11
+   19       5.2496e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28703e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.045882  seconds 
+
+Iteration: 192 NFunEvals: 13387  Bestf: 5.28546e-21      CPUTime: 246.850359    Var: 0.000101175 
+Iteration: 193 NFunEvals: 13451  Bestf: 5.28546e-21      CPUTime: 247.016594    Var: 896.808 
+Iteration: 194 NFunEvals: 13517  Bestf: 5.28546e-21      CPUTime: 247.112612    Var: 3.36127 
+Iteration: 195 NFunEvals: 13587  Bestf: 5.28546e-21      CPUTime: 247.197950    Var: 161.985 
+Iteration: 196 NFunEvals: 13659  Bestf: 5.28546e-21      CPUTime: 247.286362    Var: 8.16618 
+Iteration: 197 NFunEvals: 13734  Bestf: 5.28546e-21      CPUTime: 247.545073    Var: 1152.33 
+Iteration: 198 NFunEvals: 13808  Bestf: 5.28546e-21      CPUTime: 248.314346    Var: 16.0044 
+Iteration: 199 NFunEvals: 13874  Bestf: 5.28546e-21      CPUTime: 248.393149    Var: 72.1595 
+Iteration: 200 NFunEvals: 13940  Bestf: 5.28546e-21      CPUTime: 248.470388    Var: 0.474086 
+Iteration: 201 NFunEvals: 14006  Bestf: 5.28546e-21      CPUTime: 248.543137    Var: 0.000706875 
+Call local solver: NL2SOL 
+Initial point function value: 0.002505 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        0.0025051
+    2         0.002505
+    3        0.0025045
+    4        0.0025053
+    5        0.0025054
+    6       2.6229e-07
+    7       2.5563e-07
+    8       2.6817e-07
+    9       2.6576e-07
+ feval            sse
+   10       2.5603e-07
+   11       1.0531e-16
+   12        4.625e-11
+   13       4.0909e-11
+   14       5.3522e-11
+   15       6.3617e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.05307e-16 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019120  seconds 
+
+Iteration: 202 NFunEvals: 14095  Bestf: 5.28546e-21      CPUTime: 248.641456    Var: 6.34623e-06 
+Iteration: 203 NFunEvals: 14162  Bestf: 5.28546e-21      CPUTime: 248.708419    Var: 7.08708e-08 
+Iteration: 204 NFunEvals: 14232  Bestf: 5.28546e-21      CPUTime: 249.863556    Var: 28.2375 
+Iteration: 205 NFunEvals: 14307  Bestf: 5.28546e-21      CPUTime: 249.946102    Var: 6.21455 
+Iteration: 206 NFunEvals: 14371  Bestf: 5.28546e-21      CPUTime: 250.043416    Var: 352.023 
+Iteration: 207 NFunEvals: 14437  Bestf: 5.28546e-21      CPUTime: 250.122763    Var: 23.9867 
+Iteration: 208 NFunEvals: 14507  Bestf: 5.28546e-21      CPUTime: 250.199949    Var: 1.73065 
+Iteration: 209 NFunEvals: 14575  Bestf: 5.28546e-21      CPUTime: 250.277972    Var: 0.0702542 
+Iteration: 210 NFunEvals: 14639  Bestf: 5.28546e-21      CPUTime: 250.352286    Var: 0.00129265 
+Iteration: 211 NFunEvals: 14711  Bestf: 5.28546e-21      CPUTime: 250.435321    Var: 65.5818 
+Call local solver: NL2SOL 
+Initial point function value: 0.018720 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.01872
+    2          0.01872
+    3         0.018723
+    4         0.018721
+    5         0.018719
+    6       3.8426e-06
+    7       3.8171e-06
+    8        3.859e-06
+    9       3.8683e-06
+ feval            sse
+   10       3.8315e-06
+   11       9.0874e-15
+   12       4.6317e-11
+   13       4.2226e-11
+   14       5.4717e-11
+   15       6.2464e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 9.08742e-15 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019464  seconds 
+
+Iteration: 212 NFunEvals: 14790  Bestf: 5.28546e-21      CPUTime: 250.525774    Var: 0.000139535 
+Iteration: 213 NFunEvals: 14856  Bestf: 5.28546e-21      CPUTime: 250.600031    Var: 1.48674e-05 
+Iteration: 214 NFunEvals: 14924  Bestf: 5.28546e-21      CPUTime: 250.668048    Var: 9.25621e-07 
+Iteration: 215 NFunEvals: 14987  Bestf: 5.28546e-21      CPUTime: 250.734943    Var: 864.576 
+Iteration: 216 NFunEvals: 15051  Bestf: 5.28546e-21      CPUTime: 250.808680    Var: 18.6628 
+Iteration: 217 NFunEvals: 15120  Bestf: 5.28546e-21      CPUTime: 250.883977    Var: 1521.76 
+Iteration: 218 NFunEvals: 15192  Bestf: 5.28546e-21      CPUTime: 257.289813    Var: 853.025 
+Iteration: 219 NFunEvals: 15259  Bestf: 5.28546e-21      CPUTime: 258.077576    Var: 22.2076 
+Iteration: 220 NFunEvals: 15325  Bestf: 5.28546e-21      CPUTime: 258.152027    Var: 0.427269 
+Iteration: 221 NFunEvals: 15393  Bestf: 5.28546e-21      CPUTime: 258.228405    Var: 0.00235372 
+Call local solver: NL2SOL 
+Initial point function value: 0.228104 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           0.2281
+    2           0.2281
+    3          0.22811
+    4           0.2281
+    5           0.2281
+    6        0.0022851
+    7        0.0022854
+    8        0.0022847
+    9        0.0022854
+ feval            sse
+   10        0.0022858
+   11       8.2369e-09
+   12       9.4676e-09
+   13       7.4116e-09
+   14       7.3407e-09
+   15       8.9899e-09
+   16       1.8821e-19
+   17       4.3793e-11
+   18       3.3475e-11
+   19        4.879e-11
+ feval            sse
+   20       6.3762e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.8821e-19 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.026680  seconds 
+
+Iteration: 222 NFunEvals: 15484  Bestf: 5.28546e-21      CPUTime: 258.327613    Var: 0.000710894 
+Iteration: 223 NFunEvals: 15546  Bestf: 5.28546e-21      CPUTime: 258.393338    Var: 6.38019e-05 
+Iteration: 224 NFunEvals: 15621  Bestf: 5.28546e-21      CPUTime: 258.471415    Var: 3.93208e-06 
+Iteration: 225 NFunEvals: 15688  Bestf: 5.28546e-21      CPUTime: 258.543720    Var: 139.483 
+Iteration: 226 NFunEvals: 15751  Bestf: 5.28546e-21      CPUTime: 258.610018    Var: 0.00742654 
+Iteration: 227 NFunEvals: 15824  Bestf: 5.28546e-21      CPUTime: 258.705671    Var: 103.853 
+Iteration: 228 NFunEvals: 15892  Bestf: 5.28546e-21      CPUTime: 258.775638    Var: 3.4048 
+Iteration: 229 NFunEvals: 15957  Bestf: 5.28546e-21      CPUTime: 258.843352    Var: 89.4492 
+Iteration: 230 NFunEvals: 16028  Bestf: 5.28546e-21      CPUTime: 258.926161    Var: 172.237 
+Iteration: 231 NFunEvals: 16094  Bestf: 5.28546e-21      CPUTime: 259.003935    Var: 1.03658 
+Call local solver: NL2SOL 
+Initial point function value: 2.921168 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           2.9212
+    2           2.9212
+    3           2.9212
+    4           2.9211
+    5           2.9212
+    6         0.083018
+    7         0.083013
+    8         0.083021
+    9         0.083022
+ feval            sse
+   10         0.083016
+   11       1.2491e-05
+   12       1.2462e-05
+   13       1.2529e-05
+   14       1.2482e-05
+   15        1.244e-05
+   16       2.6826e-13
+   17       3.7302e-11
+   18       3.6119e-11
+   19       1.2515e-11
+ feval            sse
+   20       1.5769e-11
+   21       5.2855e-21
+   22       3.2089e-11
+   23        3.922e-11
+   24       4.5016e-11
+   25       4.1994e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: Optimal
+Local solution function value: 5.28547e-21 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.030717  seconds 
+
+Iteration: 232 NFunEvals: 16188  Bestf: 5.28546e-21      CPUTime: 259.112041    Var: 0.025842 
+Iteration: 233 NFunEvals: 16255  Bestf: 5.28546e-21      CPUTime: 259.187977    Var: 0.00643038 
+Iteration: 234 NFunEvals: 16322  Bestf: 5.28546e-21      CPUTime: 259.269716    Var: 457.028 
+Iteration: 235 NFunEvals: 16387  Bestf: 5.28546e-21      CPUTime: 259.345654    Var: 2.925 
+Iteration: 236 NFunEvals: 16453  Bestf: 5.28546e-21      CPUTime: 259.425785    Var: 5.02974 
+Iteration: 237 NFunEvals: 16518  Bestf: 5.28546e-21      CPUTime: 260.506670    Var: 27.9492 
+Iteration: 238 NFunEvals: 16583  Bestf: 5.28546e-21      CPUTime: 260.580840    Var: 1.99364 
+Iteration: 239 NFunEvals: 16647  Bestf: 5.28546e-21      CPUTime: 260.655755    Var: 0.342701 
+Iteration: 240 NFunEvals: 16710  Bestf: 5.28546e-21      CPUTime: 261.318641    Var: 193.337 
+Iteration: 241 NFunEvals: 16775  Bestf: 5.28546e-21      CPUTime: 261.391400    Var: 295.167 
+Call local solver: NL2SOL 
+Initial point function value: 0.000078 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       7.7751e-05
+    2       7.7668e-05
+    3       7.7891e-05
+    4       7.7912e-05
+    5       7.7713e-05
+    6       1.3959e-10
+    7       2.5869e-11
+    8       3.0627e-10
+    9        3.014e-10
+ feval            sse
+   10       8.5965e-11
+   11       5.2985e-21
+   12        4.725e-11
+   13       4.1174e-11
+   14       5.4324e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.29847e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.033439  seconds 
+
+Iteration: 242 NFunEvals: 16864  Bestf: 5.28546e-21      CPUTime: 261.506130    Var: 0.317884 
+Iteration: 243 NFunEvals: 16942  Bestf: 5.28546e-21      CPUTime: 261.597028    Var: 4837.13 
+Iteration: 244 NFunEvals: 17008  Bestf: 5.28546e-21      CPUTime: 261.670559    Var: 35.6138 
+Iteration: 245 NFunEvals: 17081  Bestf: 5.28546e-21      CPUTime: 261.768350    Var: 544.757 
+Iteration: 246 NFunEvals: 17147  Bestf: 5.28546e-21      CPUTime: 261.837881    Var: 20.284 
+Iteration: 247 NFunEvals: 17213  Bestf: 5.28546e-21      CPUTime: 261.908327    Var: 0.0132381 
+Iteration: 248 NFunEvals: 17281  Bestf: 5.28546e-21      CPUTime: 266.686335    Var: 244.391 
+Iteration: 249 NFunEvals: 17346  Bestf: 5.28546e-21      CPUTime: 266.761811    Var: 0.0851005 
+Iteration: 250 NFunEvals: 17416  Bestf: 5.28546e-21      CPUTime: 266.835741    Var: 2.93384e-05 
+Iteration: 251 NFunEvals: 17485  Bestf: 5.28546e-21      CPUTime: 266.911592    Var: 436.506 
+Call local solver: NL2SOL 
+Initial point function value: 38.342274 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           38.342
+    2           38.342
+    3           38.342
+    4           38.342
+    5           38.342
+    6          0.04602
+    7         0.046021
+    8         0.046019
+    9         0.046019
+ feval            sse
+   10          0.04602
+   11       3.5136e-05
+   12       3.5189e-05
+   13       3.5087e-05
+   14       3.5131e-05
+   15       3.5224e-05
+   16       8.6489e-09
+   17       9.0141e-09
+   18        8.221e-09
+   19       9.0858e-09
+ feval            sse
+   20       9.2502e-09
+   21       4.4228e-19
+   22       3.2093e-11
+   23       1.8416e-11
+   24        4.087e-11
+   25       4.2379e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 4.42276e-19 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.034030  seconds 
+
+Iteration: 252 NFunEvals: 17581  Bestf: 5.28546e-21      CPUTime: 267.020575    Var: 416.843 
+Iteration: 253 NFunEvals: 17654  Bestf: 5.28546e-21      CPUTime: 267.098011    Var: 0.000888906 
+Iteration: 254 NFunEvals: 17719  Bestf: 5.28546e-21      CPUTime: 271.995499    Var: 639.649 
+Iteration: 255 NFunEvals: 17781  Bestf: 5.28546e-21      CPUTime: 272.067607    Var: 1.1968 
+Iteration: 256 NFunEvals: 17847  Bestf: 5.28546e-21      CPUTime: 272.148295    Var: 1.66812 
+Iteration: 257 NFunEvals: 17916  Bestf: 5.28546e-21      CPUTime: 272.222653    Var: 0.0243931 
+Iteration: 258 NFunEvals: 17978  Bestf: 5.28546e-21      CPUTime: 272.294375    Var: 0.000571462 
+Iteration: 259 NFunEvals: 18048  Bestf: 5.28546e-21      CPUTime: 272.374892    Var: 4945.7 
+Iteration: 260 NFunEvals: 18111  Bestf: 5.28546e-21      CPUTime: 272.442068    Var: 629.249 
+Iteration: 261 NFunEvals: 18182  Bestf: 5.28546e-21      CPUTime: 272.517810    Var: 98.0526 
+Call local solver: NL2SOL 
+Initial point function value: 29.740857 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           29.741
+    2           29.741
+    3            29.74
+    4           29.741
+    5           29.741
+    6           19.271
+    7           19.271
+    8           19.271
+    9           19.271
+ feval            sse
+   10           19.271
+   11           7.2833
+   12           7.2833
+   13           7.2833
+   14           7.2833
+   15           7.2833
+   16           2.9481
+   17           2.9481
+   18           2.9481
+   19           2.9481
+ feval            sse
+   20           2.9481
+   21          0.90773
+   22          0.15867
+   23          0.15867
+   24          0.15867
+   25          0.15867
+   26          0.15867
+   27       0.00020461
+   28       0.00020468
+   29       0.00020451
+ feval            sse
+   30       0.00020464
+   31       0.00020469
+   32       3.3466e-10
+   33       5.2199e-10
+   34       1.9943e-10
+   35       3.3662e-10
+   36       4.3774e-10
+   37       5.6432e-21
+   38       3.2089e-11
+   39       1.8421e-11
+ feval            sse
+   40       9.4131e-12
+   41        9.596e-12
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 7 iteration and 42 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.64324e-21 
+Number of function evaluations in the local search: 44 
+CPU Time of the local search: 0.049608  seconds 
+
+Iteration: 262 NFunEvals: 18289  Bestf: 5.28546e-21      CPUTime: 272.639613    Var: 21.1878 
+Iteration: 263 NFunEvals: 18351  Bestf: 5.28546e-21      CPUTime: 272.713051    Var: 21.4879 
+Iteration: 264 NFunEvals: 18420  Bestf: 5.28546e-21      CPUTime: 272.796581    Var: 104.727 
+Iteration: 265 NFunEvals: 18484  Bestf: 5.28546e-21      CPUTime: 272.871668    Var: 1.10074 
+Iteration: 266 NFunEvals: 18547  Bestf: 5.28546e-21      CPUTime: 272.947765    Var: 0.0186656 
+Iteration: 267 NFunEvals: 18608  Bestf: 5.28546e-21      CPUTime: 273.015389    Var: 1.6034e-05 
+Iteration: 268 NFunEvals: 18684  Bestf: 5.28546e-21      CPUTime: 273.212063    Var: 124.051 
+Iteration: 269 NFunEvals: 18753  Bestf: 5.28546e-21      CPUTime: 273.309094    Var: 49.8064 
+Iteration: 270 NFunEvals: 18824  Bestf: 5.28546e-21      CPUTime: 273.385372    Var: 10.0998 
+Iteration: 271 NFunEvals: 18897  Bestf: 5.28546e-21      CPUTime: 273.485430    Var: 134.687 
+Call local solver: NL2SOL 
+Initial point function value: 32.823072 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           32.823
+    2           32.823
+    3           32.823
+    4           32.823
+    5           32.823
+    6           5.4619
+    7           5.4619
+    8           5.4618
+    9           5.4619
+ feval            sse
+   10           5.4619
+   11         0.098297
+   12         0.098301
+   13         0.098295
+   14         0.098295
+   15           0.0983
+   16       2.5557e-05
+   17       2.5527e-05
+   18       2.5591e-05
+   19       2.5543e-05
+ feval            sse
+   20       2.5483e-05
+   21        3.623e-08
+   22       3.6239e-08
+   23       3.7088e-08
+   24       3.5639e-08
+   25       3.5643e-08
+   26       2.1312e-17
+   27       3.5377e-11
+   28       1.8397e-11
+   29       9.4294e-12
+ feval            sse
+   30       8.9878e-12
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.13124e-17 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.036859  seconds 
+
+Iteration: 272 NFunEvals: 19000  Bestf: 5.28546e-21      CPUTime: 273.604273    Var: 1.89637 
+Iteration: 273 NFunEvals: 19069  Bestf: 5.28546e-21      CPUTime: 273.685264    Var: 0.126004 
+Iteration: 274 NFunEvals: 19141  Bestf: 5.28546e-21      CPUTime: 273.769625    Var: 0.00111864 
+Iteration: 275 NFunEvals: 19207  Bestf: 5.28546e-21      CPUTime: 273.841782    Var: 1.23933e-05 
+Iteration: 276 NFunEvals: 19272  Bestf: 5.28546e-21      CPUTime: 273.914650    Var: 1.07185e-07 
+Iteration: 277 NFunEvals: 19337  Bestf: 5.28546e-21      CPUTime: 273.993088    Var: 158.654 
+Iteration: 278 NFunEvals: 19405  Bestf: 5.28546e-21      CPUTime: 274.068041    Var: 85.4411 
+Iteration: 279 NFunEvals: 19474  Bestf: 5.28546e-21      CPUTime: 274.146608    Var: 18.5803 
+Iteration: 280 NFunEvals: 19541  Bestf: 5.28546e-21      CPUTime: 274.221514    Var: 11.1429 
+Iteration: 281 NFunEvals: 19606  Bestf: 5.28546e-21      CPUTime: 274.288299    Var: 0.116083 
+Call local solver: NL2SOL 
+Initial point function value: 0.021323 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.021323
+    2         0.021322
+    3         0.021326
+    4         0.021326
+    5         0.021323
+    6       1.7455e-06
+    7        1.764e-06
+    8       1.7296e-06
+    9       1.7339e-06
+ feval            sse
+   10       1.7597e-06
+   11        5.172e-15
+   12       4.7256e-11
+   13       4.1829e-11
+   14       5.3844e-11
+   15       6.2839e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.17196e-15 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019737  seconds 
+
+Iteration: 282 NFunEvals: 19692  Bestf: 5.28546e-21      CPUTime: 274.381284    Var: 0.0561352 
+Iteration: 283 NFunEvals: 19765  Bestf: 5.28546e-21      CPUTime: 274.456100    Var: 5449.12 
+Iteration: 284 NFunEvals: 19830  Bestf: 5.28546e-21      CPUTime: 274.527047    Var: 187.881 
+Iteration: 285 NFunEvals: 19894  Bestf: 5.28546e-21      CPUTime: 274.600071    Var: 3.09079 
+Iteration: 286 NFunEvals: 19961  Bestf: 5.28546e-21      CPUTime: 274.678404    Var: 2.14263 
+Iteration: 287 NFunEvals: 20025  Bestf: 5.28546e-21      CPUTime: 274.743240    Var: 0.574058 
+Iteration: 288 NFunEvals: 20092  Bestf: 5.28546e-21      CPUTime: 274.821102    Var: 44.8798 
+Iteration: 289 NFunEvals: 20156  Bestf: 5.28546e-21      CPUTime: 274.892658    Var: 0.0359683 
+Iteration: 290 NFunEvals: 20218  Bestf: 5.28546e-21      CPUTime: 274.965195    Var: 0.00788269 
+Iteration: 291 NFunEvals: 20284  Bestf: 5.28546e-21      CPUTime: 275.040915    Var: 0.000261342 
+Call local solver: NL2SOL 
+Initial point function value: 0.052262 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.052262
+    2          0.05226
+    3         0.052262
+    4         0.052266
+    5         0.052261
+    6       0.00017026
+    7       0.00017031
+    8       0.00017016
+    9       0.00017036
+ feval            sse
+   10       0.00017044
+   11       6.9604e-11
+   12       2.1396e-10
+   13        5.993e-12
+   14       7.9858e-11
+   15       2.3667e-10
+   16       5.2894e-21
+   17       4.3913e-11
+   18       3.6324e-11
+   19       5.1002e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.2894e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.025342  seconds 
+
+Iteration: 292 NFunEvals: 20375  Bestf: 5.28546e-21      CPUTime: 275.147477    Var: 962.736 
+Iteration: 293 NFunEvals: 20438  Bestf: 5.28546e-21      CPUTime: 275.215761    Var: 0.108976 
+Iteration: 294 NFunEvals: 20508  Bestf: 5.28546e-21      CPUTime: 275.301501    Var: 164.386 
+Iteration: 295 NFunEvals: 20571  Bestf: 5.28546e-21      CPUTime: 275.375378    Var: 0.540624 
+Iteration: 296 NFunEvals: 20645  Bestf: 5.28546e-21      CPUTime: 275.467107    Var: 1232.24 
+Iteration: 297 NFunEvals: 20723  Bestf: 5.28546e-21      CPUTime: 275.552366    Var: 5040.18 
+Iteration: 298 NFunEvals: 20804  Bestf: 5.28546e-21      CPUTime: 275.638910    Var: 974.295 
+Iteration: 299 NFunEvals: 20878  Bestf: 5.28546e-21      CPUTime: 275.719534    Var: 23.0708 
+Iteration: 300 NFunEvals: 20948  Bestf: 5.28546e-21      CPUTime: 275.797150    Var: 60.3086 
+Iteration: 301 NFunEvals: 21010  Bestf: 5.28546e-21      CPUTime: 275.906351    Var: 342.083 
+Call local solver: NL2SOL 
+Initial point function value: 50.097975 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           50.098
+    2           50.098
+    3           50.098
+    4           50.098
+    5           50.098
+    6           1.1438
+    7           1.1438
+    8           1.1438
+    9           1.1438
+ feval            sse
+   10           1.1438
+   11         0.001597
+   12        0.0015973
+   13        0.0015969
+   14        0.0015964
+   15         0.001597
+   16       1.0314e-08
+   17       9.8629e-09
+   18       1.0254e-08
+   19       1.1739e-08
+ feval            sse
+   20       1.0585e-08
+   21       4.1355e-19
+   22       3.2087e-11
+   23       4.1306e-11
+   24       5.4491e-11
+   25       3.1569e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 4.13551e-19 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.030187  seconds 
+
+Iteration: 302 NFunEvals: 21103  Bestf: 5.28546e-21      CPUTime: 276.012919    Var: 83.351 
+Iteration: 303 NFunEvals: 21167  Bestf: 5.28546e-21      CPUTime: 276.088973    Var: 4.73766 
+Iteration: 304 NFunEvals: 21232  Bestf: 5.28546e-21      CPUTime: 276.165618    Var: 0.00197684 
+Iteration: 305 NFunEvals: 21296  Bestf: 5.28546e-21      CPUTime: 276.248471    Var: 572.697 
+Iteration: 306 NFunEvals: 21361  Bestf: 5.28546e-21      CPUTime: 276.319385    Var: 0.242009 
+Iteration: 307 NFunEvals: 21434  Bestf: 5.28546e-21      CPUTime: 276.402555    Var: 4.70095e-06 
+Iteration: 308 NFunEvals: 21497  Bestf: 5.28546e-21      CPUTime: 276.470867    Var: 8.26327e-08 
+Iteration: 309 NFunEvals: 21568  Bestf: 5.28546e-21      CPUTime: 276.554675    Var: 273.14 
+Iteration: 310 NFunEvals: 21631  Bestf: 5.28546e-21      CPUTime: 276.632241    Var: 50.5161 
+Iteration: 311 NFunEvals: 21701  Bestf: 5.28546e-21      CPUTime: 276.717096    Var: 950.891 
+Call local solver: NL2SOL 
+Initial point function value: 4.819662 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           4.8197
+    2           4.8197
+    3           4.8197
+    4           4.8197
+    5           4.8197
+    6          0.21336
+    7          0.21336
+    8          0.21336
+    9          0.21337
+ feval            sse
+   10          0.21337
+   11       2.4697e-05
+   12       2.4749e-05
+   13       2.4673e-05
+   14       2.4631e-05
+   15       2.4706e-05
+   16       3.9083e-12
+   17       1.5321e-11
+   18       5.8293e-11
+   19       2.8481e-11
+ feval            sse
+   20       5.7913e-11
+   21       5.2854e-21
+   22       4.3471e-11
+   23       3.9582e-11
+   24       3.5392e-11
+   25       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.2854e-21 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.034038  seconds 
+
+Iteration: 312 NFunEvals: 21796  Bestf: 5.2854e-21      CPUTime: 276.823935    Var: 23.5216 
+Iteration: 313 NFunEvals: 21859  Bestf: 5.2854e-21      CPUTime: 276.894467    Var: 0.472163 
+Iteration: 314 NFunEvals: 21921  Bestf: 5.2854e-21      CPUTime: 276.968498    Var: 0.0579316 
+Iteration: 315 NFunEvals: 21985  Bestf: 5.2854e-21      CPUTime: 277.045841    Var: 0.00132636 
+Iteration: 316 NFunEvals: 22050  Bestf: 5.2854e-21      CPUTime: 277.122973    Var: 0.00014681 
+Iteration: 317 NFunEvals: 22115  Bestf: 5.2854e-21      CPUTime: 277.193454    Var: 0.000149111 
+Iteration: 318 NFunEvals: 22186  Bestf: 5.2854e-21      CPUTime: 277.264166    Var: 4.78566e-05 
+Iteration: 319 NFunEvals: 22252  Bestf: 5.2854e-21      CPUTime: 277.331204    Var: 7.87817e-08 
+Iteration: 320 NFunEvals: 22318  Bestf: 5.2854e-21      CPUTime: 277.440121    Var: 2293.18 
+Iteration: 321 NFunEvals: 22384  Bestf: 5.2854e-21      CPUTime: 277.515817    Var: 42.3751 
+Call local solver: NL2SOL 
+Initial point function value: 17.680562 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           17.681
+    2           17.681
+    3           17.681
+    4            17.68
+    5           17.681
+    6          0.81737
+    7          0.81738
+    8          0.81737
+    9          0.81737
+ feval            sse
+   10          0.81737
+   11        0.0067158
+   12        0.0067153
+   13        0.0067157
+   14        0.0067165
+   15        0.0067162
+   16       2.0292e-07
+   17       2.0081e-07
+   18       2.0233e-07
+   19       2.0536e-07
+ feval            sse
+   20       2.0574e-07
+   21       2.4187e-16
+   22        3.205e-11
+   23       4.0084e-11
+   24       9.4912e-12
+   25       6.3898e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.41866e-16 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.029611  seconds 
+
+Iteration: 322 NFunEvals: 22476  Bestf: 5.2854e-21      CPUTime: 277.619539    Var: 0.446054 
+Iteration: 323 NFunEvals: 22542  Bestf: 5.2854e-21      CPUTime: 277.694914    Var: 156.165 
+Iteration: 324 NFunEvals: 22605  Bestf: 5.2854e-21      CPUTime: 277.765495    Var: 0.046689 
+Iteration: 325 NFunEvals: 22675  Bestf: 5.2854e-21      CPUTime: 277.840016    Var: 0.0298053 
+Iteration: 326 NFunEvals: 22747  Bestf: 5.2854e-21      CPUTime: 277.917563    Var: 191.7 
+Iteration: 327 NFunEvals: 22815  Bestf: 5.2854e-21      CPUTime: 277.988414    Var: 24.0855 
+Iteration: 328 NFunEvals: 22879  Bestf: 5.2854e-21      CPUTime: 278.057284    Var: 0.148566 
+Iteration: 329 NFunEvals: 22947  Bestf: 5.2854e-21      CPUTime: 278.132323    Var: 379.838 
+Iteration: 330 NFunEvals: 23017  Bestf: 5.2854e-21      CPUTime: 278.289923    Var: 222.484 
+Iteration: 331 NFunEvals: 23078  Bestf: 5.2854e-21      CPUTime: 278.354162    Var: 68.1496 
+Call local solver: NL2SOL 
+Initial point function value: 19.662916 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           19.663
+    2           19.663
+    3           19.663
+    4           19.663
+    5           19.663
+    6           2.0019
+    7           2.0019
+    8           2.0019
+    9           2.0019
+ feval            sse
+   10           2.0019
+   11         0.001143
+   12        0.0011428
+   13        0.0011429
+   14        0.0011432
+   15        0.0011432
+   16       5.0274e-09
+   17       5.0075e-09
+   18       4.7792e-09
+   19       5.3519e-09
+ feval            sse
+   20       5.8013e-09
+   21       2.0668e-19
+   22       3.2091e-11
+   23       1.8418e-11
+   24       9.4144e-12
+   25       6.3774e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.06682e-19 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.030454  seconds 
+
+Iteration: 332 NFunEvals: 23172  Bestf: 5.2854e-21      CPUTime: 278.456796    Var: 10.8537 
+Iteration: 333 NFunEvals: 23237  Bestf: 5.2854e-21      CPUTime: 278.529824    Var: 3.27319 
+Iteration: 334 NFunEvals: 23299  Bestf: 5.2854e-21      CPUTime: 278.596315    Var: 1.35191 
+Iteration: 335 NFunEvals: 23370  Bestf: 5.2854e-21      CPUTime: 278.676005    Var: 92.1092 
+Iteration: 336 NFunEvals: 23436  Bestf: 5.2854e-21      CPUTime: 278.765830    Var: 42.5898 
+Iteration: 337 NFunEvals: 23507  Bestf: 5.2854e-21      CPUTime: 279.049064    Var: 1285.07 
+Iteration: 338 NFunEvals: 23577  Bestf: 5.2854e-21      CPUTime: 279.119210    Var: 32.8471 
+Iteration: 339 NFunEvals: 23650  Bestf: 5.2854e-21      CPUTime: 279.194549    Var: 5.54597 
+Iteration: 340 NFunEvals: 23720  Bestf: 5.2854e-21      CPUTime: 279.267983    Var: 0.0018696 
+Iteration: 341 NFunEvals: 23788  Bestf: 5.2854e-21      CPUTime: 281.736735    Var: 5.08213 
+Call local solver: NL2SOL 
+Initial point function value: 67.946799 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           67.947
+    2           67.947
+    3           67.946
+    4           67.946
+    5           67.947
+    6           16.656
+    7           16.656
+    8           16.656
+    9           16.656
+ feval            sse
+   10           16.656
+   11           1.4286
+   12           1.4286
+   13           1.4286
+   14           1.4286
+   15           1.4286
+   16         0.013401
+   17         0.013402
+   18           0.0134
+   19           0.0134
+ feval            sse
+   20         0.013402
+   21       5.1902e-07
+   22       5.1162e-07
+   23       5.2478e-07
+   24        5.203e-07
+   25       5.0957e-07
+   26       5.1699e-16
+   27       3.2026e-11
+   28        1.854e-11
+   29       9.6369e-12
+ feval            sse
+   30       6.3461e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.1699e-16 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.036065  seconds 
+
+Iteration: 342 NFunEvals: 23891  Bestf: 5.2854e-21      CPUTime: 281.850777    Var: 0.000441987 
+Iteration: 343 NFunEvals: 23959  Bestf: 5.2854e-21      CPUTime: 281.926784    Var: 10.1871 
+Iteration: 344 NFunEvals: 24022  Bestf: 5.2854e-21      CPUTime: 281.993565    Var: 0.0440727 
+Iteration: 345 NFunEvals: 24087  Bestf: 5.2854e-21      CPUTime: 322.157001    Var: 9.05937 
+Iteration: 346 NFunEvals: 24156  Bestf: 5.2854e-21      CPUTime: 322.231463    Var: 7.97605 
+Iteration: 347 NFunEvals: 24223  Bestf: 5.2854e-21      CPUTime: 322.304899    Var: 0.42155 
+Iteration: 348 NFunEvals: 24293  Bestf: 5.2854e-21      CPUTime: 322.384536    Var: 5.40846 
+Iteration: 349 NFunEvals: 24356  Bestf: 5.2854e-21      CPUTime: 322.450252    Var: 88.0882 
+Iteration: 350 NFunEvals: 24419  Bestf: 5.2854e-21      CPUTime: 322.513847    Var: 3.10411 
+Iteration: 351 NFunEvals: 24483  Bestf: 5.2854e-21      CPUTime: 322.578149    Var: 0.0181052 
+Call local solver: NL2SOL 
+Initial point function value: 0.334594 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.33459
+    2          0.33459
+    3          0.33459
+    4          0.33459
+    5          0.33459
+    6       0.00080919
+    7       0.00080901
+    8       0.00080947
+    9        0.0008091
+ feval            sse
+   10       0.00080876
+   11        1.008e-09
+   12       1.4218e-09
+   13       7.2327e-10
+   14       7.5234e-10
+   15       1.3224e-09
+   16       7.0247e-21
+   17       3.7132e-11
+   18       3.4335e-11
+   19       4.2799e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 7.02466e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.025031  seconds 
+
+Iteration: 352 NFunEvals: 24571  Bestf: 5.2854e-21      CPUTime: 322.673396    Var: 10.692 
+Iteration: 353 NFunEvals: 24636  Bestf: 5.2854e-21      CPUTime: 322.747505    Var: 136.531 
+Iteration: 354 NFunEvals: 24703  Bestf: 5.2854e-21      CPUTime: 322.822389    Var: 366.279 
+Iteration: 355 NFunEvals: 24764  Bestf: 5.2854e-21      CPUTime: 322.889439    Var: 233.26 
+Iteration: 356 NFunEvals: 24831  Bestf: 5.2854e-21      CPUTime: 322.966395    Var: 0.143067 
+Iteration: 357 NFunEvals: 24890  Bestf: 5.2854e-21      CPUTime: 323.036592    Var: 0.028679 
+Iteration: 358 NFunEvals: 24954  Bestf: 5.2854e-21      CPUTime: 323.113000    Var: 0.000579057 
+Iteration: 359 NFunEvals: 25016  Bestf: 5.2854e-21      CPUTime: 323.186092    Var: 9.99063e-05 
+Iteration: 360 NFunEvals: 25082  Bestf: 5.2854e-21      CPUTime: 323.261994    Var: 7.8567e-06 
+Iteration: 361 NFunEvals: 25145  Bestf: 5.2854e-21      CPUTime: 323.328720    Var: 6.21054e-07 
+Call local solver: NL2SOL 
+Initial point function value: 0.001474 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        0.0014737
+    2        0.0014738
+    3        0.0014738
+    4        0.0014735
+    5        0.0014736
+    6       9.1817e-08
+    7       8.7887e-08
+    8        9.541e-08
+    9       9.3653e-08
+ feval            sse
+   10       8.7975e-08
+   11       1.1953e-17
+   12       4.7416e-11
+   13       4.1342e-11
+   14       5.4463e-11
+   15       6.3718e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 1.19525e-17 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019119  seconds 
+
+Iteration: 362 NFunEvals: 25228  Bestf: 5.2854e-21      CPUTime: 323.416475    Var: 1.47869e-07 
+Iteration: 363 NFunEvals: 25295  Bestf: 5.2854e-21      CPUTime: 323.498896    Var: 752.61 
+Iteration: 364 NFunEvals: 25358  Bestf: 5.2854e-21      CPUTime: 323.569650    Var: 4.80955 
+Iteration: 365 NFunEvals: 25424  Bestf: 5.2854e-21      CPUTime: 323.642896    Var: 0.0326941 
+Iteration: 366 NFunEvals: 25487  Bestf: 5.2854e-21      CPUTime: 323.711673    Var: 0.00126879 
+Iteration: 367 NFunEvals: 25549  Bestf: 5.2854e-21      CPUTime: 323.775107    Var: 1.15751e-05 
+Iteration: 368 NFunEvals: 25613  Bestf: 5.2854e-21      CPUTime: 323.839665    Var: 7.39795e-07 
+Iteration: 369 NFunEvals: 25687  Bestf: 5.2854e-21      CPUTime: 323.921844    Var: 692.133 
+Iteration: 370 NFunEvals: 25759  Bestf: 5.2854e-21      CPUTime: 324.011461    Var: 3165.65 
+Iteration: 371 NFunEvals: 25829  Bestf: 5.2854e-21      CPUTime: 324.084645    Var: 110.325 
+Call local solver: NL2SOL 
+Initial point function value: 16.577060 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           16.577
+    2           16.577
+    3           16.577
+    4           16.577
+    5           16.577
+    6          0.42277
+    7          0.42277
+    8          0.42278
+    9          0.42277
+ feval            sse
+   10          0.42277
+   11           0.3302
+   12           0.3302
+   13           0.3302
+   14           0.3302
+   15           0.3302
+   16        0.0038565
+   17        0.0038558
+   18        0.0038572
+   19        0.0038567
+ feval            sse
+   20        0.0038556
+   21       1.9939e-08
+   22       1.9379e-08
+   23       2.1166e-08
+   24       1.8974e-08
+   25       1.8047e-08
+   26       8.2769e-19
+   27       4.1219e-11
+   28       2.6439e-11
+   29       5.4236e-11
+ feval            sse
+   30       6.3776e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 31 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 8.27694e-19 
+Number of function evaluations in the local search: 33 
+CPU Time of the local search: 0.036380  seconds 
+
+Iteration: 372 NFunEvals: 25926  Bestf: 5.2854e-21      CPUTime: 324.221503    Var: 8.01296 
+Iteration: 373 NFunEvals: 25992  Bestf: 5.2854e-21      CPUTime: 324.288360    Var: 0.428762 
+Iteration: 374 NFunEvals: 26057  Bestf: 5.2854e-21      CPUTime: 324.354228    Var: 0.426775 
+Iteration: 375 NFunEvals: 26127  Bestf: 5.2854e-21      CPUTime: 324.423597    Var: 0.0164086 
+Iteration: 376 NFunEvals: 26194  Bestf: 5.2854e-21      CPUTime: 324.492455    Var: 0.000167028 
+Iteration: 377 NFunEvals: 26263  Bestf: 5.2854e-21      CPUTime: 324.628997    Var: 4.96628 
+Iteration: 378 NFunEvals: 26329  Bestf: 5.2854e-21      CPUTime: 324.697905    Var: 79.7878 
+Iteration: 379 NFunEvals: 26392  Bestf: 5.2854e-21      CPUTime: 324.762348    Var: 153.049 
+Iteration: 380 NFunEvals: 26455  Bestf: 5.2854e-21      CPUTime: 324.825883    Var: 4.33075 
+Iteration: 381 NFunEvals: 26519  Bestf: 5.2854e-21      CPUTime: 324.889608    Var: 169.807 
+Call local solver: NL2SOL 
+Initial point function value: 0.075275 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.075275
+    2         0.075278
+    3         0.075266
+    4          0.07527
+    5         0.075277
+    6       5.0197e-05
+    7       5.0117e-05
+    8       5.0281e-05
+    9       5.0205e-05
+ feval            sse
+   10       5.0093e-05
+   11       3.0156e-12
+   12       6.0646e-11
+   13       4.4187e-11
+   14       3.2986e-11
+   15       5.5601e-11
+   16       5.2864e-21
+   17       4.7424e-11
+   18       4.1309e-11
+   19       5.4463e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28638e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.034432  seconds 
+
+Iteration: 382 NFunEvals: 26611  Bestf: 5.2854e-21      CPUTime: 360.370785    Var: 159.554 
+Iteration: 383 NFunEvals: 26678  Bestf: 5.2854e-21      CPUTime: 360.462811    Var: 0.358194 
+Iteration: 384 NFunEvals: 26743  Bestf: 5.2854e-21      CPUTime: 360.533784    Var: 0.0410445 
+Iteration: 385 NFunEvals: 26809  Bestf: 5.2854e-21      CPUTime: 360.607246    Var: 0.0154206 
+Iteration: 386 NFunEvals: 26877  Bestf: 5.2854e-21      CPUTime: 360.684055    Var: 0.968357 
+Iteration: 387 NFunEvals: 26944  Bestf: 5.2854e-21      CPUTime: 360.753152    Var: 0.00808865 
+Iteration: 388 NFunEvals: 27019  Bestf: 5.2854e-21      CPUTime: 360.847312    Var: 847.788 
+Iteration: 389 NFunEvals: 27085  Bestf: 5.2854e-21      CPUTime: 360.925703    Var: 179.701 
+Iteration: 390 NFunEvals: 27157  Bestf: 5.2854e-21      CPUTime: 361.009846    Var: 254.812 
+Iteration: 391 NFunEvals: 27226  Bestf: 5.2854e-21      CPUTime: 361.087965    Var: 0.957224 
+Call local solver: NL2SOL 
+Initial point function value: 3.866371 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           3.8664
+    2           3.8664
+    3           3.8664
+    4           3.8663
+    5           3.8664
+    6          0.11853
+    7          0.11853
+    8          0.11853
+    9          0.11853
+ feval            sse
+   10          0.11853
+   11       4.9928e-05
+   12       4.9922e-05
+   13       4.9894e-05
+   14       4.9983e-05
+   15       4.9997e-05
+   16       2.1941e-11
+   17       6.9252e-11
+   18       1.5723e-11
+   19         4.48e-11
+ feval            sse
+   20       1.4631e-10
+   21       5.2912e-21
+   22       3.2089e-11
+   23       3.1704e-11
+   24       9.4132e-12
+   25       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 4 iteration and 26 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.29118e-21 
+Number of function evaluations in the local search: 28 
+CPU Time of the local search: 0.030481  seconds 
+
+Iteration: 392 NFunEvals: 27320  Bestf: 5.2854e-21      CPUTime: 361.193128    Var: 0.256736 
+Iteration: 393 NFunEvals: 27386  Bestf: 5.2854e-21      CPUTime: 361.270322    Var: 0.00053869 
+Iteration: 394 NFunEvals: 27452  Bestf: 5.2854e-21      CPUTime: 361.343491    Var: 1.99464e-05 
+Iteration: 395 NFunEvals: 27521  Bestf: 5.2854e-21      CPUTime: 361.420673    Var: 36.3668 
+Iteration: 396 NFunEvals: 27583  Bestf: 5.2854e-21      CPUTime: 361.494518    Var: 12.2912 
+Iteration: 397 NFunEvals: 27650  Bestf: 5.2854e-21      CPUTime: 361.572424    Var: 0.0634288 
+Iteration: 398 NFunEvals: 27714  Bestf: 5.2854e-21      CPUTime: 361.647466    Var: 817.746 
+Iteration: 399 NFunEvals: 27777  Bestf: 5.2854e-21      CPUTime: 361.715097    Var: 55.64 
+Iteration: 400 NFunEvals: 27847  Bestf: 5.2854e-21      CPUTime: 361.789197    Var: 0.00471388 
+Iteration: 401 NFunEvals: 27913  Bestf: 5.2854e-21      CPUTime: 361.882233    Var: 36.1898 
+Call local solver: NL2SOL 
+Initial point function value: 0.000084 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        8.377e-05
+    2       8.3796e-05
+    3       8.3802e-05
+    4       8.3501e-05
+    5       8.3696e-05
+    6       1.7121e-11
+    7       1.0328e-10
+    8       4.7121e-11
+    9         1.53e-11
+ feval            sse
+   10       7.5865e-11
+   11       5.2877e-21
+   12       4.7427e-11
+   13       4.1309e-11
+   14       5.4412e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28766e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019051  seconds 
+
+Iteration: 402 NFunEvals: 27992  Bestf: 5.2854e-21      CPUTime: 361.969825    Var: 0.262434 
+Iteration: 403 NFunEvals: 28055  Bestf: 5.2854e-21      CPUTime: 362.034691    Var: 3.10428 
+Iteration: 404 NFunEvals: 28121  Bestf: 5.2854e-21      CPUTime: 362.107385    Var: 91.0494 
+Iteration: 405 NFunEvals: 28190  Bestf: 5.2854e-21      CPUTime: 362.176886    Var: 27.9567 
+Iteration: 406 NFunEvals: 28256  Bestf: 5.2854e-21      CPUTime: 362.247672    Var: 73.2611 
+Iteration: 407 NFunEvals: 28328  Bestf: 5.2854e-21      CPUTime: 362.323178    Var: 5.47533 
+Iteration: 408 NFunEvals: 28396  Bestf: 5.2854e-21      CPUTime: 362.396392    Var: 0.0989491 
+Iteration: 409 NFunEvals: 28464  Bestf: 5.2854e-21      CPUTime: 362.470474    Var: 16.3786 
+Iteration: 410 NFunEvals: 28529  Bestf: 5.2854e-21      CPUTime: 362.545931    Var: 0.0303254 
+Iteration: 411 NFunEvals: 28592  Bestf: 5.2854e-21      CPUTime: 362.619769    Var: 0.00580799 
+Call local solver: NL2SOL 
+Initial point function value: 0.096011 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1         0.096011
+    2         0.096009
+    3          0.09602
+    4         0.096015
+    5          0.09601
+    6       0.00023683
+    7       0.00023698
+    8       0.00023664
+    9       0.00023686
+ feval            sse
+   10       0.00023706
+   11        9.096e-11
+   12       2.5613e-10
+   13       5.3595e-11
+   14       1.8156e-11
+   15       1.8807e-10
+   16       5.3114e-21
+   17       4.7425e-11
+   18       4.1221e-11
+   19       5.4483e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.31145e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.024475  seconds 
+
+Iteration: 412 NFunEvals: 28686  Bestf: 5.2854e-21      CPUTime: 362.723642    Var: 7.83068e-06 
+Iteration: 413 NFunEvals: 28752  Bestf: 5.2854e-21      CPUTime: 362.794729    Var: 2.58375e-06 
+Iteration: 414 NFunEvals: 28821  Bestf: 5.2854e-21      CPUTime: 362.881189    Var: 498.158 
+Iteration: 415 NFunEvals: 28885  Bestf: 5.2854e-21      CPUTime: 362.958269    Var: 120.473 
+Iteration: 416 NFunEvals: 28952  Bestf: 5.2854e-21      CPUTime: 363.029152    Var: 117.094 
+Iteration: 417 NFunEvals: 29024  Bestf: 5.2854e-21      CPUTime: 363.108361    Var: 12.5694 
+Iteration: 418 NFunEvals: 29099  Bestf: 5.2854e-21      CPUTime: 363.195127    Var: 7.7256 
+Iteration: 419 NFunEvals: 29164  Bestf: 5.2854e-21      CPUTime: 452.066479    Var: 104.941 
+Iteration: 420 NFunEvals: 29226  Bestf: 5.2854e-21      CPUTime: 452.142617    Var: 0.850856 
+Iteration: 421 NFunEvals: 29293  Bestf: 5.2854e-21      CPUTime: 452.223415    Var: 0.883579 
+Call local solver: NL2SOL 
+Initial point function value: 0.006505 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1        0.0065046
+    2         0.006505
+    3        0.0065035
+    4        0.0065052
+    5        0.0065053
+    6       5.1117e-07
+    7       5.0431e-07
+    8       5.1968e-07
+    9       5.1052e-07
+ feval            sse
+   10        5.004e-07
+   11       3.9234e-16
+   12       4.7689e-11
+   13       4.1139e-11
+   14       5.4226e-11
+   15       6.3851e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 3.92344e-16 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019761  seconds 
+
+Iteration: 422 NFunEvals: 29385  Bestf: 5.2854e-21      CPUTime: 452.333076    Var: 2.51675 
+Iteration: 423 NFunEvals: 29448  Bestf: 5.2854e-21      CPUTime: 452.405302    Var: 0.158064 
+Iteration: 424 NFunEvals: 29510  Bestf: 5.2854e-21      CPUTime: 452.479333    Var: 0.00539392 
+Iteration: 425 NFunEvals: 29573  Bestf: 5.2854e-21      CPUTime: 452.552279    Var: 9.52928e-05 
+Iteration: 426 NFunEvals: 29639  Bestf: 5.2854e-21      CPUTime: 452.637490    Var: 173.207 
+Iteration: 427 NFunEvals: 29699  Bestf: 5.2854e-21      CPUTime: 452.705951    Var: 1.00743 
+Iteration: 428 NFunEvals: 29763  Bestf: 5.2854e-21      CPUTime: 452.787393    Var: 0.572513 
+Iteration: 429 NFunEvals: 29826  Bestf: 5.2854e-21      CPUTime: 452.859195    Var: 0.00676989 
+Iteration: 430 NFunEvals: 29890  Bestf: 5.2854e-21      CPUTime: 452.941222    Var: 347.538 
+Iteration: 431 NFunEvals: 29956  Bestf: 5.2854e-21      CPUTime: 460.349455    Var: 835.862 
+Call local solver: NL2SOL 
+Initial point function value: 21.582370 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           21.582
+    2           21.582
+    3           21.582
+    4           21.582
+    5           21.582
+    6           88.541
+    7             12.3
+    8             12.3
+    9             12.3
+ feval            sse
+   10             12.3
+   11             12.3
+   12            2.349
+   13            2.349
+   14            2.349
+   15            2.349
+   16            2.349
+   17          0.28086
+   18          0.28086
+   19          0.28085
+ feval            sse
+   20          0.28086
+   21          0.28086
+   22        8.262e-05
+   23       8.2722e-05
+   24       8.2552e-05
+   25       8.2582e-05
+   26        8.265e-05
+   27       1.3916e-11
+   28       3.2581e-11
+   29       5.3285e-11
+ feval            sse
+   30       1.1791e-11
+   31       3.6322e-12
+   32       5.2854e-21
+   33       3.2089e-11
+   34       1.8421e-11
+   35       1.8496e-11
+   36       8.9674e-12
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 6 iteration and 37 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28537e-21 
+Number of function evaluations in the local search: 39 
+CPU Time of the local search: 0.156297  seconds 
+
+Iteration: 432 NFunEvals: 30062  Bestf: 5.28537e-21      CPUTime: 460.606666    Var: 9.50604 
+Iteration: 433 NFunEvals: 30125  Bestf: 5.28537e-21      CPUTime: 460.681907    Var: 0.0621086 
+Iteration: 434 NFunEvals: 30192  Bestf: 5.28537e-21      CPUTime: 460.760295    Var: 4.39258e-05 
+Iteration: 435 NFunEvals: 30261  Bestf: 5.28537e-21      CPUTime: 460.849185    Var: 53.8018 
+Iteration: 436 NFunEvals: 30327  Bestf: 5.28537e-21      CPUTime: 460.928035    Var: 8.31122e-05 
+Iteration: 437 NFunEvals: 30395  Bestf: 5.28537e-21      CPUTime: 461.011724    Var: 512.735 
+Iteration: 438 NFunEvals: 30465  Bestf: 5.28537e-21      CPUTime: 464.892603    Var: 165.195 
+Iteration: 439 NFunEvals: 30531  Bestf: 5.28537e-21      CPUTime: 464.973023    Var: 65.4141 
+Iteration: 440 NFunEvals: 30596  Bestf: 5.28537e-21      CPUTime: 465.049005    Var: 4.59686 
+Iteration: 441 NFunEvals: 30668  Bestf: 5.28537e-21      CPUTime: 465.128770    Var: 3.80236 
+Call local solver: NL2SOL 
+Initial point function value: 0.126826 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1          0.12683
+    2          0.12682
+    3          0.12683
+    4          0.12684
+    5          0.12683
+    6       0.00035674
+    7        0.0003565
+    8       0.00035692
+    9       0.00035691
+ feval            sse
+   10       0.00035656
+   11       4.7993e-10
+   12        2.838e-10
+   13       7.6461e-10
+   14       5.7721e-10
+   15       2.3635e-10
+   16       5.4797e-21
+   17        4.093e-11
+   18        3.686e-11
+   19       4.9818e-11
+ feval            sse
+   20       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.47965e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.046498  seconds 
+
+Iteration: 442 NFunEvals: 30761  Bestf: 5.28537e-21      CPUTime: 465.265705    Var: 85.15 
+Iteration: 443 NFunEvals: 30831  Bestf: 5.28537e-21      CPUTime: 465.342564    Var: 0.10223 
+Iteration: 444 NFunEvals: 30897  Bestf: 5.28537e-21      CPUTime: 465.418266    Var: 0.00406276 
+Iteration: 445 NFunEvals: 30961  Bestf: 5.28537e-21      CPUTime: 465.491469    Var: 0.000436187 
+Iteration: 446 NFunEvals: 31024  Bestf: 5.28537e-21      CPUTime: 465.553790    Var: 7.37746e-05 
+Iteration: 447 NFunEvals: 31096  Bestf: 5.28537e-21      CPUTime: 465.627140    Var: 0.597613 
+Iteration: 448 NFunEvals: 31163  Bestf: 5.28537e-21      CPUTime: 465.702966    Var: 0.166708 
+Iteration: 449 NFunEvals: 31228  Bestf: 5.28537e-21      CPUTime: 465.780000    Var: 31.157 
+Iteration: 450 NFunEvals: 31292  Bestf: 5.28537e-21      CPUTime: 465.850654    Var: 86.4762 
+Iteration: 451 NFunEvals: 31364  Bestf: 5.28537e-21      CPUTime: 465.927572    Var: 42.6118 
+Call local solver: NL2SOL 
+Initial point function value: 7.019083 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           7.0191
+    2           7.0191
+    3            7.019
+    4           7.0191
+    5           7.0191
+    6       0.00061501
+    7       0.00061526
+    8       0.00061485
+    9       0.00061467
+ feval            sse
+   10       0.00061504
+   11       4.9292e-10
+   12       4.6774e-10
+   13       6.9563e-10
+   14       3.6274e-10
+   15       2.7137e-10
+   16       6.7573e-21
+   17       3.8327e-11
+   18       3.4607e-11
+   19       5.4128e-11
+ feval            sse
+   20       6.3769e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 3 iteration and 21 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 6.75731e-21 
+Number of function evaluations in the local search: 23 
+CPU Time of the local search: 0.025304  seconds 
+
+Iteration: 452 NFunEvals: 31448  Bestf: 5.28537e-21      CPUTime: 466.021500    Var: 6.17054 
+Iteration: 453 NFunEvals: 31510  Bestf: 5.28537e-21      CPUTime: 466.089199    Var: 0.762822 
+Iteration: 454 NFunEvals: 31572  Bestf: 5.28537e-21      CPUTime: 466.149988    Var: 33.2029 
+Iteration: 455 NFunEvals: 31644  Bestf: 5.28537e-21      CPUTime: 466.225454    Var: 18.9871 
+Iteration: 456 NFunEvals: 31705  Bestf: 5.28537e-21      CPUTime: 466.295435    Var: 0.0172218 
+Iteration: 457 NFunEvals: 31772  Bestf: 5.28537e-21      CPUTime: 466.370040    Var: 0.00081373 
+Iteration: 458 NFunEvals: 31840  Bestf: 5.28537e-21      CPUTime: 466.498192    Var: 25.4274 
+Iteration: 459 NFunEvals: 31911  Bestf: 5.28537e-21      CPUTime: 466.581485    Var: 417.995 
+Iteration: 460 NFunEvals: 31975  Bestf: 5.28537e-21      CPUTime: 466.655587    Var: 22.1833 
+Iteration: 461 NFunEvals: 32043  Bestf: 5.28537e-21      CPUTime: 583.953877    Var: 1123.31 
+Call local solver: NL2SOL 
+Initial point function value: 11.455108 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1           11.455
+    2           11.455
+    3           11.455
+    4           11.455
+    5           11.455
+    6            14.24
+    7           2.4446
+    8           2.4446
+    9           2.4446
+ feval            sse
+   10           2.4446
+   11           2.4446
+   12          0.55837
+   13          0.55837
+   14          0.55836
+   15          0.55837
+   16          0.55838
+   17       0.00045057
+   18       0.00045081
+   19       0.00045042
+ feval            sse
+   20       0.00045033
+   21       0.00045063
+   22       4.4983e-10
+   23       3.7197e-10
+   24       6.0593e-10
+   25       4.1136e-10
+   26        3.302e-10
+   27       5.8104e-21
+   28       3.2089e-11
+   29       1.8421e-11
+ feval            sse
+   30       1.0768e-11
+   31        3.285e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 5 iteration and 32 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.81044e-21 
+Number of function evaluations in the local search: 34 
+CPU Time of the local search: 0.037560  seconds 
+
+Iteration: 462 NFunEvals: 32142  Bestf: 5.28537e-21      CPUTime: 584.078795    Var: 0.875134 
+Iteration: 463 NFunEvals: 32203  Bestf: 5.28537e-21      CPUTime: 584.147617    Var: 0.887676 
+Iteration: 464 NFunEvals: 32267  Bestf: 5.28537e-21      CPUTime: 584.211750    Var: 0.00113687 
+Iteration: 465 NFunEvals: 32338  Bestf: 5.28537e-21      CPUTime: 584.293032    Var: 15.4778 
+Iteration: 466 NFunEvals: 32403  Bestf: 5.28537e-21      CPUTime: 584.374647    Var: 0.0483771 
+Iteration: 467 NFunEvals: 32472  Bestf: 5.28537e-21      CPUTime: 584.448902    Var: 94.3531 
+Iteration: 468 NFunEvals: 32534  Bestf: 5.28537e-21      CPUTime: 584.547621    Var: 213.233 
+Iteration: 469 NFunEvals: 32600  Bestf: 5.28537e-21      CPUTime: 584.623667    Var: 6.94569 
+Iteration: 470 NFunEvals: 32664  Bestf: 5.28537e-21      CPUTime: 584.694509    Var: 9.62627 
+Iteration: 471 NFunEvals: 32729  Bestf: 5.28537e-21      CPUTime: 585.063731    Var: 382.359 
+Call local solver: NL2SOL 
+Initial point function value: 0.000440 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00043979
+    2       0.00043957
+    3       0.00044041
+    4       0.00044006
+    5       0.00043965
+    6       4.2501e-09
+    7       3.5244e-09
+    8       5.0791e-09
+    9       4.4964e-09
+ feval            sse
+   10       3.3843e-09
+   11       2.3238e-20
+   12       4.7121e-11
+   13        4.126e-11
+   14       5.4242e-11
+   15       6.3767e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 2.3238e-20 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.022637  seconds 
+
+Iteration: 472 NFunEvals: 32817  Bestf: 5.28537e-21      CPUTime: 585.164430    Var: 0.946237 
+Iteration: 473 NFunEvals: 32885  Bestf: 5.28537e-21      CPUTime: 586.914752    Var: 101.174 
+Iteration: 474 NFunEvals: 32947  Bestf: 5.28537e-21      CPUTime: 586.984288    Var: 2.83796 
+Iteration: 475 NFunEvals: 33012  Bestf: 5.28537e-21      CPUTime: 587.065754    Var: 2453.81 
+Iteration: 476 NFunEvals: 33078  Bestf: 5.28537e-21      CPUTime: 587.143369    Var: 95.9581 
+Iteration: 477 NFunEvals: 33145  Bestf: 5.28537e-21      CPUTime: 587.239609    Var: 0.0822006 
+Iteration: 478 NFunEvals: 33211  Bestf: 5.28537e-21      CPUTime: 587.350782    Var: 106.585 
+Iteration: 479 NFunEvals: 33272  Bestf: 5.28537e-21      CPUTime: 587.418737    Var: 6.84368 
+Iteration: 480 NFunEvals: 33338  Bestf: 5.28537e-21      CPUTime: 587.492163    Var: 0.0245007 
+Iteration: 481 NFunEvals: 33406  Bestf: 5.28537e-21      CPUTime: 587.602496    Var: 28.9047 
+Call local solver: NL2SOL 
+Initial point function value: 0.000149 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00014885
+    2       0.00014872
+    3       0.00014924
+    4       0.00014906
+    5        0.0001487
+    6       7.6564e-13
+    7       4.2317e-11
+    8       4.4751e-11
+    9       6.4465e-11
+ feval            sse
+   10       6.0529e-11
+   11       5.2857e-21
+   12        4.744e-11
+   13       4.1293e-11
+   14       5.4483e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.28568e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.019533  seconds 
+
+Iteration: 482 NFunEvals: 33494  Bestf: 5.28537e-21      CPUTime: 587.761774    Var: 10.5548 
+Iteration: 483 NFunEvals: 33562  Bestf: 5.28537e-21      CPUTime: 587.839309    Var: 7.48827 
+Iteration: 484 NFunEvals: 33633  Bestf: 5.28537e-21      CPUTime: 587.919854    Var: 5.35837 
+Iteration: 485 NFunEvals: 33696  Bestf: 5.28537e-21      CPUTime: 587.993522    Var: 80.3464 
+Iteration: 486 NFunEvals: 33758  Bestf: 5.28537e-21      CPUTime: 588.060268    Var: 0.188226 
+Iteration: 487 NFunEvals: 33819  Bestf: 5.28537e-21      CPUTime: 588.123985    Var: 0.00958013 
+Iteration: 488 NFunEvals: 33883  Bestf: 5.28537e-21      CPUTime: 588.191391    Var: 1.97543e-05 
+Iteration: 489 NFunEvals: 33947  Bestf: 5.28537e-21      CPUTime: 588.256854    Var: 3.22943e-06 
+Iteration: 490 NFunEvals: 34013  Bestf: 5.28537e-21      CPUTime: 588.323755    Var: 1.5219e-07 
+Iteration: 491 NFunEvals: 34081  Bestf: 5.28537e-21      CPUTime: 588.400988    Var: 343.841 
+Call local solver: NL2SOL 
+Initial point function value: 0.000155 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       0.00015531
+    2       0.00015534
+    3       0.00015512
+    4       0.00015545
+    5       0.00015548
+    6       2.1659e-10
+    7       7.8574e-11
+    8       3.7586e-10
+    9       4.6697e-10
+ feval            sse
+   10       2.1433e-10
+   11       5.3086e-21
+   12       4.7309e-11
+   13       4.1309e-11
+   14       5.4427e-11
+   15       6.3768e-11
+
+ *** SUCCESSFUL TERMINATION ***
+ *** absolute function convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 2 iteration and 16 function evaluation:
+       Results: NL2SOL exited
+Local solution function value: 5.30864e-21 
+Number of function evaluations in the local search: 18 
+CPU Time of the local search: 0.020063  seconds 
+
+Iteration: 492 NFunEvals: 34173  Bestf: 5.28537e-21      CPUTime: 810.703979    Var: 117.953 
+
+Final local refinement with: NL2SOL 
+Initial point function value: 0.000000 
+
+------------------------------------------------------------------
+ This is dn2fb_ (NL2SNO v2.3)
+ Authors: John Dennis, David Gay, Roy Welsch
+ MEX Interface J. Currie 2012
+
+ Problem Properties:
+ # Decision Variables:        4
+ # Data Points:            2002
+------------------------------------------------------------------
+ feval            sse
+    1       5.2854e-21
+    2       4.1817e-11
+    3       4.2991e-10
+    4       3.0046e-10
+    5       6.3768e-11
+    6        5.286e-21
+
+ *** SUCCESSFUL TERMINATION ***
+ *** x-convergence ***
+------------------------------------------------------------------
+
+NL2SOL ended after 1 iteration and 7 function evaluation:
+       Results: Optimal
+Local solution function value: 0.000000 
+Number of function evaluations in the local search: 9 
+CPU Time of the local search: 0.010668  seconds 
+
+Maximum computation time achieved
+Best solution value		5.28537e-21
+Decision vector
+	0.876
+	0.207
+	0.177
+	0.375
+CPU time		810.769
+Number of function evaluations		34183
+Execution of script mklJac as a function is not supported:
+/scratch/ad7760/src/AMIGO2_R2025/Kernel/numericalDifferentiation/mklJac.m
+
+
+------> Computing Correlation Matrix for unknowns...
+
+---------------------------------------------------
+Local sensitivity problem related active settings
+---------------------------------------------------
+senssolver: cvodes
+ivp_RelTol: 1e-13
+ivp_AbsTol: 1e-13
+sens_RelTol: ~1e-13
+sensmex: cvodesg_harmonic_8_0
+MaxStepSize: Inf
+MaxNumberOfSteps: 1e+06
+sens_RelTol: ~1e-13
+
+
+------>An error was obtained when computing sensitivities.
+
+
+       Sorry, it was not possible to compute Cramer-Rao confidence intervals.
+
+--------------------------------------------------------------------------
+		
+Experiment 1: 
+		inputs.exp_data{1}=[
+		0.177  0.375
+		0.176342  0.376707
+		0.17568  0.378408
+		0.175016  0.380102
+		0.174348  0.381789
+		0.173678  0.383471
+		0.173004  0.385146
+		0.172328  0.386814
+		0.171649  0.388476
+		0.170967  0.390131
+		0.170282  0.391779
+		0.169594  0.393421
+		0.168904  0.395056
+		0.16821  0.396685
+		0.167514  0.398307
+		0.166814  0.399922
+		0.166112  0.40153
+		0.165407  0.403132
+		0.1647  0.404727
+		0.163989  0.406314
+		0.163276  0.407895
+		0.16256  0.40947
+		0.161841  0.411037
+		0.16112  0.412597
+		0.160395  0.41415
+		0.159668  0.415696
+		0.158939  0.417235
+		0.158206  0.418768
+		0.157471  0.420293
+		0.156734  0.421811
+		0.155993  0.423321
+		0.15525  0.424825
+		0.154505  0.426321
+		0.153757  0.42781
+		0.153006  0.429292
+		0.152252  0.430767
+		0.151496  0.432234
+		0.150738  0.433695
+		0.149977  0.435147
+		0.149213  0.436593
+		0.148447  0.438031
+		0.147678  0.439461
+		0.146907  0.440884
+		0.146133  0.4423
+		0.145357  0.443708
+		0.144579  0.445109
+		0.143798  0.446502
+		0.143014  0.447887
+		0.142228  0.449265
+		0.14144  0.450636
+		0.140649  0.451999
+		0.139856  0.453354
+		0.139061  0.454701
+		0.138263  0.456041
+		0.137463  0.457373
+		0.13666  0.458697
+		0.135855  0.460014
+		0.135048  0.461322
+		0.134239  0.462623
+		0.133427  0.463916
+		0.132613  0.465202
+		0.131797  0.466479
+		0.130979  0.467748
+		0.130158  0.46901
+		0.129335  0.470263
+		0.12851  0.471509
+		0.127683  0.472747
+		0.126854  0.473976
+		0.126022  0.475198
+		0.125189  0.476412
+		0.124353  0.477617
+		0.123515  0.478815
+		0.122675  0.480004
+		0.121833  0.481185
+		0.120989  0.482358
+		0.120143  0.483523
+		0.119295  0.48468
+		0.118445  0.485828
+		0.117593  0.486969
+		0.116739  0.488101
+		0.115882  0.489224
+		0.115024  0.49034
+		0.114164  0.491447
+		0.113302  0.492546
+		0.112438  0.493636
+		0.111573  0.494719
+		0.110705  0.495792
+		0.109835  0.496858
+		0.108964  0.497915
+		0.108091  0.498963
+		0.107216  0.500004
+		0.106339  0.501035
+		0.10546  0.502058
+		0.104579  0.503073
+		0.103697  0.504079
+		0.102813  0.505077
+		0.101927  0.506066
+		0.10104  0.507046
+		0.100151  0.508018
+		0.0992598  0.508982
+		0.0983672  0.509936
+		0.097473  0.510883
+		0.0965771  0.51182
+		0.0956796  0.512749
+		0.0947804  0.513669
+		0.0938797  0.51458
+		0.0929773  0.515483
+		0.0920734  0.516377
+		0.0911679  0.517262
+		0.0902609  0.518139
+		0.0893524  0.519006
+		0.0884423  0.519865
+		0.0875308  0.520715
+		0.0866178  0.521557
+		0.0857033  0.522389
+		0.0847873  0.523213
+		0.0838699  0.524028
+		0.0829511  0.524833
+		0.0820309  0.52563
+		0.0811093  0.526419
+		0.0801864  0.527198
+		0.079262  0.527968
+		0.0783364  0.528729
+		0.0774094  0.529482
+		0.0764811  0.530225
+		0.0755515  0.53096
+		0.0746206  0.531685
+		0.0736884  0.532402
+		0.0727551  0.533109
+		0.0718204  0.533808
+		0.0708846  0.534497
+		0.0699476  0.535177
+		0.0690093  0.535849
+		0.06807  0.536511
+		0.0671294  0.537164
+		0.0661877  0.537808
+		0.0652449  0.538443
+		0.064301  0.539069
+		0.063356  0.539685
+		0.06241  0.540293
+		0.0614629  0.540891
+		0.0605147  0.541481
+		0.0595655  0.542061
+		0.0586153  0.542632
+		0.0576641  0.543193
+		0.056712  0.543746
+		0.0557589  0.544289
+		0.0548048  0.544823
+		0.0538498  0.545348
+		0.0528939  0.545864
+		0.0519371  0.54637
+		0.0509794  0.546868
+		0.0500209  0.547356
+		0.0490615  0.547834
+		0.0481013  0.548304
+		0.0471403  0.548764
+		0.0461784  0.549215
+		0.0452158  0.549656
+		0.0442524  0.550088
+		0.0432883  0.550511
+		0.0423234  0.550925
+		0.0413579  0.551329
+		0.0403916  0.551724
+		0.0394246  0.55211
+		0.038457  0.552486
+		0.0374887  0.552853
+		0.0365198  0.55321
+		0.0355503  0.553558
+		0.0345802  0.553897
+		0.0336094  0.554227
+		0.0326382  0.554547
+		0.0316663  0.554857
+		0.0306939  0.555158
+		0.029721  0.55545
+		0.0287476  0.555733
+		0.0277738  0.556006
+		0.0267994  0.556269
+		0.0258246  0.556524
+		0.0248494  0.556769
+		0.0238737  0.557004
+		0.0228976  0.55723
+		0.0219212  0.557446
+		0.0209443  0.557653
+		0.0199671  0.557851
+		0.0189896  0.558039
+		0.0180118  0.558218
+		0.0170336  0.558387
+		0.0160552  0.558547
+		0.0150765  0.558698
+		0.0140975  0.558839
+		0.0131183  0.55897
+		0.0121389  0.559092
+		0.0111593  0.559205
+		0.0101795  0.559308
+		0.00919946  0.559401
+		0.00821932  0.559485
+		0.00723903  0.55956
+		0.00625862  0.559625
+		0.00527811  0.559681
+		0.00429751  0.559727
+		0.00331683  0.559764
+		0.0023361  0.559791
+		0.00135533  0.559809
+		0.000374534  0.559818
+		-0.000606267  0.559816
+		-0.00158706  0.559806
+		-0.00256782  0.559786
+		-0.00354854  0.559756
+		-0.0045292  0.559717
+		-0.00550978  0.559669
+		-0.00649027  0.559611
+		-0.00747066  0.559543
+		-0.00845091  0.559466
+		-0.00943102  0.55938
+		-0.010411  0.559284
+		-0.0113907  0.559179
+		-0.0123703  0.559064
+		-0.0133497  0.55894
+		-0.0143288  0.558806
+		-0.0153078  0.558663
+		-0.0162864  0.55851
+		-0.0172648  0.558348
+		-0.0182428  0.558177
+		-0.0192206  0.557996
+		-0.0201981  0.557805
+		-0.0211752  0.557605
+		-0.0221519  0.557396
+		-0.0231283  0.557177
+		-0.0241042  0.556949
+		-0.0250798  0.556712
+		-0.026055  0.556465
+		-0.0270297  0.556208
+		-0.0280039  0.555942
+		-0.0289777  0.555667
+		-0.029951  0.555382
+		-0.0309237  0.555088
+		-0.031896  0.554785
+		-0.0328677  0.554472
+		-0.0338388  0.55415
+		-0.0348094  0.553818
+		-0.0357794  0.553477
+		-0.0367488  0.553127
+		-0.0377176  0.552767
+		-0.0386857  0.552398
+		-0.0396532  0.552019
+		-0.04062  0.551631
+		-0.0415861  0.551234
+		-0.0425515  0.550828
+		-0.0435162  0.550412
+		-0.0444801  0.549987
+		-0.0454433  0.549553
+		-0.0464057  0.549109
+		-0.0473674  0.548656
+		-0.0483282  0.548194
+		-0.0492883  0.547722
+		-0.0502474  0.547241
+		-0.0512058  0.546751
+		-0.0521632  0.546252
+		-0.0531198  0.545743
+		-0.0540755  0.545225
+		-0.0550303  0.544698
+		-0.0559841  0.544162
+		-0.056937  0.543616
+		-0.057889  0.543062
+		-0.0588399  0.542498
+		-0.0597899  0.541925
+		-0.0607388  0.541342
+		-0.0616867  0.540751
+		-0.0626336  0.54015
+		-0.0635794  0.539541
+		-0.0645242  0.538922
+		-0.0654678  0.538294
+		-0.0664103  0.537657
+		-0.0673517  0.53701
+		-0.068292  0.536355
+		-0.0692311  0.535691
+		-0.0701691  0.535017
+		-0.0711058  0.534335
+		-0.0720414  0.533643
+		-0.0729757  0.532943
+		-0.0739088  0.532233
+		-0.0748406  0.531515
+		-0.0757712  0.530787
+		-0.0767005  0.53005
+		-0.0776285  0.529305
+		-0.0785552  0.52855
+		-0.0794805  0.527787
+		-0.0804045  0.527014
+		-0.0813272  0.526233
+		-0.0822485  0.525443
+		-0.0831683  0.524644
+		-0.0840868  0.523836
+		-0.0850039  0.523019
+		-0.0859195  0.522193
+		-0.0868336  0.521359
+		-0.0877463  0.520515
+		-0.0886575  0.519663
+		-0.0895672  0.518802
+		-0.0904754  0.517932
+		-0.091382  0.517054
+		-0.0922871  0.516167
+		-0.0931907  0.51527
+		-0.0940926  0.514366
+		-0.094993  0.513452
+		-0.0958918  0.51253
+		-0.0967889  0.511599
+		-0.0976844  0.51066
+		-0.0985782  0.509712
+		-0.0994704  0.508755
+		-0.100361  0.50779
+		-0.10125  0.506816
+		-0.102137  0.505833
+		-0.103022  0.504842
+		-0.103906  0.503842
+		-0.104788  0.502834
+		-0.105668  0.501817
+		-0.106546  0.500792
+		-0.107422  0.499759
+		-0.108297  0.498716
+		-0.10917  0.497666
+		-0.110041  0.496607
+		-0.11091  0.495539
+		-0.111777  0.494464
+		-0.112643  0.49338
+		-0.113506  0.492287
+		-0.114368  0.491186
+		-0.115227  0.490077
+		-0.116085  0.48896
+		-0.116941  0.487834
+		-0.117794  0.4867
+		-0.118646  0.485558
+		-0.119496  0.484407
+		-0.120343  0.483249
+		-0.121189  0.482082
+		-0.122032  0.480907
+		-0.122874  0.479724
+		-0.123713  0.478532
+		-0.124551  0.477333
+		-0.125386  0.476126
+		-0.126219  0.47491
+		-0.12705  0.473687
+		-0.127879  0.472455
+		-0.128706  0.471216
+		-0.12953  0.469968
+		-0.130352  0.468713
+		-0.131172  0.467449
+		-0.13199  0.466178
+		-0.132806  0.464899
+		-0.133619  0.463612
+		-0.13443  0.462317
+		-0.135239  0.461014
+		-0.136046  0.459703
+		-0.13685  0.458385
+		-0.137652  0.457059
+		-0.138452  0.455725
+		-0.139249  0.454383
+		-0.140044  0.453034
+		-0.140836  0.451677
+		-0.141626  0.450313
+		-0.142414  0.448941
+		-0.143199  0.447561
+		-0.143982  0.446173
+		-0.144763  0.444779
+		-0.145541  0.443376
+		-0.146316  0.441966
+		-0.147089  0.440549
+		-0.14786  0.439124
+		-0.148628  0.437692
+		-0.149394  0.436252
+		-0.150157  0.434805
+		-0.150917  0.43335
+		-0.151675  0.431888
+		-0.152431  0.430419
+		-0.153183  0.428943
+		-0.153934  0.427459
+		-0.154681  0.425968
+		-0.155426  0.42447
+		-0.156169  0.422965
+		-0.156908  0.421453
+		-0.157645  0.419933
+		-0.15838  0.418406
+		-0.159111  0.416872
+		-0.15984  0.415332
+		-0.160567  0.413784
+		-0.16129  0.412229
+		-0.162011  0.410667
+		-0.162729  0.409098
+		-0.163445  0.407523
+		-0.164157  0.40594
+		-0.164867  0.40435
+		-0.165574  0.402754
+		-0.166278  0.401151
+		-0.16698  0.399541
+		-0.167678  0.397924
+		-0.168374  0.396301
+		-0.169067  0.394671
+		-0.169757  0.393034
+		-0.170444  0.39139
+		-0.171128  0.38974
+		-0.17181  0.388084
+		-0.172488  0.38642
+		-0.173164  0.38475
+		-0.173836  0.383074
+		-0.174506  0.381391
+		-0.175173  0.379702
+		-0.175837  0.378006
+		-0.176497  0.376304
+		-0.177155  0.374596
+		-0.17781  0.372881
+		-0.178462  0.37116
+		-0.17911  0.369432
+		-0.179756  0.367699
+		-0.180399  0.365959
+		-0.181039  0.364213
+		-0.181675  0.362461
+		-0.182309  0.360702
+		-0.182939  0.358938
+		-0.183566  0.357167
+		-0.18419  0.355391
+		-0.184812  0.353608
+		-0.18543  0.351819
+		-0.186044  0.350025
+		-0.186656  0.348224
+		-0.187265  0.346418
+		-0.18787  0.344606
+		-0.188472  0.342788
+		-0.189071  0.340964
+		-0.189667  0.339134
+		-0.190259  0.337299
+		-0.190849  0.335458
+		-0.191435  0.333611
+		-0.192018  0.331758
+		-0.192597  0.3299
+		-0.193174  0.328037
+		-0.193747  0.326167
+		-0.194316  0.324293
+		-0.194883  0.322413
+		-0.195446  0.320527
+		-0.196006  0.318636
+		-0.196563  0.316739
+		-0.197116  0.314838
+		-0.197666  0.31293
+		-0.198212  0.311018
+		-0.198756  0.3091
+		-0.199296  0.307177
+		-0.199832  0.305249
+		-0.200365  0.303316
+		-0.200895  0.301377
+		-0.201421  0.299434
+		-0.201944  0.297485
+		-0.202464  0.295531
+		-0.20298  0.293573
+		-0.203492  0.291609
+		-0.204001  0.289641
+		-0.204507  0.287667
+		-0.205009  0.285689
+		-0.205508  0.283706
+		-0.206003  0.281718
+		-0.206495  0.279725
+		-0.206984  0.277727
+		-0.207468  0.275725
+		-0.20795  0.273718
+		-0.208428  0.271707
+		-0.208902  0.269691
+		-0.209373  0.26767
+		-0.20984  0.265645
+		-0.210303  0.263615
+		-0.210763  0.261581
+		-0.21122  0.259543
+		-0.211673  0.2575
+		-0.212122  0.255452
+		-0.212568  0.253401
+		-0.21301  0.251345
+		-0.213449  0.249284
+		-0.213884  0.24722
+		-0.214315  0.245151
+		-0.214743  0.243079
+		-0.215167  0.241002
+		-0.215587  0.238921
+		-0.216004  0.236836
+		-0.216417  0.234747
+		-0.216826  0.232654
+		-0.217232  0.230557
+		-0.217634  0.228456
+		-0.218033  0.226352
+		-0.218427  0.224243
+		-0.218818  0.222131
+		-0.219206  0.220015
+		-0.219589  0.217895
+		-0.219969  0.215771
+		-0.220345  0.213644
+		-0.220718  0.211514
+		-0.221087  0.209379
+		-0.221452  0.207241
+		-0.221813  0.2051
+		-0.22217  0.202955
+		-0.222524  0.200807
+		-0.222874  0.198655
+		-0.22322  0.1965
+		-0.223562  0.194342
+		-0.223901  0.19218
+		-0.224236  0.190015
+		-0.224567  0.187847
+		-0.224894  0.185676
+		-0.225217  0.183501
+		-0.225537  0.181324
+		-0.225853  0.179143
+		-0.226165  0.176959
+		-0.226473  0.174773
+		-0.226777  0.172583
+		-0.227078  0.170391
+		-0.227374  0.168195
+		-0.227667  0.165997
+		-0.227956  0.163796
+		-0.228241  0.161592
+		-0.228522  0.159385
+		-0.228799  0.157176
+		-0.229073  0.154964
+		-0.229342  0.15275
+		-0.229608  0.150532
+		-0.22987  0.148313
+		-0.230128  0.146091
+		-0.230382  0.143866
+		-0.230632  0.141639
+		-0.230878  0.139409
+		-0.23112  0.137177
+		-0.231359  0.134943
+		-0.231593  0.132707
+		-0.231824  0.130468
+		-0.23205  0.128227
+		-0.232273  0.125984
+		-0.232492  0.123739
+		-0.232707  0.121491
+		-0.232917  0.119242
+		-0.233124  0.116991
+		-0.233327  0.114737
+		-0.233526  0.112482
+		-0.233721  0.110225
+		-0.233913  0.107965
+		-0.2341  0.105705
+		-0.234283  0.103442
+		-0.234462  0.101177
+		-0.234638  0.0989111
+		-0.234809  0.0966433
+		-0.234976  0.0943738
+		-0.23514  0.0921027
+		-0.235299  0.08983
+		-0.235454  0.0875559
+		-0.235606  0.0852802
+		-0.235753  0.0830031
+		-0.235897  0.0807246
+		-0.236036  0.0784447
+		-0.236171  0.0761635
+		-0.236303  0.073881
+		-0.23643  0.0715973
+		-0.236554  0.0693124
+		-0.236673  0.0670262
+		-0.236789  0.064739
+		-0.2369  0.0624506
+		-0.237007  0.0601612
+		-0.237111  0.0578708
+		-0.23721  0.0555794
+		-0.237306  0.053287
+		-0.237397  0.0509938
+		-0.237484  0.0486997
+		-0.237568  0.0464047
+		-0.237647  0.044109
+		-0.237722  0.0418125
+		-0.237793  0.0395153
+		-0.237861  0.0372175
+		-0.237924  0.034919
+		-0.237983  0.0326199
+		-0.238038  0.0303203
+		-0.238089  0.0280202
+		-0.238136  0.0257196
+		-0.238179  0.0234185
+		-0.238218  0.0211171
+		-0.238253  0.0188153
+		-0.238284  0.0165132
+		-0.238311  0.0142108
+		-0.238334  0.0119081
+		-0.238353  0.00960531
+		-0.238368  0.00730231
+		-0.238378  0.00499918
+		-0.238385  0.00269597
+		-0.238388  0.000392718
+		-0.238387  -0.00191054
+		-0.238381  -0.00421377
+		-0.238372  -0.00651693
+		-0.238358  -0.00881998
+		-0.238341  -0.0111229
+		-0.238319  -0.0134256
+		-0.238294  -0.0157281
+		-0.238264  -0.0180303
+		-0.238231  -0.0203322
+		-0.238193  -0.0226338
+		-0.238151  -0.0249349
+		-0.238106  -0.0272357
+		-0.238056  -0.029536
+		-0.238002  -0.0318358
+		-0.237944  -0.0341351
+		-0.237883  -0.0364338
+		-0.237817  -0.0387318
+		-0.237747  -0.0410292
+		-0.237673  -0.043326
+		-0.237595  -0.0456219
+		-0.237513  -0.0479171
+		-0.237427  -0.0502115
+		-0.237337  -0.0525051
+		-0.237243  -0.0547978
+		-0.237145  -0.0570895
+		-0.237043  -0.0593803
+		-0.236937  -0.06167
+		-0.236827  -0.0639587
+		-0.236713  -0.0662464
+		-0.236595  -0.0685329
+		-0.236473  -0.0708182
+		-0.236347  -0.0731024
+		-0.236217  -0.0753853
+		-0.236083  -0.077667
+		-0.235945  -0.0799473
+		-0.235802  -0.0822263
+		-0.235656  -0.0845038
+		-0.235506  -0.08678
+		-0.235352  -0.0890547
+		-0.235194  -0.0913279
+		-0.235032  -0.0935995
+		-0.234866  -0.0958695
+		-0.234696  -0.098138
+		-0.234522  -0.100405
+		-0.234345  -0.10267
+		-0.234163  -0.104933
+		-0.233977  -0.107195
+		-0.233787  -0.109454
+		-0.233593  -0.111712
+		-0.233396  -0.113968
+		-0.233194  -0.116222
+		-0.232988  -0.118474
+		-0.232779  -0.120724
+		-0.232565  -0.122973
+		-0.232348  -0.125218
+		-0.232127  -0.127462
+		-0.231901  -0.129704
+		-0.231672  -0.131944
+		-0.231439  -0.134181
+		-0.231202  -0.136416
+		-0.230961  -0.138648
+		-0.230716  -0.140879
+		-0.230467  -0.143107
+		-0.230215  -0.145332
+		-0.229958  -0.147555
+		-0.229698  -0.149776
+		-0.229433  -0.151994
+		-0.229165  -0.154209
+		-0.228893  -0.156422
+		-0.228617  -0.158632
+		-0.228337  -0.16084
+		-0.228053  -0.163045
+		-0.227766  -0.165247
+		-0.227474  -0.167446
+		-0.227179  -0.169642
+		-0.22688  -0.171836
+		-0.226577  -0.174026
+		-0.22627  -0.176214
+		-0.22596  -0.178399
+		-0.225645  -0.18058
+		-0.225327  -0.182759
+		-0.225005  -0.184935
+		-0.224679  -0.187107
+		-0.224349  -0.189276
+		-0.224016  -0.191442
+		-0.223678  -0.193605
+		-0.223337  -0.195765
+		-0.222992  -0.197921
+		-0.222644  -0.200074
+		-0.222291  -0.202223
+		-0.221935  -0.204369
+		-0.221575  -0.206512
+		-0.221211  -0.208651
+		-0.220844  -0.210786
+		-0.220473  -0.212918
+		-0.220098  -0.215046
+		-0.219719  -0.217171
+		-0.219337  -0.219292
+		-0.218951  -0.22141
+		-0.218561  -0.223523
+		-0.218168  -0.225633
+		-0.217771  -0.227739
+		-0.21737  -0.229841
+		-0.216965  -0.231939
+		-0.216557  -0.234034
+		-0.216145  -0.236124
+		-0.21573  -0.23821
+		-0.21531  -0.240293
+		-0.214888  -0.242371
+		-0.214461  -0.244445
+		-0.214031  -0.246515
+		-0.213597  -0.248581
+		-0.21316  -0.250643
+		-0.212719  -0.2527
+		-0.212275  -0.254753
+		-0.211827  -0.256802
+		-0.211375  -0.258846
+		-0.21092  -0.260886
+		-0.210461  -0.262922
+		-0.209998  -0.264953
+		-0.209532  -0.26698
+		-0.209063  -0.269002
+		-0.20859  -0.27102
+		-0.208113  -0.273033
+		-0.207633  -0.275041
+		-0.207149  -0.277045
+		-0.206662  -0.279044
+		-0.206172  -0.281039
+		-0.205677  -0.283028
+		-0.20518  -0.285013
+		-0.204679  -0.286993
+		-0.204174  -0.288968
+		-0.203666  -0.290938
+		-0.203155  -0.292904
+		-0.20264  -0.294864
+		-0.202122  -0.296819
+		-0.2016  -0.29877
+		-0.201075  -0.300715
+		-0.200546  -0.302655
+		-0.200014  -0.30459
+		-0.199479  -0.30652
+		-0.19894  -0.308445
+		-0.198398  -0.310365
+		-0.197853  -0.312279
+		-0.197304  -0.314188
+		-0.196752  -0.316091
+		-0.196196  -0.31799
+		-0.195638  -0.319883
+		-0.195075  -0.32177
+		-0.19451  -0.323652
+		-0.193941  -0.325529
+		-0.193369  -0.3274
+		-0.192794  -0.329265
+		-0.192216  -0.331125
+		-0.191634  -0.33298
+		-0.191049  -0.334828
+		-0.190461  -0.336671
+		-0.189869  -0.338509
+		-0.189275  -0.34034
+		-0.188677  -0.342166
+		-0.188076  -0.343986
+		-0.187471  -0.345801
+		-0.186864  -0.347609
+		-0.186253  -0.349411
+		-0.18564  -0.351208
+		-0.185023  -0.352999
+		-0.184403  -0.354783
+		-0.18378  -0.356562
+		-0.183153  -0.358335
+		-0.182524  -0.360101
+		-0.181891  -0.361862
+		-0.181256  -0.363616
+		-0.180617  -0.365364
+		-0.179976  -0.367106
+		-0.179331  -0.368842
+		-0.178683  -0.370571
+		-0.178033  -0.372295
+		-0.177379  -0.374012
+		-0.176722  -0.375722
+		-0.176062  -0.377427
+		-0.1754  -0.379125
+		-0.174734  -0.380816
+		-0.174065  -0.382501
+		-0.173394  -0.38418
+		-0.172719  -0.385852
+		-0.172041  -0.387517
+		-0.171361  -0.389176
+		-0.170678  -0.390828
+		-0.169992  -0.392474
+		-0.169303  -0.394113
+		-0.168611  -0.395746
+		-0.167916  -0.397371
+		-0.167218  -0.39899
+		-0.166518  -0.400603
+		-0.165815  -0.402208
+		-0.165109  -0.403807
+		-0.1644  -0.405399
+		-0.163688  -0.406984
+		-0.162974  -0.408562
+		-0.162256  -0.410133
+		-0.161536  -0.411697
+		-0.160814  -0.413254
+		-0.160088  -0.414805
+		-0.15936  -0.416348
+		-0.15863  -0.417884
+		-0.157896  -0.419413
+		-0.15716  -0.420935
+		-0.156421  -0.42245
+		-0.15568  -0.423958
+		-0.154936  -0.425458
+		-0.154189  -0.426952
+		-0.15344  -0.428438
+		-0.152688  -0.429917
+		-0.151933  -0.431388
+		-0.151176  -0.432853
+		-0.150416  -0.43431
+		-0.149654  -0.435759
+		-0.14889  -0.437201
+		-0.148122  -0.438636
+		-0.147353  -0.440064
+		-0.14658  -0.441484
+		-0.145806  -0.442896
+		-0.145028  -0.444301
+		-0.144249  -0.445699
+		-0.143467  -0.447089
+		-0.142682  -0.448471
+		-0.141895  -0.449846
+		-0.141106  -0.451213
+		-0.140314  -0.452572
+		-0.13952  -0.453924
+		-0.138724  -0.455268
+		-0.137925  -0.456605
+		-0.137124  -0.457934
+		-0.13632  -0.459255
+		-0.135515  -0.460568
+		-0.134706  -0.461873
+		-0.133896  -0.463171
+		-0.133083  -0.464461
+		-0.132269  -0.465742
+		-0.131452  -0.467016
+		-0.130632  -0.468283
+		-0.129811  -0.469541
+		-0.128987  -0.470791
+		-0.128161  -0.472033
+		-0.127333  -0.473268
+		-0.126503  -0.474494
+		-0.12567  -0.475712
+		-0.124836  -0.476922
+		-0.123999  -0.478124
+		-0.12316  -0.479318
+		-0.12232  -0.480504
+		-0.121477  -0.481682
+		-0.120632  -0.482852
+		-0.119785  -0.484013
+		-0.118936  -0.485166
+		-0.118085  -0.486311
+		-0.117232  -0.487448
+		-0.116377  -0.488577
+		-0.11552  -0.489697
+		-0.114661  -0.490809
+		-0.1138  -0.491913
+		-0.112937  -0.493008
+		-0.112073  -0.494095
+		-0.111206  -0.495174
+		-0.110338  -0.496244
+		-0.109467  -0.497306
+		-0.108595  -0.498359
+		-0.107721  -0.499404
+		-0.106845  -0.500441
+		-0.105967  -0.501469
+		-0.105088  -0.502488
+		-0.104207  -0.503499
+		-0.103324  -0.504502
+		-0.102439  -0.505496
+		-0.101552  -0.506481
+		-0.100664  -0.507458
+		-0.0997743  -0.508427
+		-0.0988827  -0.509386
+		-0.0979894  -0.510337
+		-0.0970945  -0.51128
+		-0.0961979  -0.512214
+		-0.0952997  -0.513139
+		-0.0943998  -0.514055
+		-0.0934984  -0.514963
+		-0.0925954  -0.515862
+		-0.0916908  -0.516752
+		-0.0907847  -0.517634
+		-0.0898771  -0.518507
+		-0.0889679  -0.51937
+		-0.0880572  -0.520226
+		-0.087145  -0.521072
+		-0.0862314  -0.52191
+		-0.0853162  -0.522738
+		-0.0843997  -0.523558
+		-0.0834817  -0.524369
+		-0.0825623  -0.525171
+		-0.0816415  -0.525965
+		-0.0807193  -0.526749
+		-0.0797958  -0.527524
+		-0.0788709  -0.528291
+		-0.0779447  -0.529049
+		-0.0770171  -0.529797
+		-0.0760883  -0.530537
+		-0.0751581  -0.531267
+		-0.0742267  -0.531989
+		-0.073294  -0.532702
+		-0.0723601  -0.533405
+		-0.071425  -0.5341
+		-0.0704886  -0.534786
+		-0.0695511  -0.535462
+		-0.0686124  -0.53613
+		-0.0676725  -0.536788
+		-0.0667315  -0.537437
+		-0.0657893  -0.538077
+		-0.0648461  -0.538709
+		-0.0639017  -0.539331
+		-0.0629563  -0.539943
+		-0.0620097  -0.540547
+		-0.0610622  -0.541142
+		-0.0601136  -0.541727
+		-0.059164  -0.542303
+		-0.0582134  -0.54287
+		-0.0572618  -0.543428
+		-0.0563092  -0.543977
+		-0.0553557  -0.544516
+		-0.0544012  -0.545046
+		-0.0534458  -0.545567
+		-0.0524896  -0.546079
+		-0.0515324  -0.546582
+		-0.0505743  -0.547075
+		-0.0496154  -0.547559
+		-0.0486557  -0.548034
+		-0.0476951  -0.548499
+		-0.0467338  -0.548955
+		-0.0457716  -0.549402
+		-0.0448087  -0.54984
+		-0.043845  -0.550268
+		-0.0428805  -0.550687
+		-0.0419154  -0.551097
+		-0.0409495  -0.551497
+		-0.0399829  -0.551888
+		-0.0390157  -0.55227
+		-0.0380478  -0.552642
+		-0.0370792  -0.553005
+		-0.0361101  -0.553358
+		-0.0351403  -0.553703
+		-0.0341699  -0.554038
+		-0.0331989  -0.554363
+		-0.0322274  -0.554679
+		-0.0312553  -0.554986
+		-0.0302827  -0.555283
+		-0.0293096  -0.555571
+		-0.028336  -0.555849
+		-0.0273619  -0.556118
+		-0.0263874  -0.556378
+		-0.0254124  -0.556628
+		-0.024437  -0.556869
+		-0.0234611  -0.557101
+		-0.0224849  -0.557323
+		-0.0215083  -0.557535
+		-0.0205313  -0.557738
+		-0.019554  -0.557932
+		-0.0185763  -0.558116
+		-0.0175983  -0.558291
+		-0.0166201  -0.558456
+		-0.0156415  -0.558612
+		-0.0146627  -0.558758
+		-0.0136836  -0.558895
+		-0.0127043  -0.559023
+		-0.0117248  -0.559141
+		-0.0107451  -0.559249
+		-0.00976521  -0.559348
+		-0.00878515  -0.559438
+		-0.00780495  -0.559518
+		-0.00682461  -0.559589
+		-0.00584415  -0.55965
+		-0.0048636  -0.559702
+		-0.00388296  -0.559744
+		-0.00290226  -0.559777
+		-0.00192151  -0.5598
+		-0.000940727  -0.559814
+		4.00717e-05  -0.559818
+		0.00102087  -0.559813
+		0.00200165  -0.559799
+		0.0029824  -0.559774
+		0.0039631  -0.559741
+		0.00494373  -0.559698
+		0.00592427  -0.559645
+		0.00690472  -0.559583
+		0.00788505  -0.559512
+		0.00886524  -0.559431
+		0.00984529  -0.559341
+		0.0108252  -0.559241
+		0.0118049  -0.559131
+		0.0127844  -0.559013
+		0.0137636  -0.558884
+		0.0147427  -0.558747
+		0.0157215  -0.5586
+		0.0167  -0.558443
+		0.0176783  -0.558277
+		0.0186562  -0.558101
+		0.0196338  -0.557916
+		0.0206111  -0.557722
+		0.0215881  -0.557518
+		0.0225647  -0.557305
+		0.0235409  -0.557082
+		0.0245167  -0.55685
+		0.0254921  -0.556608
+		0.026467  -0.556357
+		0.0274415  -0.556097
+		0.0284156  -0.555827
+		0.0293892  -0.555548
+		0.0303622  -0.555259
+		0.0313348  -0.554961
+		0.0323068  -0.554654
+		];
+
+
+
+---------------------------------------------------------------------------------------------
+>>>>    Mean / Maximum value of the residuals in percentage (100*(data-model)/data):
+
+		Experiment 1 : 
+		 Observable 1 -->  mean error: 0.000000 %	 max error: 0.000003 %
+		 Observable 2 -->  mean error: 0.000000 %	 max error: 0.000000 %
+
+--------------------------------------------------------------------------
+
+--------------------------------------------------------------------
+>>>>    Maximum absolute value of the residuals (data-model):
+
+		Experiment 1 : 
+		 Observable 1 -->  max residual: 0.000000 max data: 0.177000
+		 Observable 2 -->  max residual: 0.000000 max data: 0.559818
+
+--------------------------------------------------------------------------	   
+
+>>>> Best objective function: 0.000000 
+	   
+
+>>>> Computational cost: 810.768597 s
+> 99.54% of successful simulationn
+> 0.00% of successful sensitivity calculations
+
+
+>>> Estimated global parameters: 
+
+	a : 8.7600e-01 
+	b : 2.0700e-01 
+
+
+>>> Estimated global initial conditions: 
+
+	x1 : 1.7700e-01
+	x2 : 3.7500e-01
+
+
+------>Plotting results....
+
+
+
+------>Results (report and struct_results.mat) and plots were kept in the directory:
+
+		/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_8_0/PE_harmonic_8_0_eSS_run1
+
+		Click <a href="matlab: cd('/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_8_0/PE_harmonic_8_0_eSS_run1')">here</a> to go to the results folder or <a href="matlab: load('/scratch/ad7760/src/AMIGO2_R2025/Results/harmonic_8_0/PE_harmonic_8_0_eSS_run1/strreport_harmonic_8_0_run1.mat')">here</a> to load the results.
+
+ans =
+
+    0.8760    0.2070
+
+
+ans =
+
+    0.1770    0.3750
+
+
+
+Time: 1135.73561501503
+===END===

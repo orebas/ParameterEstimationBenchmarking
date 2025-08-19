@@ -41,47 +41,34 @@ def parse_result_string(s):
     result = ast.literal_eval(s)
     
     # Format: [['k5', '0.539', '0.540'], ['k6', '0.672', '0.673'], ...] - multiple estimation results
-    if len(result) > 0 and isinstance(result[0], list):
-        # First, collect all parameters and their values
-        param_values = {}
-        max_estimations = 0
-        
-        for item in result:
-            if len(item) >= 2:  # At least parameter name and one value
-                param = item[0]
-                if param:  # Non-empty parameter name
-                    values = [float(v) for v in item[1:] if v]  # Convert all values to float
-                    if values:
-                        param_values[param] = values
-                        max_estimations = max(max_estimations, len(values))
-            elif len(item) == 1:
-                # Just parameter name without values - estimation failed for this parameter
-                continue
-        
-        if not param_values or max_estimations == 0:
-            return []
-        
-        # Create estimation results where i-th result uses i-th value from each parameter
-        estimation_results = []
-        for i in range(max_estimations):
-            result_dict = {}
-            for param, values in param_values.items():
-                if i < len(values):  # Use i-th value if available
-                    result_dict[param] = values[i]
-                else:  # Use last available value if this estimation has fewer values
-                    result_dict[param] = values[-1]
-            
-            if result_dict:  # Only add non-empty results
-                estimation_results.append(result_dict)
-        
-        return estimation_results
+    # First, collect all parameters and their values
+    param_values = {}
+    max_estimations = 0
     
-    # Format: [('k5', '0.539'), ('k6', '0.672'), ...] - single value per parameter (tuples)
-    elif len(result) > 0 and isinstance(result[0], tuple) and len(result[0]) == 2:
-        parsed = {param: float(value) for param, value in result if param and value}
-        return [parsed] if parsed else []  # Return list with single result
+    for item in result:
+        if len(item) >= 2:  # At least parameter name and one value
+            param = item[0]
+            if param:  # Non-empty parameter name
+                values = [float(v) for v in item[1:] if v]  # Convert all values to float
+                if values:
+                    param_values[param] = values
+                    max_estimations = max(max_estimations, len(values))
+        elif len(item) == 1:
+            # Just parameter name without values - estimation failed for this parameter
+            continue
     
-    raise ValueError(f"Unrecognized result format: {s}")
+    if not param_values or max_estimations == 0:
+        return []
+    
+    # Create estimation results where i-th result uses i-th value from each parameter
+    estimation_results = []
+    for i in range(max_estimations):
+        result_dict = {}
+        for param, values in param_values.items():
+            result_dict[param] = values[i]  
+        estimation_results.append(result_dict)
+    
+    return estimation_results
 
 def select_best_estimation(true_params, estimation_results):
     """Select the best estimation result from multiple candidates based on closeness to true values
@@ -474,8 +461,8 @@ def create_accuracy_tables(df, args):
                 lambda x: x.sum(),
                 'count'
             ]).round(2)
-            overall_success.columns = ['valid_runs', 'total_runs']
-            overall_success.valid_runs = df.groupby('software')['has_valid_result'].sum()
+            overall_success.columns = ['finished_runs', 'total_runs']
+            overall_success.finished_runs = df.groupby('software')['finished'].sum()
             
             # Success percentage by noise level
             success_by_noise = df.groupby(['software', 'noise'])['is_successful'].agg([
@@ -490,7 +477,7 @@ def create_accuracy_tables(df, args):
             
             # Combine overall stats with noise-level breakdown
             software_summary = overall_success.join(success_by_noise, rsuffix='_noise')
-            software_summary = software_summary.sort_values('valid_runs', ascending=False)
+            software_summary = software_summary.sort_values('finished_runs', ascending=False)
             
         else:
             if statistic == 'median':
@@ -502,12 +489,11 @@ def create_accuracy_tables(df, args):
             else:
                 continue
             
-            df['has_valid_result'] = df['estimated_params_parsed'].apply(lambda x: len(x) > 0)
-            valid_runs = df.groupby('software')['has_valid_result'].sum()
-            total_runs = df.groupby('software')['has_valid_result'].size()
+            finished_runs = df.groupby('software')['finished'].sum()
+            total_runs = df.groupby('software').size()
             
             overall_stats = pd.DataFrame({
-                'valid_runs': valid_runs,
+                'finished_runs': finished_runs,
                 'total_runs': total_runs
             })
             
@@ -518,7 +504,7 @@ def create_accuracy_tables(df, args):
             stats_by_noise = stats_by_noise.rename(columns=noise_columns)
             
             software_summary = overall_stats.join(stats_by_noise, rsuffix='_noise')
-            software_summary = software_summary.sort_values('valid_runs', ascending=False)
+            software_summary = software_summary.sort_values('finished_runs', ascending=False)
         
         comparison_filename = f"software_comparison_{statistic}.csv"
         software_summary.to_csv(comparison_filename)

@@ -61,26 +61,43 @@ OUTPUT:             {args.dir.as_posix()}
       continue
     print(software)
     for instance in instances['instances']:
+      result = {
+            'id': instance['id'],
+            'name' : instance['name'],
+            'software': software,
+            'finished': False,
+            'result': None,
+            'time': None
+      }
+            
       # Verify logs
       log_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
       if not log_path.exists():
         warn(f"Results for {software} / {instance['id']} not found.")
+        results['results'].append(result)
         continue
       with open(log_path, 'r') as logs:
          output = logs.read()
       if not output.strip().endswith(END_OF_LOG):
         warn(f"Results for {software} / {instance['id']} are bad: wrong end of file.")
+        results['results'].append(result)
         continue
       time = 0.
       try:
         time = float(output.strip().split('\n')[-2].split(':')[1])
       except:
         pass
+      
+      result.update({
+          'finished': True,
+          'time': time
+      })
 
       if software in ("odepe", "pe", "sciml"):
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"result.csv"
         if not result_path.exists():
           warn(f"Results for {software} / {instance['id']} not found.")
+          results['results'].append(result)
           continue
         df = pd.read_csv(result_path, header=None, index_col=False)
         data = df.values.T.tolist()
@@ -90,22 +107,21 @@ OUTPUT:             {args.dir.as_posix()}
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
         if not result_path.exists():
           warn(f"Results for {software} / {instance['id']} not found.")
+          results['results'].append(result)
           continue
         with open(result_path, 'r') as logs:
           output = logs.read()
         data = parse_output(output, software)
       info(f"Found results for {software} / {instance['id']}")
       try:
+        data = list(map(list, data))
         required_vars = [*instance['parameter_variables'], *instance['state_variables']]
         data = sorted(data, key=lambda pair: required_vars.index(pair[0]))
         assert set([pair[0] for pair in data]) == set(required_vars)
-        result = {
-            'id': instance['id'],
-            'name' : instance['name'],
-            'software': software,
+        result.update({
             'result' : data,
             'time' : time
-        }
+        })
         results['results'].append(result)
       except:
         warn(f"Error while processing {software} / {instance['id']}")
@@ -134,12 +150,14 @@ OUTPUT:             {args.dir.as_posix()}
             'time_count'        : instance['time']['count'],
             'name'              : instance['name'],
             'noise'             : args.config['NOISE_LEVEL'][instance['id'].split('_')[-1]],
+            'finished'          : False
         })
         if (instance['id'], software) in results:
             dict1.update({
             'software'          : results[(instance['id'], software)]['software'],
             'result'            : results[(instance['id'], software)]['result'],
-            'time'              : results[(instance['id'], software)]['time']
+            'time'              : results[(instance['id'], software)]['time'],
+            'finished'          : results[(instance['id'], software)]['finished']
             })
         else:
             dict1.update({'software' : software})

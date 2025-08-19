@@ -181,6 +181,8 @@ OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DI
                 os.makedirs(instance_path)
                 df.to_csv(instance_path / 'data.csv', index=False, header=False)
 
+    instances['instances'] = [instance | {'index': i} for i, instance in enumerate(instances['instances'])]
+
     with open(output_dir / "huge_json.json", "w") as io:
         json.dump(instances, io, indent=None)
 

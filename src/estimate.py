@@ -38,6 +38,7 @@ def _main(args):
         instances = json.load(io)
     for index in args.array:
         instance = instances['instances'][index]
+        assert instance['index'] == index
         print(instance['id'])
         cmd = get_cmd(args, instance) 
         stdout_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / STDOUT_FILENAME)

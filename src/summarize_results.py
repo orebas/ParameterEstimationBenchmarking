@@ -323,24 +323,22 @@ def create_accuracy_tables(df, args):
     
     software_list = sorted(df['software'].unique())
     noise_levels = sorted(df['noise'].unique())
-    
+
+    statistic_to_column = {
+        'median': 'relative_median_error',
+        'mean': 'relative_mean_error',
+        'rmse': 'rmse',
+        'success_ratio': 'is_successful'
+    }
+
     for statistic in statistics:
         for software in software_list:
             software_df = df[df['software'] == software].copy()
             
             if len(software_df) == 0:
                 continue
-            
-            if statistic == 'median':
-                value_column = 'relative_median_error'
-            elif statistic == 'mean':
-                value_column = 'relative_mean_error'
-            elif statistic == 'rmse':
-                value_column = 'rmse'
-            elif statistic == 'success_ratio':
-                value_column = 'is_successful'
-            else:
-                continue
+
+            value_column = statistic_to_column[statistic]
             
             # Create pivot table: rows = models, columns = noise levels
             if statistic == 'success_ratio':
@@ -373,16 +371,7 @@ def create_accuracy_tables(df, args):
             print()
 
     for statistic in statistics:
-        if statistic == 'median':
-            value_column = 'relative_median_error'
-        elif statistic == 'mean':
-            value_column = 'relative_mean_error'
-        elif statistic == 'rmse':
-            value_column = 'rmse'
-        elif statistic == 'success_ratio':
-            value_column = 'is_successful'
-        else:
-            continue
+        value_column = statistic_to_column[statistic]
 
         has_result = df.groupby('software')['has_result'].sum()
         finished_runs = df.groupby('software')['finished'].sum()

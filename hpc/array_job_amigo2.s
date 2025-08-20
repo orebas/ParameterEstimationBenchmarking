@@ -14,12 +14,10 @@
 
 module purge
 module load matlab/2025a
-module load anaconda3/2024.02
 
 cd $SCRATCH
 
-source activate env/
-source venv/bin/activate
+source no-matlab-no-worry/environments/venv/bin/activate
 
 python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/$1 amigo2 $SLURM_ARRAY_TASK_ID
 

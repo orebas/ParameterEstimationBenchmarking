@@ -41,9 +41,9 @@ TEMPLATE_ESTIMATION = {
 SOFTWARE_COMMENT = {
     "pe"    : "#",
     "odepe" : "#",
-    "amigo2": "#",
+    "amigo2": "%",
     "iqm"   : "%",
-    "sciml" : "%"
+    "sciml" : "#"
 }
 
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}

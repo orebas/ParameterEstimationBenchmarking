@@ -27,7 +27,6 @@ from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, END_OF_LOG, STD
 
 def get_cmd(args, instance):
     if args.software in ['pe','odepe','sciml']:
-        print(shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.jl")))
         return shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.jl"))
     elif args.software in ['amigo2', 'iqm']:
         return shlex.split('matlab -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.software / instance['id'] / f"script.m") + '; exit"')

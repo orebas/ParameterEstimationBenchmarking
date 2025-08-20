@@ -14,7 +14,12 @@ import shutil
 #from julia.api import Julia
 #import csv
 import pandas as pd
-pd.set_option("display.precision",16)
+
+# Global configuration for number display precision
+DISPLAY_DIGITS = 2
+
+pd.set_option("display.precision", DISPLAY_DIGITS)
+pd.set_option('display.float_format', f'{{:.{DISPLAY_DIGITS}f}}'.format)
 import argparse
 from datetime import datetime
 from pathlib import Path
@@ -102,11 +107,16 @@ def select_best_estimation(true_params, estimation_results):
     
     return best_result
 
-def log_invalid_estimation(row, reason, results_dir, counter=None, limit=5):
+def log_invalid_estimation(row, reason, results_dir, counter=None, limit=5, software_filter=None):
     """Log information about invalid estimation results with clickable path"""
+    
     model_name = row.get('name', 'unknown')
     software = row.get('software', 'unknown')
     row_id = row.get('id', 'unknown')
+    
+    # Check if software should be logged based on filter
+    if software_filter is not None and software not in software_filter:
+        return  # Skip logging for this software
     
     # Determine script extension based on software
     # Most software uses Julia (.jl), except for some that use MATLAB (.m)
@@ -236,10 +246,11 @@ def validate_parameter_coverage(true_params, estimated_params):
 def create_accuracy_tables(df, args):
     """Create CSV tables showing various statistics by software"""
     
-    statistics = getattr(args, 'statistics', ['median'])
+    statistics = getattr(args, 'statistics', ['all'])
     tolerance = args.tolerance
     results_dir = str(args.dir)
     log_limit = args.log_limit
+    log_software = getattr(args, 'log_software', None)
     
     df['true_states_parsed'] = df['true_states'].apply(parse_dict_string_must_succeed)
     df['true_parameters_parsed'] = df['true_parameters'].apply(parse_dict_string_must_succeed)
@@ -256,13 +267,13 @@ def create_accuracy_tables(df, args):
         true_params = row['true_params_parsed']
         
         if not candidates:
-            log_invalid_estimation(row, "No valid estimation candidates found - parsing failed", results_dir, invalid_results_counter, log_limit)
+            log_invalid_estimation(row, "No valid estimation candidates found - parsing failed", results_dir, invalid_results_counter, log_limit, log_software)
             return {}
         
         best_result = select_best_estimation(true_params, candidates)
         
         if not best_result:
-            log_invalid_estimation(row, "No estimation candidate matched true parameters", results_dir, invalid_results_counter, log_limit)
+            log_invalid_estimation(row, "No estimation candidate matched true parameters", results_dir, invalid_results_counter, log_limit, log_software)
         
         return best_result
     
@@ -275,10 +286,10 @@ def create_accuracy_tables(df, args):
                 row['estimated_params_parsed']
             )
         except AssertionError as e:
-            log_invalid_estimation(row, f"Parameter validation failed: {str(e)}", results_dir, invalid_results_counter, log_limit)
+            log_invalid_estimation(row, f"Parameter validation failed: {str(e)}", results_dir, invalid_results_counter, log_limit, log_software)
             return False
         except Exception as e:
-            log_invalid_estimation(row, f"Unexpected error during validation: {str(e)}", results_dir, invalid_results_counter, log_limit)
+            log_invalid_estimation(row, f"Unexpected error during validation: {str(e)}", results_dir, invalid_results_counter, log_limit, log_software)
             return False
     
     df['params_valid'] = df.apply(validate_and_log_parameter_coverage, axis=1)
@@ -323,6 +334,7 @@ def create_accuracy_tables(df, args):
     
     software_list = sorted(df['software'].unique())
     noise_levels = sorted(df['noise'].unique())
+    systems = sorted(df['name'].unique())
 
     statistic_to_column = {
         'median': 'relative_median_error',
@@ -334,25 +346,33 @@ def create_accuracy_tables(df, args):
     for statistic in statistics:
         for software in software_list:
             software_df = df[df['software'] == software].copy()
-            
-            if len(software_df) == 0:
-                continue
 
             value_column = statistic_to_column[statistic]
+            
+            # Calculate overall stats for this software
+            software_has_result = software_df.groupby('name')['has_result'].sum()
+            software_finished_runs = software_df.groupby('name')['finished'].sum()
+            software_total_runs = software_df.groupby('name').size()
+            
+            software_overall_stats = pd.DataFrame({
+                'has_result': software_has_result,
+                'finished_runs': software_finished_runs,
+                'total_runs': software_total_runs,
+            })
             
             # Create pivot table: rows = models, columns = noise levels
             if statistic == 'success_ratio':
                 accuracy_table = software_df.groupby(['name', 'noise'])[value_column].agg([
                     lambda x: f"{x.sum() / len(x) * 100}%",
                     'count'
-                ]).round(2)
+                ]).round(DISPLAY_DIGITS)
 
                 accuracy_table.columns = ['success_percentage', 'total_runs']
                 accuracy_table = accuracy_table['success_percentage'].unstack(fill_value=np.nan)
             else:
                 accuracy_table = software_df.groupby(['name', 'noise'])[value_column].agg([
                     'median', 'count'
-                ]).round(6)
+                ]).round(DISPLAY_DIGITS)
 
                 accuracy_table = accuracy_table['median'].unstack(fill_value=np.nan)
             
@@ -360,14 +380,17 @@ def create_accuracy_tables(df, args):
             accuracy_table = accuracy_table.reindex(columns=noise_levels, fill_value=np.nan)
             noise_columns = {col: f"{col:.0e}" for col in accuracy_table.columns}
             accuracy_table = accuracy_table.rename(columns=noise_columns)
+            
+            # Combine overall stats with accuracy table
+            final_table = software_overall_stats.join(accuracy_table, rsuffix='_noise')
 
             # Save the table
             filename = f"software_{software}_{statistic}_relative_errors.csv"
-            accuracy_table.to_csv(filename)
+            final_table.to_csv(filename)
             
             print(f"\n{statistic.title()} Table for {software}:")
             print("="*60)
-            print(accuracy_table.to_string())
+            print(final_table.to_string())
             print()
 
     for statistic in statistics:
@@ -385,12 +408,12 @@ def create_accuracy_tables(df, args):
         
         if statistic == 'success_ratio':
             stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg([
-                lambda x: f"{x.sum() / len(x) * 100}%"  # success percentage
-            ]).round(2)
+                lambda x: f"{round(x.sum() / len(x) * 100, DISPLAY_DIGITS)}%"  # success percentage
+            ]).round(DISPLAY_DIGITS)
             stats_by_noise.columns = ['success_pct']
             stats_by_noise = stats_by_noise['success_pct'].unstack(fill_value=0.0)
         else:
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(6)
+            stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(DISPLAY_DIGITS)
             stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
         
         noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
@@ -447,6 +470,7 @@ Examples:
   python summarize_results.py LATEST/ --stats success_ratio     # Only success ratio
   python summarize_results.py LATEST/ --log-limit 0             # Show all invalid result details
   python summarize_results.py LATEST/ --log-limit 10            # Show first 10 invalid result details
+  python summarize_results.py LATEST/ --log-software pe sciml # Only log errors from pe and sciml
         """)
     
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
@@ -456,8 +480,11 @@ Examples:
                       help="Statistics to compute (default: median)")
     parser.add_argument("--tolerance", type=float, default=0.1,
                       help="Tolerance for success ratio calculation (default: 0.1 = 10%%)")
-    parser.add_argument("--log-limit", type=int, default=5,
+    parser.add_argument("--log-limit", type=int, default=0,
                       help="Maximum number of detailed invalid result logs to show (default: 5, 0 for no limit)")
+    parser.add_argument("--log-software", nargs='+', default=None,
+                      choices=AVAILABLE_SOFTWARE,
+                      help=f"Only log errors from specific software. Available options: {', '.join(AVAILABLE_SOFTWARE)}. If not specified, logs errors from all software.")
     
     args = parser.parse_args()
     

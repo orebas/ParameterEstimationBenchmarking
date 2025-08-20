@@ -121,7 +121,7 @@ OUTPUT:             {args.dir.as_posix()}
         assert set([pair[0] for pair in data]) == set(required_vars)
         result.update({
             'result' : data,
-            'has_result' : True,
+            'has_result' : len(data[0]) > 1,
             'time' : time
         })
         results['results'].append(result)

@@ -1,0 +1,51 @@
+{
+  "systems": [
+    {
+      "name": "vanderpol",
+      "state_variables": [
+        "x1",
+        "x2"
+      ],
+      "parameter_variables": [
+        "a",
+        "b"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "ode_system": {
+        "x1": "a * x2",
+        "x2": "-(x1) - b * (x1^2 - 1) * (x2)"
+      },
+      "measurements": {
+        "y1": "x1",
+        "y2": "x2"
+      },
+      "sciml_measurements": "(sol[1, :]), (sol[2, :])"
+    },
+    {
+      "name": "fitzhugh_nagumo",
+      "state_variables": [
+        "VV",
+        "R"
+      ],
+      "parameter_variables": [
+        "g",
+        "a",
+        "b"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "ode_system": {
+        "VV": "g * (VV - VV^3 / 3 + R)",
+        "R": "1 / g * (VV - a + b * R)"
+      },
+      "measurements": {
+        "y1": "VV"
+      },
+      "sciml_measurements": "(sol[1, :])"
+    }
+  ]
+}

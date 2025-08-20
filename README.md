@@ -1,81 +1,15 @@
 # Benchmarking parameter estimation software
 
-## Installation
+## Running the scripts
 
-0. We use the following versions of software:
+0. We use the following versions:
     - Julia: 1.11.6
     - Python: 3.9 or 3.10
 
-1. Possibly create a new environment and install packages:
+1. Run the following command:
 
 ```
-$ python -m venv venv
-$ source venv/bin/activate   # On Windows: .\venv\Scripts\activate
-$ python -m pip install -r requirements.txt
-```
-
-2. Install Julia packages:
-
-```
-$ ./environments/setup.s
-```
-
-Note: the Julia scripts use the global Julia environment.
-
-## Usage Example
-
-The pipeline consists of the following stages:
-1. Generation of data
-2. Generation of scripts for estimation
-3. Estimation
-4. Analysis
-
-### 1. Generation of data
-
-Run
-
-```
-$ python src/generate_data.py config/config.json config/systems.json
-```
-
-- This creates a directory `[DATE]` with data.
-- It is possible to modify `config.json` and `systems.json`.
-
-### 2. Generation of scripts for estimation
-
-Run
-
-```
-$ python src/generate_scripts.py "[DATE]" software
-```
-
-- This generates runnable scripts for estimation for the `software`. 
-    Possible choices of `software` are:
-    - pe
-    - odepe
-    - amigo2
-    - iqm
-    - sciml
-
-### 3. Estimation
-
-Run
-
-```
-$ python src/estimate.py "[DATE]" software 0,1,5-19
-```
-
-where 
-
-- software is one of the supported software (see above), 
-- 0,1,5-19 is the array of job indices.
-
-### 4. Collecting results
-
-Run
-
-```
-$ python src/collect_results.py "[DATE]"
+./run.sh
 ```
 
 ## Running on HPC

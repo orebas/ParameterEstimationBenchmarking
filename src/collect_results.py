@@ -66,6 +66,7 @@ OUTPUT:             {args.dir.as_posix()}
             'name' : instance['name'],
             'software': software,
             'finished': False,
+            'has_result' : False,
             'result': None,
             'time': None
       }
@@ -120,6 +121,7 @@ OUTPUT:             {args.dir.as_posix()}
         assert set([pair[0] for pair in data]) == set(required_vars)
         result.update({
             'result' : data,
+            'has_result' : True,
             'time' : time
         })
         results['results'].append(result)
@@ -151,14 +153,16 @@ OUTPUT:             {args.dir.as_posix()}
             'time_count'        : instance['time']['count'],
             'name'              : instance['name'],
             'noise'             : args.config['NOISE_LEVEL'][instance['id'].split('_')[-1]],
-            'finished'          : False
+            'finished'          : False,
+            'has_result'        : False
         })
         if (instance['id'], software) in results:
             dict1.update({
             'software'          : results[(instance['id'], software)]['software'],
             'result'            : results[(instance['id'], software)]['result'],
             'time'              : results[(instance['id'], software)]['time'],
-            'finished'          : results[(instance['id'], software)]['finished']
+            'finished'          : results[(instance['id'], software)]['finished'],
+            'has_result'        : results[(instance['id'], software)]['has_result']
             })
         else:
             dict1.update({'software' : software})

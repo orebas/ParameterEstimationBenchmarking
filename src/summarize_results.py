@@ -456,55 +456,62 @@ def create_accuracy_tables(df, args):
     
     for statistic in statistics:
         
-        if statistic == 'success_ratio':
-            overall_success = df.groupby('software')['is_successful'].agg([
-                lambda x: x.sum(),
-                'count'
-            ]).round(2)
-            overall_success.columns = ['finished_runs', 'total_runs']
-            overall_success.finished_runs = df.groupby('software')['finished'].sum()
+        # if statistic == 'success_ratio':
+        #     print(df.columns)
+        #     overall_success = df.groupby('software')['is_successful'].agg([
+        #         lambda x: x.sum(),
+        #         'count'
+        #     ]).round(2)
+        #     overall_success.columns = ['has_result', 'finished_runs', 'total_runs']
+        #     overall_success.finished_runs = df.groupby('software')['finished'].sum()
+        #     overall_success.has_result = df.groupby('software')['has_result'].sum()
+        #     print(overall_success)
             
-            # Success percentage by noise level
-            success_by_noise = df.groupby(['software', 'noise'])['is_successful'].agg([
-                lambda x: x.sum() / len(x) * 100  # success percentage
-            ]).round(2)
-            success_by_noise.columns = ['success_pct']
-            success_by_noise = success_by_noise['success_pct'].unstack(fill_value=0.0)
+        #     # Success percentage by noise level
+        #     success_by_noise = df.groupby(['software', 'noise'])['is_successful'].agg([
+        #         lambda x: x.sum() / len(x) * 100  # success percentage
+        #     ]).round(2)
+        #     success_by_noise.columns = ['success_pct']
+        #     success_by_noise = success_by_noise['success_pct'].unstack(fill_value=0.0)
             
-            # Rename noise level columns for better readability
-            noise_columns = {col: f"{col:.0e}" for col in success_by_noise.columns}
-            success_by_noise = success_by_noise.rename(columns=noise_columns)
+        #     # Rename noise level columns for better readability
+        #     noise_columns = {col: f"{col:.0e}" for col in success_by_noise.columns}
+        #     success_by_noise = success_by_noise.rename(columns=noise_columns)
             
-            # Combine overall stats with noise-level breakdown
-            software_summary = overall_success.join(success_by_noise, rsuffix='_noise')
-            software_summary = software_summary.sort_values('finished_runs', ascending=False)
+        #     # Combine overall stats with noise-level breakdown
+        #     software_summary = overall_success.join(success_by_noise, rsuffix='_noise')
+        #     software_summary = software_summary.sort_values('has_result', ascending=False)
             
+        # else:
+        if statistic == 'median':
+            value_column = 'relative_median_error'
+        elif statistic == 'mean':
+            value_column = 'relative_mean_error'
+        elif statistic == 'rmse':
+            value_column = 'rmse'
+        elif statistic == 'success_ratio':
+            value_column = 'is_successful'
         else:
-            if statistic == 'median':
-                value_column = 'relative_median_error'
-            elif statistic == 'mean':
-                value_column = 'relative_mean_error'
-            elif statistic == 'rmse':
-                value_column = 'rmse'
-            else:
-                continue
-            
-            finished_runs = df.groupby('software')['finished'].sum()
-            total_runs = df.groupby('software').size()
-            
-            overall_stats = pd.DataFrame({
-                'finished_runs': finished_runs,
-                'total_runs': total_runs
-            })
-            
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(6)
-            stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
-            
-            noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
-            stats_by_noise = stats_by_noise.rename(columns=noise_columns)
-            
-            software_summary = overall_stats.join(stats_by_noise, rsuffix='_noise')
-            software_summary = software_summary.sort_values('finished_runs', ascending=False)
+            continue
+
+        has_result = df.groupby('software')['has_result'].sum()
+        finished_runs = df.groupby('software')['finished'].sum()
+        total_runs = df.groupby('software').size()
+        
+        overall_stats = pd.DataFrame({
+            'has_result': has_result,
+            'finished_runs': finished_runs,
+            'total_runs': total_runs,
+        })
+        
+        stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(6)
+        stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
+        
+        noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
+        stats_by_noise = stats_by_noise.rename(columns=noise_columns)
+        
+        software_summary = overall_stats.join(stats_by_noise, rsuffix='_noise')
+        software_summary = software_summary.sort_values('has_result', ascending=False)
         
         comparison_filename = f"software_comparison_{statistic}.csv"
         software_summary.to_csv(comparison_filename)
@@ -566,7 +573,7 @@ Examples:
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
     parser.add_argument("--stats", "--statistics", dest="statistics", nargs='+', 
                       choices=['median', 'mean', 'rmse', 'success_ratio', 'all'],
-                      default=['median'],
+                      default=['all'],
                       help="Statistics to compute (default: median)")
     parser.add_argument("--tolerance", type=float, default=0.1,
                       help="Tolerance for success ratio calculation (default: 0.1 = 10%%)")

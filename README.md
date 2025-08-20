@@ -3,7 +3,7 @@
 ## Running the scripts
 
 0. We use the following versions of software:
-    - Julia: 1.11.6
+    - Julia: 1.11.5
     - Python: 3.9 or 3.10
 
 1. Run the following command:

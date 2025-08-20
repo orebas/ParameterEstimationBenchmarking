@@ -3,7 +3,7 @@
 ## Installation
 
 0. We use the following versions of software:
-    - Julia: 1.11
+    - Julia: 1.11.6
     - Python: 3.9 or 3.10
 
 1. Possibly create a new environment and install packages:
@@ -17,7 +17,7 @@ $ python -m pip install -r requirements.txt
 2. Install Julia packages:
 
 ```
-$ julia hpc/setup_packages.jl
+$ ./environments/setup.s
 ```
 
 Note: the Julia scripts use the global Julia environment.

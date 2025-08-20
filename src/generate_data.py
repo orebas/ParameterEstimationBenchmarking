@@ -14,7 +14,7 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
-from shared import warn, get_settings
+from shared import warn, get_settings, JULIA_ENVIRONMENTS
     
 def generate_instance(args, system, instance_id, param_vals, initial_vals):
     state_values = { 
@@ -70,7 +70,7 @@ CONFIG:             {args.config_path}
   SEARCH_BOUNDS:    {args.config['SEARCH_BOUNDS']}
 
 ENV:
-  JULIA             {(parent / "julia_env").as_posix()}
+  JULIA             {(parent / JULIA_ENVIRONMENTS["odepe"]).as_posix()}
 
 OUTPUT:             {output_dir.as_posix()}
   SCRIPTS:          {(output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR']).as_posix()}
@@ -106,7 +106,6 @@ OUTPUT:             {output_dir.as_posix()}
             data_filepath = Path("..") / args.config['DATA_DIR'] / (instance_name + ".csv")
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
- 
 
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
             state_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["state_variables"])).round(3).tolist()
@@ -116,7 +115,7 @@ OUTPUT:             {output_dir.as_posix()}
             
             settings = get_settings(args, instance)
             settings.update({'data_filepath'  : data_filepath.as_posix()})
-            settings.update({'julia_env_path' : 'joinpath(dirname(dirname(dirname(@__DIR__))), string(:julia_env))'})
+            settings.update({'julia_env_path' : f'joinpath(dirname(dirname(dirname(dirname(@__DIR__)))), string({JULIA_ENVIRONMENTS["odepe"]}))'})
 
             with open(parent / args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)

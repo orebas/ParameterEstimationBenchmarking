@@ -7,6 +7,14 @@ END_OF_LOG = "===END==="
 STDOUT_FILENAME = "stdout.txt"
 STDERR_FILENAME = "stderr.txt"
 
+JULIA_ENVIRONMENTS = {
+    "pe"    : "Symbol(:environments, /, :julia_pe)",
+    "odepe" : "Symbol(:environments, /, :julia_odepe)",
+    "sciml" : "Symbol(:environments, /, :julia_odepe)",
+    "amigo2": "",
+    "iqm"   : ""
+}
+
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))
 

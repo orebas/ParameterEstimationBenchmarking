@@ -142,6 +142,7 @@ OUTPUT:             {args.dir.as_posix()}
     for software in AVAILABLE_SOFTWARE:
         dict1 = {}
         dict1.update({
+            'index'             : instance['index'],
             'id'                : instance['id'],
             'true_states'       : instance['state_values'],
             'true_parameters'   : instance['parameter_values'],

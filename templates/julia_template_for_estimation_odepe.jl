@@ -1,5 +1,7 @@
 using Pkg; Pkg.activate({{julia_env_path}})
 
+using MKL
+
 using ODEParameterEstimation
 using ModelingToolkit, DifferentialEquations
 using BenchmarkTools

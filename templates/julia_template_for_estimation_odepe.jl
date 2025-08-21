@@ -58,7 +58,6 @@ pep = ParameterEstimationProblem(
 meta, results = analyze_parameter_estimation_problem(
     pep,
     nooutput = true,
-    shooting_points = 1
 )
  
 (solutions_vector, besterror,

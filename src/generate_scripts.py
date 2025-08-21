@@ -54,12 +54,14 @@ def sub_all(subs, string):
     return string
 
 def get_sciml_measurements(instance):
+    import re
     subs = {}
-    subs = subs | {x : f"sol[{idx}, :]" for idx, x in enumerate(instance["state_variables"])}
-    subs = subs | {x : f"p[(length(ic) + {idx}):end]" for idx, x in enumerate(instance["parameter_variables"])}
+    subs = subs | {x : f"sol[{1+idx}, :]" for idx, x in enumerate(instance["state_variables"])}
+    subs = subs | {x : f"p[(length(ic) + {1+idx}):end]" for idx, x in enumerate(instance["parameter_variables"])}
     subs = subs | {'*' : '.*'}
-    sciml_measurements = ','.join([sub_all(subs, value) for key, value in instance["measurements"].items()])
-    print(sciml_measurements)
+    subs = dict((re.escape(k), v) for k, v in subs.items())
+    pattern = re.compile("|".join(subs.keys()))
+    sciml_measurements = ','.join([pattern.sub(lambda m: subs[re.escape(m.group(0))], value) for key, value in instance["measurements"].items()])
     return sciml_measurements
 
 def main(args):

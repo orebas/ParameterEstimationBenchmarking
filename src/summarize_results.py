@@ -152,7 +152,7 @@ def calculate_relative_median_error(true_params, estimated_params):
     assert true_params, "True parameters must be provided"
 
     if not estimated_params:
-        return np.nan
+        return 1. # np.nan
 
     assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
     errors = []
@@ -169,7 +169,7 @@ def calculate_mean_relative_error(true_params, estimated_params):
     assert true_params, "True parameters must be provided"
 
     if not estimated_params:
-        return np.nan
+        return 1. # np.nan
 
     assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
     errors = []
@@ -186,7 +186,7 @@ def calculate_rmse(true_params, estimated_params):
     assert true_params, "True parameters must be provided"
 
     if not estimated_params:
-        return np.nan
+        return 1. # np.nan
 
     assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
     errors = []
@@ -464,8 +464,8 @@ def create_accuracy_tables(df, args):
         
         if statistic == 'success_ratio':
             stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg([
-                lambda x: f"{round(x.sum() / len(x) * 100, DISPLAY_DIGITS)}%"  # success percentage
-            ]).round(DISPLAY_DIGITS)
+                lambda x: f"{int(round(x.sum() / len(x) * 100, DISPLAY_DIGITS))}%"  # success percentage
+            ]).round(0)
             stats_by_noise.columns = ['success_pct']
             stats_by_noise = stats_by_noise['success_pct'].unstack(fill_value=0.0)
         else:

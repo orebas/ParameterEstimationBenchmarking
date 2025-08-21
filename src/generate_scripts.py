@@ -48,6 +48,20 @@ SOFTWARE_COMMENT = {
 
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}
 
+def sub_all(subs, string):
+    for key, value in subs.items():
+        string = string.replace(key, value)
+    return string
+
+def get_sciml_measurements(instance):
+    subs = {}
+    subs = subs | {x : f"sol[{idx}, :]" for idx, x in enumerate(instance["state_variables"])}
+    subs = subs | {x : f"p[(length(ic) + {idx}):end]" for idx, x in enumerate(instance["parameter_variables"])}
+    subs = subs | {'*' : '.*'}
+    sciml_measurements = ','.join([sub_all(subs, value) for key, value in instance["measurements"].items()])
+    print(sciml_measurements)
+    return sciml_measurements
+
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE or args.software == 'all'
     
@@ -92,7 +106,7 @@ OUTPUT:             {args.dir}
             settings["data_filepath"] = 'data.csv'
             settings["estimation_result_filepath"] = 'result.csv'
             settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
-            settings["data_expr"] = instance["sciml_measurements"]
+            settings["data_expr"] = get_sciml_measurements(instance)
             settings["path_to_src"] = args.config["PATH_TO_SRC"]
 
             comment = SOFTWARE_COMMENT[software]

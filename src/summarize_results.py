@@ -349,16 +349,6 @@ def create_accuracy_tables(df, args):
 
             value_column = statistic_to_column[statistic]
             
-            # Calculate overall stats for this software
-            software_has_result = software_df.groupby('name')['has_result'].sum()
-            software_finished_runs = software_df.groupby('name')['finished'].sum()
-            software_total_runs = software_df.groupby('name').size()
-            
-            software_overall_stats = pd.DataFrame({
-                'has_result': software_has_result,
-                'finished_runs': software_finished_runs,
-                'total_runs': software_total_runs,
-            })
             
             # Create pivot table: rows = models, columns = noise levels
             if statistic == 'success_ratio':
@@ -381,28 +371,94 @@ def create_accuracy_tables(df, args):
             noise_columns = {col: f"{col:.0e}" for col in accuracy_table.columns}
             accuracy_table = accuracy_table.rename(columns=noise_columns)
             
-            # Combine overall stats with accuracy table
-            final_table = software_overall_stats.join(accuracy_table, rsuffix='_noise')
-
             # Save the table
             filename = f"software_{software}_{statistic}_relative_errors.csv"
-            final_table.to_csv(filename)
+            accuracy_table.to_csv(filename)
             
             print(f"\n{statistic.title()} Table for {software}:")
             print("="*60)
-            print(final_table.to_string())
+            print(accuracy_table.to_string())
             print()
+
+    # Generate noise-level tables: rows = systems, columns = software
+    for statistic in statistics:
+        value_column = statistic_to_column[statistic]
+        
+        for noise_level in noise_levels:
+            noise_df = df[df['noise'] == noise_level].copy()
+            
+            if statistic == 'success_ratio':
+                # For success ratio, calculate percentage of successful runs
+                noise_table = noise_df.groupby(['name', 'software'])[value_column].agg([
+                    lambda x: round(x.sum() / len(x) * 100, DISPLAY_DIGITS)  # success percentage
+                ]).round(DISPLAY_DIGITS)
+                noise_table.columns = ['success_percentage']
+                noise_table = noise_table['success_percentage'].unstack(fill_value=0.0)
+            else:
+                # For other statistics, use median aggregation
+                noise_table = noise_df.groupby(['name', 'software'])[value_column].median().round(DISPLAY_DIGITS)
+                noise_table = noise_table.unstack(fill_value=np.nan)
+            
+            # Reorder columns by software list to ensure consistent ordering
+            noise_table = noise_table.reindex(columns=software_list, fill_value=np.nan)
+            
+            # Save the table (without has_result and total_runs columns for these tables)
+            noise_str = f"{noise_level:.0e}"
+            filename = f"noise_{noise_str}_{statistic}_by_system.csv"
+            noise_table.to_csv(filename)
+
+            print(f"\n{statistic.title()} by System and Software (Noise Level: {noise_str}):")
+            print("="*80)
+            print(noise_table.to_string())
+            print()
+    
+    # Additional table: for each software, rows=systems, columns=noise levels, entries=number of estimation results
+    for software in software_list:
+        software_df = df[df['software'] == software].copy()
+        
+        # Calculate overall stats for this software (Estimation Counts tables should have these columns)
+        software_has_result = software_df.groupby('name')['has_result'].sum()
+        software_total_runs = software_df.groupby('name').size()
+        
+        software_overall_stats = pd.DataFrame({
+            'has_result': software_has_result,
+            'total_runs': software_total_runs,
+        })
+        
+        # Count number of estimation results per system and noise level with mean and std
+        def format_mean_std(x):
+            counts = x.apply(len)
+            mean_val = counts.mean()
+            std_val = counts.std()
+            if pd.isna(std_val):
+                std_val = 0.0
+            return f"{mean_val:.{1}f} ± {std_val:.{1}f}"
+        
+        count_table = software_df.groupby(['name', 'noise'])['estimation_candidates'].apply(format_mean_std).unstack(fill_value="0.0 ± 0.0")
+        # Reorder columns by noise_levels for consistency
+        count_table = count_table.reindex(columns=noise_levels, fill_value="0.0 ± 0.0")
+        noise_columns = {col: f"{col:.0e}" for col in count_table.columns}
+        count_table = count_table.rename(columns=noise_columns)
+        
+        # Combine overall stats with count table (Estimation Counts tables must have has_result and total_runs)
+        final_count_table = software_overall_stats.join(count_table, rsuffix='_noise')
+        
+        # Save and print
+        filename = f"software_{software}_estimation_counts.csv"
+        final_count_table.to_csv(filename)
+        print(f"\nEstimation Counts for {software} (Rows: Systems, Columns: Noise Levels):")
+        print("="*70)
+        print(final_count_table.to_string())
+        print()
 
     for statistic in statistics:
         value_column = statistic_to_column[statistic]
 
         has_result = df.groupby('software')['has_result'].sum()
-        finished_runs = df.groupby('software')['finished'].sum()
         total_runs = df.groupby('software').size()
         
         overall_stats = pd.DataFrame({
             'has_result': has_result,
-            'finished_runs': finished_runs,
             'total_runs': total_runs,
         })
         

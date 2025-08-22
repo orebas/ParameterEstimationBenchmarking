@@ -147,6 +147,58 @@ def log_invalid_estimation(row, reason, results_dir, counter=None, limit=5, soft
             print("⚠️  (Suppressing further detailed invalid result logs, will show summary at end)")
             print()
 
+def filter_identifiable_parameters(true_params, estimated_params, non_identifiable_list):
+    """Filter out non-identifiable parameters from both true and estimated parameters"""
+    if not non_identifiable_list:
+        return true_params, estimated_params
+    
+    # Convert non_identifiable_list to set for faster lookup
+    non_identifiable_set = set(non_identifiable_list) if isinstance(non_identifiable_list, list) else set()
+    
+    # Filter true parameters
+    filtered_true_params = {k: v for k, v in true_params.items() if k not in non_identifiable_set}
+    
+    # Filter estimated parameters
+    filtered_estimated_params = {k: v for k, v in estimated_params.items() if k not in non_identifiable_set}
+    
+    return filtered_true_params, filtered_estimated_params
+
+def calculate_relative_median_error_filtered(true_params, estimated_params, non_identifiable_list):
+    """Calculate relative median error excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:  # If all parameters are non-identifiable
+        return np.nan
+    return calculate_relative_median_error(filtered_true, filtered_estimated)
+
+def calculate_mean_relative_error_filtered(true_params, estimated_params, non_identifiable_list):
+    """Calculate relative mean error excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:  # If all parameters are non-identifiable
+        return np.nan
+    return calculate_mean_relative_error(filtered_true, filtered_estimated)
+
+def calculate_rmse_filtered(true_params, estimated_params, non_identifiable_list):
+    """Calculate RMSE excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:  # If all parameters are non-identifiable
+        return np.nan
+    return calculate_rmse(filtered_true, filtered_estimated)
+
+def calculate_success_ratio_filtered(true_params, estimated_params, tolerance, non_identifiable_list):
+    """Calculate success ratio excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:  # If all parameters are non-identifiable
+        return True  # Consider as successful if there are no identifiable parameters to check
+    return calculate_success_ratio(filtered_true, filtered_estimated, tolerance)
+
 def calculate_relative_median_error(true_params, estimated_params):
     """Calculate relative median error between true and estimated parameters"""
     assert true_params, "True parameters must be provided"
@@ -255,6 +307,17 @@ def create_accuracy_tables(df, args):
     df['true_states_parsed'] = df['true_states'].apply(parse_dict_string_must_succeed)
     df['true_parameters_parsed'] = df['true_parameters'].apply(parse_dict_string_must_succeed)
     
+    # Parse non-identifiable parameters if the column exists
+    def parse_non_identifiable(s):
+        if pd.isna(s) or s == '' or s == 'nan' or s == 'NaN':
+            return []
+        try:
+            result = ast.literal_eval(s)
+            return result if isinstance(result, list) else []
+        except:
+            return []
+    df['non_identifiable_parsed'] = df['non_identifiable'].apply(parse_non_identifiable)
+   
     df['true_params_parsed'] = df.apply(
         lambda row: {**row['true_states_parsed'], **row['true_parameters_parsed']}, axis=1
     )
@@ -301,34 +364,38 @@ def create_accuracy_tables(df, args):
     
     if 'median' in statistics:
         df['relative_median_error'] = df.apply(
-            lambda row: calculate_relative_median_error(
+            lambda row: calculate_relative_median_error_filtered(
                 row['true_params_parsed'], 
-                row['estimated_params_parsed']
+                row['estimated_params_parsed'],
+                row['non_identifiable_parsed']
             ), axis=1
         )
     
     if 'mean' in statistics:
         df['relative_mean_error'] = df.apply(
-            lambda row: calculate_mean_relative_error(
+            lambda row: calculate_mean_relative_error_filtered(
                 row['true_params_parsed'], 
-                row['estimated_params_parsed']
+                row['estimated_params_parsed'],
+                row['non_identifiable_parsed']
             ), axis=1
         )
     
     if 'rmse' in statistics:
         df['rmse'] = df.apply(
-            lambda row: calculate_rmse(
+            lambda row: calculate_rmse_filtered(
                 row['true_params_parsed'], 
-                row['estimated_params_parsed']
+                row['estimated_params_parsed'],
+                row['non_identifiable_parsed']
             ), axis=1
         )
     
     if 'success_ratio' in statistics:
         df['is_successful'] = df.apply(
-            lambda row: calculate_success_ratio(
+            lambda row: calculate_success_ratio_filtered(
                 row['true_params_parsed'], 
                 row['estimated_params_parsed'],
-                tolerance=tolerance
+                tolerance,
+                row['non_identifiable_parsed']
             ), axis=1
         )
     

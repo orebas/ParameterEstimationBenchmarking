@@ -33,6 +33,7 @@ def generate_instance(args, system, instance_id, param_vals, initial_vals):
         "parameter_values": parameter_values,
         "time": {"start": args.config['TIME_INTERVAL'][0], "end": args.config['TIME_INTERVAL'][1], "count": args.config['NUM_PTS']},
         "count": args.config['NUM_PTS'],
+        "non_identifiable": system["non_identifiable"]
     }
     instance = instance | system.copy()
     return instance
@@ -113,7 +114,7 @@ OUTPUT:             {output_dir.as_posix()}
 
     while instances_to_generate:
         for instance_name in instances_to_generate:
-            print(instance_name)
+            system = args.systems["systems"][[system["name"] for system in args.systems["systems"]].index("_".join(instance_name.split("_")[:-1]))]
             data_filepath = Path("..") / args.config['DATA_DIR'] / (instance_name + ".csv")
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
@@ -133,8 +134,8 @@ OUTPUT:             {output_dir.as_posix()}
             
             with open(data_generation_filepath, 'w') as output_file:
                 output_file.write(julia_file)
-            
-        cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir))
+
+        cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir) + ' ' + "\"" + ",".join(instances_to_generate) + "\"")
         try:
             output = subprocess.run(
                 cmd,
@@ -163,8 +164,9 @@ OUTPUT:             {output_dir.as_posix()}
                     data_filepath_orig = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
 
                     if not os.path.exists(data_filepath_orig):
-                        instances_to_generate.append(instance_name)
-                        warn(f"Need to regenerate data for {instance_name}")
+                        if instance_name not in set(instances_to_generate):
+                            instances_to_generate.append(instance_name)
+                            warn(f"Need to regenerate data for {instance_name}")
                         continue
 
                     df = pd.read_csv(data_filepath_orig, header=None, index_col=False)

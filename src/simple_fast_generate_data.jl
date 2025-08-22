@@ -16,7 +16,7 @@ using JSON
 function main()
     if length(ARGS) < 1
         println("Usage: julia simple_fast_generate_data.jl <output_directory>")
-        println("Example: julia simple_fast_generate_data.jl 2025_08_21_15_30")
+        println("Example: julia simple_fast_generate_data.jl results/EXAMPLE")
         exit(1)
     end
     
@@ -30,49 +30,22 @@ function main()
     end
     
     # Find the data generation directory
-    data_gen_dir = nothing
     config_path = joinpath(output_dir, "config", "config.json")
-    
-    if isfile(config_path)
-        config = JSON.parsefile(config_path)
-        data_gen_dir = joinpath(output_dir, config["FILETREE"], config["DATA_GENERATION_DIR"])
-    else
-        # Try to find it automatically
-        possible_paths = [
-            joinpath(output_dir, "scripts", "data_generation"),
-            joinpath(output_dir, "src", "data_generation"),
-            joinpath(output_dir, "data_generation")
-        ]
-        for path in possible_paths
-            if isdir(path)
-                data_gen_dir = path
-                break
-            end
-        end
-    end
-    
-    if data_gen_dir === nothing || !isdir(data_gen_dir)
-        println("Error: Could not find data generation directory.")
-        println("Expected structure: <output_dir>/<filetree>/<data_generation_dir>/")
-        exit(1)
-    end
-    
+    config = JSON.parsefile(config_path)
+    data_gen_dir = joinpath(output_dir, config["FILETREE"], config["DATA_GENERATION_DIR"])
+    data_csv_dir = joinpath(output_dir, config["FILETREE"], config["DATA_DIR"])
+
     println("Fast data generation starting...")
     println("Output directory: $output_dir")
     println("Data generation scripts: $data_gen_dir")
     
-    # Find all .jl files in the data generation directory
+    instances_to_generate = filter(f -> endswith(f, ".jl"), readdir(data_gen_dir))
+    already_computed = map(f -> chopsuffix(f, ".csv"), readdir(data_csv_dir))
+    instances_to_generate = filter(f -> !(chopsuffix(f, ".jl") in already_computed), instances_to_generate)
+
     jl_files = []
-    for file in readdir(data_gen_dir)
-        if endswith(file, ".jl") && !endswith(file, "_logs.txt")
-            push!(jl_files, joinpath(data_gen_dir, file))
-        end
-    end
-    
-    if isempty(jl_files)
-        println("Error: No .jl files found in $data_gen_dir")
-        println("Please run generate_data.py first to generate the individual scripts.")
-        exit(1)
+    for instance in instances_to_generate
+        push!(jl_files, joinpath(data_gen_dir, instance))
     end
     
     println("Found $(length(jl_files)) data generation scripts")
@@ -106,7 +79,7 @@ function main()
     println("Failed: $(length(failed))")
     println("Total: $(length(jl_files))")
 
-    println("Failed:\n", join(map(x -> rstrip(x, ".jl"), failed), ","))
+    println("Failed:\n", failed)
 
     exit(length(failed) != 0)
 end

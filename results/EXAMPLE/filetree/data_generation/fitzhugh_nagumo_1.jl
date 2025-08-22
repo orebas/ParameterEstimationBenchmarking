@@ -15,8 +15,8 @@ const D = ModelingToolkit.D_nounits
 parameters = @parameters g a b
 states = @variables VV(t) R(t) 
 observables = @variables y1(t)
-p_true = [0.84, 0.157, 0.17]
-ic = [0.116, 0.766]
+p_true = [0.701, 0.66, 0.874]
+ic = [0.896, 0.461]
 
 equations =             [
                              D(VV) ~ g * (VV - VV^3 / 3 + R),

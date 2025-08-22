@@ -15,8 +15,8 @@ const D = ModelingToolkit.D_nounits
 parameters = @parameters a b
 states = @variables x1(t) x2(t) 
 observables = @variables y1(t) y2(t)
-p_true = [0.539, 0.672]
-ic = [0.582, 0.536]
+p_true = [0.585, 0.193]
+ic = [0.682, 0.61]
 
 equations =             [
                              D(x1) ~ a * x2,

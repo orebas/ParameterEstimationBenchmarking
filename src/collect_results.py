@@ -152,6 +152,7 @@ OUTPUT:             {args.dir.as_posix()}
             'time_end'          : instance['time']['end'],
             'time_count'        : instance['time']['count'],
             'name'              : instance['name'],
+            'non_identifiable'  : instance['non_identifiable'],
             'noise'             : args.config['NOISE_LEVEL'][instance['id'].split('_')[-1]],
             'finished'          : False,
             'has_result'        : False
@@ -167,7 +168,7 @@ OUTPUT:             {args.dir.as_posix()}
         else:
             dict1.update({'software' : software})
         rows_list.append(dict1)
-  df = pd.DataFrame(rows_list)
+  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'software', 'result', 'time'])
   print("DataFrame header:")
   print(df.head())
   print("DataFrame columns:", df.columns)

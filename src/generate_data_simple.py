@@ -9,6 +9,7 @@ import subprocess
 import chevron
 import pandas as pd
 pd.set_option("display.precision",16)
+import shutil
 
 import argparse
 from datetime import datetime
@@ -81,8 +82,14 @@ OUTPUT:             {output_dir.as_posix()}
 
     # Create output directories
     if os.path.exists(output_dir):
-        warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
-        exit(1)
+        warn(f"Directory {output_dir} already exists.")
+        answer = input("Would you like to redo the generation? (y/n) ")
+        if answer.lower() == 'y':
+            warn(f"Removing existing directory {output_dir}")
+            shutil.rmtree(output_dir)
+        else:
+            warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
+            exit(1)
 
     os.makedirs(output_dir)
     os.makedirs(output_dir / args.config['FILETREE'])
@@ -129,11 +136,11 @@ OUTPUT:             {output_dir.as_posix()}
             
         cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir))
         try:
-            subprocess.run(
+            output = subprocess.run(
                 cmd,
                 check=True,
-                stdout=subprocess.STDOUT,
-                stderr=subprocess.STDERR,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
             )
         except subprocess.CalledProcessError as err:
             warn("Error from {}".format(cmd))    
@@ -144,7 +151,8 @@ OUTPUT:             {output_dir.as_posix()}
 
     OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY']}
     """)
-        
+
+        instances_to_generate = []
         for (mnemonic, noise_level) in args.config['NOISE_LEVEL'].items():
             for system in args.systems["systems"]:
                 print(mnemonic, system["name"])
@@ -153,6 +161,11 @@ OUTPUT:             {output_dir.as_posix()}
                     instance_name = instance_basename + str(i)
                     
                     data_filepath_orig = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
+
+                    if not os.path.exists(data_filepath_orig):
+                        instances_to_generate.append(instance_name)
+                        warn(f"Need to regenerate data for {instance_name}")
+                        continue
 
                     df = pd.read_csv(data_filepath_orig, header=None, index_col=False)
                     if noise_level == 0:
@@ -173,7 +186,7 @@ OUTPUT:             {output_dir.as_posix()}
                     instances['instances'].append(instance)
 
                     instance_path = output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'] / instance['id']
-                    os.makedirs(instance_path)
+                    os.makedirs(instance_path, exist_ok=True)
                     df.to_csv(instance_path / 'data.csv', index=False, header=False)
         
     instances['instances'] = [instance | {'index': i} for i, instance in enumerate(instances['instances'])]

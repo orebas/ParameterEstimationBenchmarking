@@ -10,7 +10,7 @@ This script assumes you have already run generate_data.py to create the individu
 .jl files, and this script will execute them all in a single Julia session.
 """
 
-using Pkg
+using Pkg; Pkg.activate(joinpath(dirname(@__DIR__), "environments/julia_odepe"))
 using JSON
 
 function main()
@@ -107,6 +107,8 @@ function main()
     println("Total: $(length(jl_files))")
 
     println("Failed:\n", join(map(x -> rstrip(x, ".jl"), failed), ","))
+
+    exit(length(failed) != 0)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__

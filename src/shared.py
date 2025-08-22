@@ -90,6 +90,14 @@ def get_settings(args, instance):
             "index": i+1,
             "comma": ", " if i < len(measurement_variables)-1 else "",
         })
+    measured_quantities_amigo2 = []
+    for i, measure_var in enumerate(instance['measurement_variables']):
+        measured_quantities_amigo2.append({
+            "measurement": measure_var,
+            "measurement_expression": instance['measurements'][measure_var].replace('*', '.*'),
+            "index": i+1,
+            "comma": ", " if i < len(measurement_variables)-1 else "",
+        })
 
     initial_conditions = []
     for i, state_var in enumerate(state_variables):
@@ -109,6 +117,7 @@ def get_settings(args, instance):
         "num_parameters": len(parameters),
         "components": components,
         "measured_quantities": measured_quantities,
+        "measured_quantities_amigo2": measured_quantities_amigo2,
         "initial_conditions": initial_conditions,
         "time_start": instance["time"]["start"],
         "time_end": instance["time"]["end"],

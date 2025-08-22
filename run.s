@@ -9,8 +9,8 @@ cd ..
 # 2. Generate data
 python src/generate_data_simple.py  \
     -d results/EXAMPLE              \
-    config/config-small-test.json   \
-    config/systems-small-test.json
+    config/config.json              \
+    config/systems.json
 
 # 3. Generate estimation scripts
 python src/generate_scripts.py      \

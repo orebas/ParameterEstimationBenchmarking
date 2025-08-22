@@ -486,6 +486,74 @@ def create_accuracy_tables(df, args):
         print(software_summary.to_string())
         print()
 
+    # Generate timing table
+    print("\n" + "="*90)
+    print("TIMING ANALYSIS")
+    print("="*90)
+    
+    # Filter to only include finished runs with timing data
+    timing_df = df[(df['finished'] == True) & (df['time'].notna()) & (df['time'] > 0)].copy()
+    
+    if not timing_df.empty:
+        # Overall timing statistics by software
+        timing_stats = timing_df.groupby('software')['time'].agg([
+            'count',
+            'mean', 
+            'median',
+            'std',
+            'min',
+            'max'
+        ]).round(DISPLAY_DIGITS)
+        
+        timing_stats.columns = ['runs', 'mean_time', 'median_time', 'std_time', 'min_time', 'max_time']
+        timing_stats = timing_stats.sort_values('median_time')
+        
+        # Save timing summary
+        timing_stats.to_csv("software_timing_summary.csv")
+        
+        print(f"\nTiming Summary by Software (seconds):")
+        print("="*70)
+        print(timing_stats.to_string())
+        print()
+        
+        # Timing by noise level and software
+        timing_by_noise = timing_df.groupby(['software', 'noise'])['time'].median().round(DISPLAY_DIGITS)
+        timing_by_noise = timing_by_noise.unstack(fill_value=np.nan)
+        
+        # Format noise level columns
+        noise_columns = {col: f"{col:.0e}" for col in timing_by_noise.columns}
+        timing_by_noise = timing_by_noise.rename(columns=noise_columns)
+        
+        # Save timing by noise
+        timing_by_noise.to_csv("software_timing_by_noise.csv")
+        
+        print(f"\nMedian Timing by Software and Noise Level (seconds):")
+        print("="*70)
+        print(timing_by_noise.to_string())
+        print()
+        
+        # Timing by system (top 10 slowest and fastest)
+        timing_by_system = timing_df.groupby(['name', 'software'])['time'].median().round(DISPLAY_DIGITS)
+        timing_by_system = timing_by_system.unstack(fill_value=np.nan)
+        timing_by_system = timing_by_system.reindex(columns=software_list, fill_value=np.nan)
+        
+        # Calculate average time across all software for each system
+        timing_by_system['avg_time'] = timing_by_system.mean(axis=1, skipna=True).round(DISPLAY_DIGITS)
+        timing_by_system_sorted = timing_by_system.sort_values('avg_time', ascending=False)
+        
+        # Save full timing by system
+        timing_by_system_sorted.to_csv("system_timing_by_software.csv")
+        
+        print(f"\nTiming by System and Software (median time in seconds, sorted by average):")
+        print("="*80)
+        print(timing_by_system_sorted.to_string())
+        print()
+        
+    else:
+        print("\nNo timing data available in the results.")
+        print("Make sure the estimation runs completed successfully.")
+        print()
+
 def main(args):
   parent = Path(__file__).parent.parent.resolve()
   args.dir = parent / Path(args.dir)

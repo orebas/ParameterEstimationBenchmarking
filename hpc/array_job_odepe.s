@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=04:00:00
-#SBATCH --mem=128GB
+#SBATCH --time=01:00:00
+#SBATCH --mem=16GB
 #SBATCH --job-name=array_job_odepe
 #SBATCH --output=output/array_job_odepe_%A_%a.out
 #SBATCH --error=output/array_job_odepe_%A_%a.err

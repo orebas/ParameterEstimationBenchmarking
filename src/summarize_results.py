@@ -553,6 +553,141 @@ def create_accuracy_tables(df, args):
         print(software_summary.to_string())
         print()
 
+    # Generate parameter comparison tables (ground-truth vs estimation)
+    print("\n" + "="*90)
+    print("PARAMETER COMPARISON TABLES (Ground-truth vs Estimation)")
+    print("="*90)
+    
+    def create_parameter_comparison_tables(df, args):
+        """Create tables comparing ground-truth vs estimation results per parameter"""
+        
+        # Get valid results only
+        valid_df = df[df['params_valid'] == True].copy()
+        
+        if valid_df.empty:
+            print("No valid estimation results found for parameter comparison.")
+            return
+        
+        # Get unique combinations of model, software, and noise level
+        groups = valid_df.groupby(['name', 'software', 'noise'])
+        
+        for (model_name, software, noise_level), group in groups:
+            if len(group) == 0:
+                continue
+                
+            # Get all parameter names from the first valid row
+            first_valid_row = group.iloc[0]
+            true_params = first_valid_row['true_params_parsed']
+            estimated_params = first_valid_row['estimated_params_parsed']
+            non_identifiable = first_valid_row['non_identifiable_parsed']
+            
+            # Get both identifiable and non-identifiable parameters
+            identifiable_params = [p for p in true_params.keys() if p not in non_identifiable]
+            non_identifiable_params = [p for p in true_params.keys() if p in non_identifiable]
+            all_params = identifiable_params + non_identifiable_params
+            
+            if not all_params:
+                print("   No parameters found.")
+                continue
+                
+            print(f"\nModel: {model_name} | Software: {software} | Noise: {noise_level:.0e}")
+            print("-" * 80)
+            if identifiable_params and non_identifiable_params:
+                print(f"   Identifiable parameters: {', '.join(sorted(identifiable_params))}")
+                print(f"   Non-identifiable parameters: {', '.join(sorted(non_identifiable_params))}")
+            elif non_identifiable_params:
+                print(f"   All parameters are non-identifiable: {', '.join(sorted(non_identifiable_params))}")
+            else:
+                print(f"   All parameters are identifiable: {', '.join(sorted(identifiable_params))}")
+            print()
+            
+            # Create comparison table
+            comparison_data = []
+            
+            for idx, (_, row) in enumerate(group.iterrows()):
+                row_data = {'Run': idx + 1}
+                
+                true_vals = row['true_params_parsed']
+                est_vals = row['estimated_params_parsed']
+                
+                # Add true values (prefixed with 'True_')
+                for param in all_params:
+                    if param in true_vals:
+                        row_data[f'True_{param}'] = true_vals[param]
+                
+                # Add estimated values (prefixed with 'Est_')
+                for param in all_params:
+                    if param in est_vals:
+                        row_data[f'Est_{param}'] = est_vals[param]
+                    else:
+                        row_data[f'Est_{param}'] = np.nan
+                
+                # Add overall statistics for this run (using existing functions)
+                filtered_true, filtered_est = filter_identifiable_parameters(true_vals, est_vals, non_identifiable)
+                
+                if filtered_true and filtered_est:
+                    try:
+                        tolerance = getattr(args, 'tolerance', 0.1)
+                        row_data['MedianRelErr'] = calculate_relative_median_error(filtered_true, filtered_est)
+                        row_data['MeanRelErr'] = calculate_mean_relative_error(filtered_true, filtered_est)
+                        row_data['RMSE'] = calculate_rmse(filtered_true, filtered_est)
+                        row_data['Success'] = calculate_success_ratio(filtered_true, filtered_est, tolerance)
+                    except Exception as e:
+                        row_data['MedianRelErr'] = np.nan
+                        row_data['MeanRelErr'] = np.nan
+                        row_data['RMSE'] = np.nan
+                        row_data['Success'] = False
+                else:
+                    row_data['MedianRelErr'] = np.nan
+                    row_data['MeanRelErr'] = np.nan
+                    row_data['RMSE'] = np.nan
+                    row_data['Success'] = False
+                
+                comparison_data.append(row_data)
+            
+            # Create DataFrame and format
+            comparison_df = pd.DataFrame(comparison_data)
+            
+            # Set Run as index
+            comparison_df.set_index('Run', inplace=True)
+            
+            # Group columns: identifiable parameters, non-identifiable parameters, statistics
+            identifiable_true_columns = []
+            identifiable_est_columns = []
+            non_identifiable_true_columns = []
+            non_identifiable_est_columns = []
+            
+            for param in sorted(identifiable_params):
+                identifiable_true_columns.append(f'True_{param}')
+                identifiable_est_columns.append(f'Est_{param}')
+            
+            for param in sorted(non_identifiable_params):
+                non_identifiable_true_columns.append(f'True_{param}')
+                non_identifiable_est_columns.append(f'Est_{param}')
+            
+            overall_columns = ['MedianRelErr', 'MeanRelErr', 'RMSE', 'Success']
+            
+            # Order: identifiable true, identifiable est, non-identifiable true, non-identifiable est, statistics
+            ordered_columns = (identifiable_true_columns + identifiable_est_columns + 
+                             non_identifiable_true_columns + non_identifiable_est_columns + 
+                             overall_columns)
+            comparison_df = comparison_df.reindex(columns=ordered_columns)
+            
+            # Sort by RMSE in descending order (worst performers first)
+            comparison_df = comparison_df.sort_values('RMSE', ascending=False)
+            
+            # Print the table
+            print(comparison_df.to_string())
+            
+            # Save to CSV
+            safe_model_name = model_name.replace('/', '_').replace(' ', '_')
+            filename = f"parameter_comparison_{safe_model_name}_{software}_noise_{noise_level:.0e}.csv"
+            comparison_df.to_csv(filename)
+            print(f"   Saved to: {filename}")
+            print()
+    
+    create_parameter_comparison_tables(df, args)
+
     # Generate timing table
     print("\n" + "="*90)
     print("TIMING ANALYSIS")

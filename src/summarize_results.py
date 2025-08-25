@@ -199,6 +199,15 @@ def calculate_success_ratio_filtered(true_params, estimated_params, tolerance, n
         return True  # Consider as successful if there are no identifiable parameters to check
     return calculate_success_ratio(filtered_true, filtered_estimated, tolerance)
 
+def calculate_max_relative_error_filtered(true_params, estimated_params, non_identifiable_list):
+    """Calculate maximum relative error excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:
+        return np.nan
+    return calculate_max_relative_error(filtered_true, filtered_estimated)
+
 def calculate_relative_median_error(true_params, estimated_params):
     """Calculate relative median error between true and estimated parameters"""
     assert true_params, "True parameters must be provided"
@@ -267,6 +276,23 @@ def calculate_success_ratio(true_params, estimated_params, tolerance=0.1):
             return False
 
     return True
+
+def calculate_max_relative_error(true_params, estimated_params):
+    """Calculate maximum relative error between true and estimated parameters"""
+    assert true_params, "True parameters must be provided"
+
+    if not estimated_params:
+        return np.nan
+
+    assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
+    errors = []
+    for param in true_params.keys():
+        true_val = float(true_params[param])
+        est_val = float(estimated_params[param])
+        assert abs(true_val) >= 1e-10, f"True parameter value for '{param}' is too small: {true_val}"            
+        errors.append(abs(est_val - true_val) / abs(true_val))
+
+    return max(errors)
 
 def validate_parameter_coverage(true_params, estimated_params):
     """Validate that all true parameters are covered in estimated parameters"""
@@ -399,6 +425,15 @@ def create_accuracy_tables(df, args):
             ), axis=1
         )
     
+    if 'max' in statistics:
+        df['max_relative_error'] = df.apply(
+            lambda row: calculate_max_relative_error_filtered(
+                row['true_params_parsed'], 
+                row['estimated_params_parsed'],
+                row['non_identifiable_parsed']
+            ), axis=1
+        )
+    
     software_list = sorted(df['software'].unique())
     noise_levels = sorted(df['noise'].unique())
     systems = sorted(df['name'].unique())
@@ -407,7 +442,8 @@ def create_accuracy_tables(df, args):
         'median': 'relative_median_error',
         'mean': 'relative_mean_error',
         'rmse': 'rmse',
-        'success_ratio': 'is_successful'
+        'success_ratio': 'is_successful',
+        'max': 'max_relative_error'
     }
 
     for statistic in statistics:
@@ -427,11 +463,17 @@ def create_accuracy_tables(df, args):
                 accuracy_table.columns = ['success_percentage', 'total_runs']
                 accuracy_table = accuracy_table['success_percentage'].unstack(fill_value=np.nan)
             else:
+                # Choose aggregation method based on statistic type
+                if statistic == 'max':
+                    agg_method = 'max'
+                else:
+                    agg_method = 'median'
+                    
                 accuracy_table = software_df.groupby(['name', 'noise'])[value_column].agg([
-                    'median', 'count'
+                    agg_method, 'count'
                 ]).round(DISPLAY_DIGITS)
 
-                accuracy_table = accuracy_table['median'].unstack(fill_value=np.nan)
+                accuracy_table = accuracy_table[agg_method].unstack(fill_value=np.nan)
             
             # Reorder columns by noise level
             accuracy_table = accuracy_table.reindex(columns=noise_levels, fill_value=np.nan)
@@ -462,8 +504,13 @@ def create_accuracy_tables(df, args):
                 noise_table.columns = ['success_percentage']
                 noise_table = noise_table['success_percentage'].unstack(fill_value=0.0)
             else:
-                # For other statistics, use median aggregation
-                noise_table = noise_df.groupby(['name', 'software'])[value_column].median().round(DISPLAY_DIGITS)
+                # Choose aggregation method based on statistic type
+                if statistic == 'max':
+                    agg_method = 'max'
+                else:
+                    agg_method = 'median'
+                    
+                noise_table = noise_df.groupby(['name', 'software'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
                 noise_table = noise_table.unstack(fill_value=np.nan)
             
             # Reorder columns by software list to ensure consistent ordering
@@ -536,7 +583,13 @@ def create_accuracy_tables(df, args):
             stats_by_noise.columns = ['success_pct']
             stats_by_noise = stats_by_noise['success_pct'].unstack(fill_value=0.0)
         else:
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(DISPLAY_DIGITS)
+            # Choose aggregation method based on statistic type
+            if statistic == 'max':
+                agg_method = 'max'
+            else:
+                agg_method = 'median'
+                
+            stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
             stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
         
         noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
@@ -630,16 +683,19 @@ def create_accuracy_tables(df, args):
                         tolerance = getattr(args, 'tolerance', 0.1)
                         row_data['MedianRelErr'] = calculate_relative_median_error(filtered_true, filtered_est)
                         row_data['MeanRelErr'] = calculate_mean_relative_error(filtered_true, filtered_est)
+                        row_data['MaxRelErr'] = calculate_max_relative_error(filtered_true, filtered_est)
                         row_data['RMSE'] = calculate_rmse(filtered_true, filtered_est)
                         row_data['Success'] = calculate_success_ratio(filtered_true, filtered_est, tolerance)
                     except Exception as e:
                         row_data['MedianRelErr'] = np.nan
                         row_data['MeanRelErr'] = np.nan
+                        row_data['MaxRelErr'] = np.nan
                         row_data['RMSE'] = np.nan
                         row_data['Success'] = False
                 else:
                     row_data['MedianRelErr'] = np.nan
                     row_data['MeanRelErr'] = np.nan
+                    row_data['MaxRelErr'] = np.nan
                     row_data['RMSE'] = np.nan
                     row_data['Success'] = False
                 
@@ -665,7 +721,7 @@ def create_accuracy_tables(df, args):
                 non_identifiable_true_columns.append(f'True_{param}')
                 non_identifiable_est_columns.append(f'Est_{param}')
             
-            overall_columns = ['MedianRelErr', 'MeanRelErr', 'RMSE', 'Success']
+            overall_columns = ['MedianRelErr', 'MeanRelErr', 'MaxRelErr', 'RMSE', 'Success']
             
             # Order: identifiable true, identifiable est, non-identifiable true, non-identifiable est, statistics
             ordered_columns = (identifiable_true_columns + identifiable_est_columns + 
@@ -801,7 +857,7 @@ Examples:
     
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
     parser.add_argument("--stats", "--statistics", dest="statistics", nargs='+', 
-                      choices=['median', 'mean', 'rmse', 'success_ratio', 'all'],
+                      choices=['median', 'mean', 'rmse', 'success_ratio', 'max', 'all'],
                       default=['all'],
                       help="Statistics to compute (default: median)")
     parser.add_argument("--tolerance", type=float, default=0.1,
@@ -816,7 +872,7 @@ Examples:
     
     # Handle 'all' option
     if 'all' in args.statistics:
-        args.statistics = ['median', 'mean', 'rmse', 'success_ratio']
+        args.statistics = ['median', 'mean', 'rmse', 'success_ratio', 'max']
     
     main(args)
 

@@ -199,6 +199,15 @@ def calculate_success_ratio_filtered(true_params, estimated_params, tolerance, n
         return True  # Consider as successful if there are no identifiable parameters to check
     return calculate_success_ratio(filtered_true, filtered_estimated, tolerance)
 
+def calculate_max_relative_error_filtered(true_params, estimated_params, non_identifiable_list):
+    """Calculate maximum relative error excluding non-identifiable parameters"""
+    filtered_true, filtered_estimated = filter_identifiable_parameters(
+        true_params, estimated_params, non_identifiable_list
+    )
+    if not filtered_true:
+        return np.nan
+    return calculate_max_relative_error(filtered_true, filtered_estimated)
+
 def calculate_relative_median_error(true_params, estimated_params):
     """Calculate relative median error between true and estimated parameters"""
     assert true_params, "True parameters must be provided"
@@ -267,6 +276,23 @@ def calculate_success_ratio(true_params, estimated_params, tolerance=0.1):
             return False
 
     return True
+
+def calculate_max_relative_error(true_params, estimated_params):
+    """Calculate maximum relative error between true and estimated parameters"""
+    assert true_params, "True parameters must be provided"
+
+    if not estimated_params:
+        return np.nan
+
+    assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
+    errors = []
+    for param in true_params.keys():
+        true_val = float(true_params[param])
+        est_val = float(estimated_params[param])
+        assert abs(true_val) >= 1e-10, f"True parameter value for '{param}' is too small: {true_val}"            
+        errors.append(abs(est_val - true_val) / abs(true_val))
+
+    return max(errors)
 
 def validate_parameter_coverage(true_params, estimated_params):
     """Validate that all true parameters are covered in estimated parameters"""
@@ -399,6 +425,15 @@ def create_accuracy_tables(df, args):
             ), axis=1
         )
     
+    if 'max' in statistics:
+        df['max_relative_error'] = df.apply(
+            lambda row: calculate_max_relative_error_filtered(
+                row['true_params_parsed'], 
+                row['estimated_params_parsed'],
+                row['non_identifiable_parsed']
+            ), axis=1
+        )
+    
     software_list = sorted(df['software'].unique())
     noise_levels = sorted(df['noise'].unique())
     systems = sorted(df['name'].unique())
@@ -407,7 +442,8 @@ def create_accuracy_tables(df, args):
         'median': 'relative_median_error',
         'mean': 'relative_mean_error',
         'rmse': 'rmse',
-        'success_ratio': 'is_successful'
+        'success_ratio': 'is_successful',
+        'max': 'max_relative_error'
     }
 
     for statistic in statistics:
@@ -427,11 +463,17 @@ def create_accuracy_tables(df, args):
                 accuracy_table.columns = ['success_percentage', 'total_runs']
                 accuracy_table = accuracy_table['success_percentage'].unstack(fill_value=np.nan)
             else:
+                # Choose aggregation method based on statistic type
+                if statistic == 'max':
+                    agg_method = 'max'
+                else:
+                    agg_method = 'median'
+                    
                 accuracy_table = software_df.groupby(['name', 'noise'])[value_column].agg([
-                    'median', 'count'
+                    agg_method, 'count'
                 ]).round(DISPLAY_DIGITS)
 
-                accuracy_table = accuracy_table['median'].unstack(fill_value=np.nan)
+                accuracy_table = accuracy_table[agg_method].unstack(fill_value=np.nan)
             
             # Reorder columns by noise level
             accuracy_table = accuracy_table.reindex(columns=noise_levels, fill_value=np.nan)
@@ -462,8 +504,13 @@ def create_accuracy_tables(df, args):
                 noise_table.columns = ['success_percentage']
                 noise_table = noise_table['success_percentage'].unstack(fill_value=0.0)
             else:
-                # For other statistics, use median aggregation
-                noise_table = noise_df.groupby(['name', 'software'])[value_column].median().round(DISPLAY_DIGITS)
+                # Choose aggregation method based on statistic type
+                if statistic == 'max':
+                    agg_method = 'max'
+                else:
+                    agg_method = 'median'
+                    
+                noise_table = noise_df.groupby(['name', 'software'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
                 noise_table = noise_table.unstack(fill_value=np.nan)
             
             # Reorder columns by software list to ensure consistent ordering
@@ -536,7 +583,13 @@ def create_accuracy_tables(df, args):
             stats_by_noise.columns = ['success_pct']
             stats_by_noise = stats_by_noise['success_pct'].unstack(fill_value=0.0)
         else:
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].median().round(DISPLAY_DIGITS)
+            # Choose aggregation method based on statistic type
+            if statistic == 'max':
+                agg_method = 'max'
+            else:
+                agg_method = 'median'
+                
+            stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
             stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
         
         noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
@@ -552,6 +605,144 @@ def create_accuracy_tables(df, args):
         print("="*90)
         print(software_summary.to_string())
         print()
+
+    # Generate parameter comparison tables (ground-truth vs estimation)
+    print("\n" + "="*90)
+    print("PARAMETER COMPARISON TABLES (Ground-truth vs Estimation)")
+    print("="*90)
+    
+    def create_parameter_comparison_tables(df, args):
+        """Create tables comparing ground-truth vs estimation results per parameter"""
+        
+        # Get valid results only
+        valid_df = df[df['params_valid'] == True].copy()
+        
+        if valid_df.empty:
+            print("No valid estimation results found for parameter comparison.")
+            return
+        
+        # Get unique combinations of model, software, and noise level
+        groups = valid_df.groupby(['name', 'software', 'noise'])
+        
+        for (model_name, software, noise_level), group in groups:
+            if len(group) == 0:
+                continue
+                
+            # Get all parameter names from the first valid row
+            first_valid_row = group.iloc[0]
+            true_params = first_valid_row['true_params_parsed']
+            estimated_params = first_valid_row['estimated_params_parsed']
+            non_identifiable = first_valid_row['non_identifiable_parsed']
+            
+            # Get both identifiable and non-identifiable parameters
+            identifiable_params = [p for p in true_params.keys() if p not in non_identifiable]
+            non_identifiable_params = [p for p in true_params.keys() if p in non_identifiable]
+            all_params = identifiable_params + non_identifiable_params
+            
+            if not all_params:
+                print("   No parameters found.")
+                continue
+                
+            print(f"\nModel: {model_name} | Software: {software} | Noise: {noise_level:.0e}")
+            print("-" * 80)
+            if identifiable_params and non_identifiable_params:
+                print(f"   Identifiable parameters: {', '.join(sorted(identifiable_params))}")
+                print(f"   Non-identifiable parameters: {', '.join(sorted(non_identifiable_params))}")
+            elif non_identifiable_params:
+                print(f"   All parameters are non-identifiable: {', '.join(sorted(non_identifiable_params))}")
+            else:
+                print(f"   All parameters are identifiable: {', '.join(sorted(identifiable_params))}")
+            print()
+            
+            # Create comparison table
+            comparison_data = []
+            
+            for idx, (_, row) in enumerate(group.iterrows()):
+                row_data = {'Run': idx + 1}
+                
+                true_vals = row['true_params_parsed']
+                est_vals = row['estimated_params_parsed']
+                
+                # Add true values (prefixed with 'True_')
+                for param in all_params:
+                    if param in true_vals:
+                        row_data[f'True_{param}'] = true_vals[param]
+                
+                # Add estimated values (prefixed with 'Est_')
+                for param in all_params:
+                    if param in est_vals:
+                        row_data[f'Est_{param}'] = est_vals[param]
+                    else:
+                        row_data[f'Est_{param}'] = np.nan
+                
+                # Add overall statistics for this run (using existing functions)
+                filtered_true, filtered_est = filter_identifiable_parameters(true_vals, est_vals, non_identifiable)
+                
+                if filtered_true and filtered_est:
+                    try:
+                        tolerance = getattr(args, 'tolerance', 0.1)
+                        row_data['MedianRelErr'] = calculate_relative_median_error(filtered_true, filtered_est)
+                        row_data['MeanRelErr'] = calculate_mean_relative_error(filtered_true, filtered_est)
+                        row_data['MaxRelErr'] = calculate_max_relative_error(filtered_true, filtered_est)
+                        row_data['RMSE'] = calculate_rmse(filtered_true, filtered_est)
+                        row_data['Success'] = calculate_success_ratio(filtered_true, filtered_est, tolerance)
+                    except Exception as e:
+                        row_data['MedianRelErr'] = np.nan
+                        row_data['MeanRelErr'] = np.nan
+                        row_data['MaxRelErr'] = np.nan
+                        row_data['RMSE'] = np.nan
+                        row_data['Success'] = False
+                else:
+                    row_data['MedianRelErr'] = np.nan
+                    row_data['MeanRelErr'] = np.nan
+                    row_data['MaxRelErr'] = np.nan
+                    row_data['RMSE'] = np.nan
+                    row_data['Success'] = False
+                
+                comparison_data.append(row_data)
+            
+            # Create DataFrame and format
+            comparison_df = pd.DataFrame(comparison_data)
+            
+            # Set Run as index
+            comparison_df.set_index('Run', inplace=True)
+            
+            # Group columns: identifiable parameters, non-identifiable parameters, statistics
+            identifiable_true_columns = []
+            identifiable_est_columns = []
+            non_identifiable_true_columns = []
+            non_identifiable_est_columns = []
+            
+            for param in sorted(identifiable_params):
+                identifiable_true_columns.append(f'True_{param}')
+                identifiable_est_columns.append(f'Est_{param}')
+            
+            for param in sorted(non_identifiable_params):
+                non_identifiable_true_columns.append(f'True_{param}')
+                non_identifiable_est_columns.append(f'Est_{param}')
+            
+            overall_columns = ['MedianRelErr', 'MeanRelErr', 'MaxRelErr', 'RMSE', 'Success']
+            
+            # Order: identifiable true, identifiable est, non-identifiable true, non-identifiable est, statistics
+            ordered_columns = (identifiable_true_columns + identifiable_est_columns + 
+                             non_identifiable_true_columns + non_identifiable_est_columns + 
+                             overall_columns)
+            comparison_df = comparison_df.reindex(columns=ordered_columns)
+            
+            # Sort by RMSE in descending order (worst performers first)
+            comparison_df = comparison_df.sort_values('RMSE', ascending=False)
+            
+            # Print the table
+            print(comparison_df.to_string())
+            
+            # Save to CSV
+            safe_model_name = model_name.replace('/', '_').replace(' ', '_')
+            filename = f"parameter_comparison_{safe_model_name}_{software}_noise_{noise_level:.0e}.csv"
+            comparison_df.to_csv(filename)
+            print(f"   Saved to: {filename}")
+            print()
+    
+    create_parameter_comparison_tables(df, args)
 
     # Generate timing table
     print("\n" + "="*90)
@@ -666,7 +857,7 @@ Examples:
     
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
     parser.add_argument("--stats", "--statistics", dest="statistics", nargs='+', 
-                      choices=['median', 'mean', 'rmse', 'success_ratio', 'all'],
+                      choices=['median', 'mean', 'rmse', 'success_ratio', 'max', 'all'],
                       default=['all'],
                       help="Statistics to compute (default: median)")
     parser.add_argument("--tolerance", type=float, default=0.1,
@@ -681,7 +872,7 @@ Examples:
     
     # Handle 'all' option
     if 'all' in args.statistics:
-        args.statistics = ['median', 'mean', 'rmse', 'success_ratio']
+        args.statistics = ['median', 'mean', 'rmse', 'success_ratio', 'max']
     
     main(args)
 

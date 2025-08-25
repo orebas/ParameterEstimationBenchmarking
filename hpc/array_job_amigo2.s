@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=01:00:00
-#SBATCH --mem=4GB
+#SBATCH --mem=8GB
 #SBATCH --job-name=array_job_amigo2
 #SBATCH --output=output/array_job_amigo2_%A_%a.out
 #SBATCH --error=output/array_job_amigo2_%A_%a.err

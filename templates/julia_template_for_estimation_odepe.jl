@@ -58,6 +58,7 @@ pep = ParameterEstimationProblem(
 # Create EstimationOptions with desired settings
 # You can customize these options based on your needs
 opts = EstimationOptions(
+    ;
     # Data and sampling parameters
     datasize = 1001,  # Number of data points (from original example)
     noise_level = 0.0,  # No noise for this example
@@ -98,7 +99,7 @@ opts = EstimationOptions(
     debug_cas_diagnostics = false,
 
     # Feature flags
-    use_new_flow = true,  # Use optimized workflow
+    # use_new_flow = true,  # Use optimized workflow
     use_si_template = true,  # Use StructuralIdentifiability templates
     try_more_methods = true,  # Try additional methods on failure
     save_system = true,  # Save polynomial systems

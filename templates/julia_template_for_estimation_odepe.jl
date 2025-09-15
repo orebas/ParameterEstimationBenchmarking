@@ -54,10 +54,26 @@ pep = ParameterEstimationProblem(
     OrderedDict(states .=> ic),
     0,
 )
- 
+
+# Create EstimationOptions with desired settings
+# You can customize these options based on your needs
+opts = EstimationOptions(
+    datasize = length(data_sample["t"]),
+    noise_level = 0.000,
+    system_solver = SolverHC,
+    flow = FlowStandard,
+    use_si_template = true,
+    polish_solver_solutions = true,
+    polish_solutions = false,
+    polish_maxiters = 50,
+    polish_method = PolishLBFGS,
+    # opt_ad_backend = :enzyme,
+    diagnostics = true)
+
+# Run the analysis with the selected options
 meta, results = analyze_parameter_estimation_problem(
     pep,
-    nooutput = true,
+    opts,  # Use the main opts, or replace with opts_fast, opts_accurate, or opts_noisy
 )
  
 (solutions_vector, besterror,
@@ -72,6 +88,26 @@ table = merge(
     Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
     Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
 )
- 
-CSV.write(joinpath(@__DIR__, "result.csv"), table, header = string.(collect(keys(table))))
 
+result_file = joinpath(@__DIR__, "result.csv")
+CSV.write(result_file, table, header = string.(collect(keys(table))))
+
+println("\n" * "="^60)
+println("Parameter Estimation Complete!")
+println("="^60)
+println("\nResults saved to: ", result_file)
+println("Number of solutions found: ", length(solutions_vector))
+if !isempty(solutions_vector)
+    println("\nBest solution:")
+    best_sol = solutions_vector[1]
+    println("  States: ", best_sol.states)
+    println("  Parameters: ", best_sol.parameters)
+    println("  Error metrics:")
+    println("    Best error: ", besterror)
+    println("    Min error: ", best_min_error)
+    println("    Mean error: ", best_mean_error)
+    println("    Median error: ", best_median_error)
+    println("    Max error: ", best_max_error)
+    println("    Approximation error: ", best_approximation_error)
+    println("    RMS error: ", best_rms_error)
+end

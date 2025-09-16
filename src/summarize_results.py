@@ -16,7 +16,7 @@ import shutil
 import pandas as pd
 
 # Global configuration for number display precision
-DISPLAY_DIGITS = 2
+DISPLAY_DIGITS = 4
 
 pd.set_option("display.precision", DISPLAY_DIGITS)
 pd.set_option('display.float_format', f'{{:.{DISPLAY_DIGITS}f}}'.format)
@@ -230,7 +230,7 @@ def calculate_mean_relative_error(true_params, estimated_params):
     assert true_params, "True parameters must be provided"
 
     if not estimated_params:
-        return 1. # np.nan
+        return 1.0 # np.nan  # 1.0
 
     assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
     errors = []
@@ -247,7 +247,7 @@ def calculate_rmse(true_params, estimated_params):
     assert true_params, "True parameters must be provided"
 
     if not estimated_params:
-        return 1. # np.nan
+        return 1.0 # np.nan   # 1.0
 
     assert set(true_params.keys()) == set(estimated_params.keys()), "True parameters and estimated parameters must have the same keys"
     errors = []

@@ -7,7 +7,7 @@ source setup_julia.s
 cd ..
 
 # 2. Generate data
-python src/generate_data_simple.py  \
+python src/generate_data.py         \
     -d results/EXAMPLE              \
     config/config.json              \
     config/systems.json

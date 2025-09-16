@@ -9,10 +9,12 @@ import subprocess
 import chevron
 import pandas as pd
 pd.set_option("display.precision",16)
+import shutil
 
 import argparse
 from datetime import datetime
 from pathlib import Path
+from subprocess import PIPE
 
 from shared import warn, get_settings, JULIA_ENVIRONMENTS
     
@@ -31,6 +33,7 @@ def generate_instance(args, system, instance_id, param_vals, initial_vals):
         "parameter_values": parameter_values,
         "time": {"start": args.config['TIME_INTERVAL'][0], "end": args.config['TIME_INTERVAL'][1], "count": args.config['NUM_PTS']},
         "count": args.config['NUM_PTS'],
+        "non_identifiable": system["non_identifiable"]
     }
     instance = instance | system.copy()
     return instance
@@ -80,8 +83,14 @@ OUTPUT:             {output_dir.as_posix()}
 
     # Create output directories
     if os.path.exists(output_dir):
-        warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
-        exit(1)
+        warn(f"Directory {output_dir} already exists.")
+        answer = input("Would you like to redo the generation? (y/n) ")
+        if answer.lower() == 'y':
+            warn(f"Removing existing directory {output_dir}")
+            shutil.rmtree(output_dir)
+        else:
+            warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
+            exit(1)
 
     os.makedirs(output_dir)
     os.makedirs(output_dir / args.config['FILETREE'])
@@ -96,13 +105,16 @@ OUTPUT:             {output_dir.as_posix()}
 
     # Generate data and populate instances
     instance_stash = {}
+    
+    instances_to_generate = []
     for system in args.systems["systems"]:
-        print(system["name"])
-        instance_basename = system["name"] + "_"
+        for i in range(args.config['NUM_TESTS']):
+            instance_name = system["name"] + "_" + str(i)
+            instances_to_generate.append(instance_name)
 
-        i = 0
-        while i < args.config['NUM_TESTS']:        
-            instance_name = instance_basename + str(i)
+    while instances_to_generate:
+        for instance_name in instances_to_generate:
+            system = args.systems["systems"][[system["name"] for system in args.systems["systems"]].index("_".join(instance_name.split("_")[:-1]))]
             data_filepath = Path("..") / args.config['DATA_DIR'] / (instance_name + ".csv")
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
@@ -122,64 +134,63 @@ OUTPUT:             {output_dir.as_posix()}
             
             with open(data_generation_filepath, 'w') as output_file:
                 output_file.write(julia_file)
-            
-            print(instance_name)
-            cmd = shlex.split('julia ' + data_generation_filepath.as_posix())
-            logs_io = open(log_filepath, 'a+')
-            try:
-                output = subprocess.run(
-                    cmd,
-                    check=True,
-                    stdout=logs_io,
-                    stderr=logs_io
-                )
-                i += 1
-            except subprocess.CalledProcessError as err:
-                warn("Error from {}".format(cmd))
-                warn("Logs written to {}".format(log_filepath.as_posix()))
-                warn("Trying again with different parameter values.")
-                continue
-            finally:
-                logs_io.close()
 
-    instances = {"instances":[]}
-    print(f"""
-###  GENERATING NOISY DATA  ###
+        cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir) + ' ' + "\"" + ",".join(instances_to_generate) + "\"")
+        try:
+            output = subprocess.run(
+                cmd,
+                check=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+            )
+        except subprocess.CalledProcessError as err:
+            warn("Error from {}".format(cmd))    
+    
+        instances = {"instances":[]}
+        print(f"""
+    ###  GENERATING NOISY DATA  ###
 
-OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY']}
-""")
-        
-    for (mnemonic, noise_level) in args.config['NOISE_LEVEL'].items():
-        for system in args.systems["systems"]:
-            print(mnemonic, system["name"])
-            instance_basename = system["name"] + "_"
-            for i in range(args.config['NUM_TESTS']):
-                instance_name = instance_basename + str(i)
-                
-                data_filepath_orig = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
+    OUTPUT:             {output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY']}
+    """)
 
-                df = pd.read_csv(data_filepath_orig, header=None, index_col=False)
-                if noise_level == 0:
-                    df = df
-                else:
-                    assert args.config['NOISE_TYPE'] in ("ADDITIVE", "MULTIPLICATIVE")
-                    if args.config['NOISE_TYPE'] == "ADDITIVE":
-                        df.loc[:, df.columns != df.columns[0]] += list(df[df.columns[1:]].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1))
-                    elif args.config['NOISE_TYPE'] == "MULTIPLICATIVE": 
-                        df.loc[:, df.columns != df.columns[0]] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1)))
+        instances_to_generate = []
+        for (mnemonic, noise_level) in args.config['NOISE_LEVEL'].items():
+            for system in args.systems["systems"]:
+                print(mnemonic, system["name"])
+                instance_basename = system["name"] + "_"
+                for i in range(args.config['NUM_TESTS']):
+                    instance_name = instance_basename + str(i)
+                    
+                    data_filepath_orig = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
+
+                    if not os.path.exists(data_filepath_orig):
+                        if instance_name not in set(instances_to_generate):
+                            instances_to_generate.append(instance_name)
+                            warn(f"Need to regenerate data for {instance_name}")
+                        continue
+
+                    df = pd.read_csv(data_filepath_orig, header=None, index_col=False)
+                    if noise_level == 0:
+                        df = df
                     else:
-                        exit(1)
+                        assert args.config['NOISE_TYPE'] in ("ADDITIVE", "MULTIPLICATIVE")
+                        if args.config['NOISE_TYPE'] == "ADDITIVE":
+                            df.loc[:, df.columns != df.columns[0]] += list(df[df.columns[1:]].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1))
+                        elif args.config['NOISE_TYPE'] == "MULTIPLICATIVE": 
+                            df.loc[:, df.columns != df.columns[0]] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1)))
+                        else:
+                            assert False
 
-                instance = {}
-                instance = instance | instance_stash[instance_name]
-                instance['id'] = instance['id'] + "_" + mnemonic
-                instance['data'] = df.values.T.tolist()
-                instances['instances'].append(instance)
+                    instance = {}
+                    instance = instance | instance_stash[instance_name]
+                    instance['id'] = instance['id'] + "_" + mnemonic
+                    instance['data'] = df.values.T.tolist()
+                    instances['instances'].append(instance)
 
-                instance_path = output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'] / instance['id']
-                os.makedirs(instance_path)
-                df.to_csv(instance_path / 'data.csv', index=False, header=False)
-
+                    instance_path = output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'] / instance['id']
+                    os.makedirs(instance_path, exist_ok=True)
+                    df.to_csv(instance_path / 'data.csv', index=False, header=False)
+        
     instances['instances'] = [instance | {'index': i} for i, instance in enumerate(instances['instances'])]
 
     with open(output_dir / "huge_json.json", "w") as io:

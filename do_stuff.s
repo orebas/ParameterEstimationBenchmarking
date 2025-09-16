@@ -3,7 +3,7 @@ set -e
 
 source environments/venv/bin/activate
 
-python src/generate_data_simple.py  \
+python src/generate_data.py         \
     -d results/FINAL5               \
     config/config.json              \
     config/systems.json

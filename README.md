@@ -9,7 +9,7 @@
 1. Run the following command:
 
 ```
-./run.sh
+./run.s
 ```
 
 ## Running on HPC

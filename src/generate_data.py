@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
 
-from shared import warn, get_settings, JULIA_ENVIRONMENTS
+from shared import warn, get_settings, JULIA_ENVIRONMENTS, get_file_meta_header
     
 def generate_instance(args, system, instance_id, param_vals, initial_vals):
     state_values = { 
@@ -131,9 +131,10 @@ OUTPUT:             {output_dir.as_posix()}
 
             with open(parent / args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)
-            
+
+            file_meta_header = get_file_meta_header("#")
             with open(data_generation_filepath, 'w') as output_file:
-                output_file.write(julia_file)
+                output_file.write(file_meta_header + julia_file)
 
         cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir) + ' ' + "\"" + ",".join(instances_to_generate) + "\"")
         try:

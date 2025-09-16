@@ -23,7 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from termcolor import colored
 
-from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONMENTS
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONMENTS, get_file_meta_header
 
 TEMPLATE_ESTIMATION = {
     "pe"     : "templates/julia_template_for_estimation_pe.jl",
@@ -59,8 +59,10 @@ def get_sciml_measurements(instance):
     sciml_measurements = ','.join([pattern.sub(lambda m: subs[re.escape(m.group(0))], value) for key, value in instance["measurements"].items()])
     return sciml_measurements
 
+instance = {"state_variables": ["x"], "parameter_variables": [], "measurements": {"y1" : "x/x"}}
+assert get_sciml_measurements(instance) == "sol[1, :]/sol[1, :]"
 instance = {"state_variables" : ["x1", "x2"], "parameter_variables": ["a", "b"], "measurements": {"y1": "x1", "y2": "a*x1^2 + b * b * x2"}}
-assert get_sciml_measurements(instance) == ""
+assert get_sciml_measurements(instance) == "sol[1, :],p[(length(ic) + 1):end].*sol[1, :]^2 + p[(length(ic) + 2):end] .* p[(length(ic) + 2):end] .* sol[2, :]"
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE or args.software == 'all'
@@ -109,14 +111,8 @@ OUTPUT:             {args.dir}
             settings["data_expr"] = get_sciml_measurements(instance)
             settings["path_to_src"] = args.config["PATH_TO_SRC"]
 
-            comment = SOFTWARE_COMMENT[software]
-            file_meta_header = f"""{comment}{comment}{comment} This file is machine-generated.
-{comment}{comment}{comment} Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-{comment}{comment}{comment} Author: {getpass.getuser()}
-{comment}{comment}{comment} Args: {" ".join(sys.argv)}
-{comment}{comment}{comment} Environment: {sys.prefix}
+            file_meta_header = get_file_meta_header(SOFTWARE_COMMENT[software])
 
-"""
             if software in ['pe','odepe','sciml','amigo2']:
                 settings.update({'julia_env_path' : f'joinpath(dirname(dirname(dirname(dirname(dirname(@__DIR__))))), string({JULIA_ENVIRONMENTS[software]}))'})
                 with open(args.dir / args.config['FILETREE'] / software / instance['id'] / f'script.{FILE_EXT[software]}', 'w') as output_file:

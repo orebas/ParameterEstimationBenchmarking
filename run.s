@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env -S bash -e
 
 # 1. Setup packages
 cd environments

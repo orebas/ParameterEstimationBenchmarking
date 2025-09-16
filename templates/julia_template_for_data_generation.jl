@@ -45,9 +45,12 @@ PEP = ParameterEstimationProblem(
     0,
 )
 
-estimation_problem_with_data = sample_problem_data(PEP, datasize = {{time_count}}, time_interval = [{{time_start}}, {{time_end}}], noise_level = 0.000)
 
-
+opts = EstimationOptions(
+    datasize={{time_count}},
+    time_interval=[{{time_start}}, {{time_end}}]
+)
+estimation_problem_with_data = sample_problem_data(PEP, opts)
 
 data_sample = estimation_problem_with_data.data_sample
 

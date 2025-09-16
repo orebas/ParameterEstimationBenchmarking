@@ -17,6 +17,7 @@ import shutil
 import pandas as pd
 pd.set_option("display.precision",16)
 
+import getpass
 import argparse
 from datetime import datetime
 import time
@@ -45,6 +46,11 @@ def _main(args):
         stdout_file = open(stdout_filepath, "w")
         stderr_filepath = str(args.dir / args.config['FILETREE'] / args.software / instance['id'] / STDERR_FILENAME)
         stderr_file = open(stderr_filepath, "w")
+        slurm_task_id = os.environ.get("SLURM_ARRAY_TASK_ID")
+        print(f"### Run on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=stdout_file)
+        print(f"### Run by: {getpass.getuser()}", file=stdout_file)
+        print(f"### SLURM ARRAY JOB?: {slurm_task_id}\n", file=stdout_file)
+        stdout_file.flush()
         start_time = time.time()
         try:
             p = subprocess.run(cmd, stdout=stdout_file, stderr=stderr_file)

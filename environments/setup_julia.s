@@ -34,6 +34,6 @@ rm -rf julia_odepe
 
 julia -e "using Pkg; Pkg.activate(\"julia_pe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"ParameterEstimation.jl/\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"CSV\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
 
-julia -e "using Pkg; Pkg.activate(\"julia_odepe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"GaussianProcesses.jl/\"); Pkg.develop(path=\"mpfi.jl/\"); Pkg.develop(path=\"rs.jl/\"); Pkg.develop(path=\"RationalUnivariateRepresentation.jl/\"); Pkg.add(\"SIAN\"); Pkg.develop(path=\"ODEParameterEstimation/\"); Pkg.add(\"OrderedCollections\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"Optim\"); Pkg.add(\"LineSearches\"); Pkg.add(\"CSV\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
+julia -e "using Pkg; Pkg.activate(\"julia_odepe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"GaussianProcesses.jl/\"); Pkg.develop(path=\"mpfi.jl/\"); Pkg.develop(path=\"rs.jl/\"); Pkg.develop(path=\"RationalUnivariateRepresentation.jl/\"); Pkg.add(\"SIAN\"); Pkg.develop(path=\"ODEParameterEstimation/\"); Pkg.add(\"OrderedCollections\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"Optim\"); Pkg.add(\"LineSearches\"); Pkg.add(\"CSV\"); Pkg.add(\"JSON\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
 
 

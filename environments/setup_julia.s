@@ -31,9 +31,11 @@ git clone https://github.com/orebas/ODEParameterEstimation
 
 rm -rf julia_pe
 rm -rf julia_odepe
+rm -rf julia_sciml
 
 julia -e "using Pkg; Pkg.activate(\"julia_pe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"ParameterEstimation.jl/\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"CSV\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
 
-julia -e "using Pkg; Pkg.activate(\"julia_odepe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"GaussianProcesses.jl/\"); Pkg.develop(path=\"mpfi.jl/\"); Pkg.develop(path=\"rs.jl/\"); Pkg.develop(path=\"RationalUnivariateRepresentation.jl/\"); Pkg.add(\"SIAN\"); Pkg.develop(path=\"ODEParameterEstimation/\"); Pkg.add(\"OrderedCollections\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"Optim\"); Pkg.add(\"LineSearches\"); Pkg.add(\"CSV\"); Pkg.add(\"JSON\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
+julia -e "using Pkg; Pkg.activate(\"julia_odepe\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.develop(path=\"GaussianProcesses.jl/\"); Pkg.develop(path=\"mpfi.jl/\"); Pkg.develop(path=\"rs.jl/\"); Pkg.develop(path=\"RationalUnivariateRepresentation.jl/\"); Pkg.add(\"SIAN\"); Pkg.develop(path=\"ODEParameterEstimation/\"); Pkg.add(\"OrderedCollections\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"BenchmarkTools\"); Pkg.add(\"Optim\"); Pkg.add(\"LineSearches\"); Pkg.add(\"CSV\"); Pkg.add(\"Distributions\"); Pkg.add(\"JSON\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
 
+julia -e "using Pkg; Pkg.activate(\"julia_sciml\"); Pkg.add(\"MKL\"); Pkg.add(name=\"ModelingToolkit\", version=\"10\"); Pkg.add(\"DifferentialEquations\"); Pkg.add(\"Optimization\"); Pkg.add(\"OptimizationPolyalgorithms\"); Pkg.add(\"OptimizationOptimJL\"); Pkg.add(\"SciMLSensitivity\"); Pkg.add(\"ForwardDiff\"); Pkg.add(\"StaticArrays\"); Pkg.add(\"CSV\"); Pkg.add(\"Distributions\"); Pkg.resolve(); Pkg.instantiate(); Pkg.status(mode=PKGMODE_MANIFEST);"
 

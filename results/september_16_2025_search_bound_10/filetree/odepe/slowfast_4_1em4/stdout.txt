@@ -1,0 +1,973 @@
+### Run on: 2025-09-17 04:33:27
+### Run by: ad7760
+### SLURM ARRAY JOB?: 434
+
+Starting model: slowfast
+Using NEW optimized parameter estimation flow
+[DEBUG-ODEPE] Derivative order: PE formula=9, heuristic=4, using n=9
+[DEBUG-ODEPE] Starting identifiability analysis with:
+ deriv_level: Dict(4 => 9, 2 => 9, 3 => 9, 1 => 9)
+
+[DEBUG-ODEPE] Before Jacobian computation:
+  varlist: Num[k1, k2, eB, xA(t), xB(t), xC(t), eA(t), eC(t)]
+  parameter_values keys: SymbolicUtils.BasicSymbolic{Real}[k1, k2, eB]
+  ordered_test_points[1] keys: SymbolicUtils.BasicSymbolic{Real}[k1, k2, eB, xA(t), xB(t), xC(t), eA(t), eC(t)]
+[DEBUG-ODEPE] Initial max_rank with n=9: 8
+[DEBUG-ODEPE] Jacobian size: (40, 8)
+[DEBUG-ODEPE] PE would use n=9 derivatives
+[DEBUG-ODEPE] Testing n=8: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=7: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=6: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=5: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=4: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=3: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=2: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=1: rank=6 (vs max_rank=8)
+[DEBUG-ODEPE] Rank dropped! Reverting to n=2
+[DEBUG-ODEPE] Final derivative order after rank reduction: n=2
+[DEBUG-ODEPE] Starting per-measurement refinement...
+[DEBUG-ODEPE] Round 1: Reduced deriv_level[4] from 2 to 1, rank preserved at 8
+[DEBUG-ODEPE] Round 2: Reduced deriv_level[4] from 1 to 0, rank preserved at 8
+[DEBUG-ODEPE] Round 3: Reduced deriv_level[3] from 2 to 1, rank preserved at 8
+[DEBUG-ODEPE] Round 4: Reduced deriv_level[3] from 1 to 0, rank preserved at 8
+[DEBUG-ODEPE] Final deriv_level after refinement: Dict(4 => 0, 2 => 2, 3 => 0, 1 => 2)
+
+[DEBUG-ODEPE] DD structure analysis:
+[DEBUG-ODEPE]   DD.obs_lhs dimensions: (10,)
+[DEBUG-ODEPE]   DD.states_lhs dimensions: (9,)
+[DEBUG-ODEPE]   Sample DD.obs_lhs[1][1:min(3,end)]: SymbolicUtils.BasicSymbolic{Real}[y1(t), y2(t), y3(t)]
+[DEBUG-ODEPE]   Sample DD.states_lhs[1][1:min(3,end)]: SymbolicUtils.BasicSymbolic{Real}[xAˍt(t), xBˍt(t), xCˍt(t)]
+Phase 3: Solving at 8 shooting points using a reused SI template...
+
+--- Solving at shooting point index: 1 (t=-1.0) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.3680013844684764, 0.028984314778112155, 0.11422311630699017, 0.25375174233745174, 0.19299877772424912, 0.0, 0.9180681640737715, 1.1999776361882586, 0.1559537450882304, 0.11419185365546847, -0.14317616843358064, 0.028976381825818433, 0.0, -0.051305241500418604, 0.0, 0.022328859674600174, -0.013018794421774959, -0.0034822692898034626, 0.01650106371157842, 0.0, 0.0], [0.23999973651329615, 0.0, 0.3680013844684764, 0.028984314778112155, 0.1858519958062842, 0.15595374508823065, 0.19299877772424912, 0.0, 0.8464392845744771, 0.8299943007955365, 0.2537517423374514, 0.18580112846552727, -0.21478544324363943, 0.028976381825818433, 0.0, -0.08347856227761372, 0.0, 0.05450218045179528, -0.013018794421774955, -0.013830023250833235, 0.02684881767260819, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.7599102209087637e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.7599102209087637e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.321930452034367e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.321930452034367e-17
+
+--- Solving at shooting point index: 144 (t=-0.714) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.37742726701754015, 0.036761143549139584, 0.24615808752333523, 0.14933957246338578, 0.19299877772424912, 0.0, 0.7771234435874742, 0.8044342841850182, 0.2663290420117597, 0.1702093987063922, -0.2069705422555318, 0.02541899883206258, 0.0, -0.08054126507563279, 0.0, 0.055122266243570216, -0.012027998092055226, -0.014680660362167216, 0.026708658454222444, 0.0, 0.0], [0.23999973651329615, 0.0, 0.37742726701754015, 0.036761143549139584, 0.13802904584291048, 0.2663290420117595, 0.19299877772424912, 0.0, 0.8852524852678987, 1.2466003975444266, 0.14933957246338594, 0.09544208412291826, -0.13220322767205786, 0.02541899883206258, 0.0, -0.045162172330887373, 0.0, 0.019743173498824793, -0.012027998092055224, -0.002948437089384946, 0.01497643518144017, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 4.0295191246331285e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 4.0295191246331285e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.1391339688615314e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.1391339688615314e-17
+
+--- Solving at shooting point index: 287 (t=-0.428) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.3889337011069122, 0.043543045821451326, 0.16094427194645827, 0.270547347195661, 0.19299877772424912, 0.0, 0.8487972427041001, 1.265814355753452, 0.14734959424688318, 0.08152688348887104, -0.12506992931032235, 0.022056882053043795, 0.0, -0.04048588538940616, 0.0, 0.01842900333636236, -0.010953348890971408, -0.0027155061639874507, 0.013668855054958857, 0.0, 0.0], [0.23999973651329615, 0.0, 0.3889337011069122, 0.043543045821451326, 0.2955084202573052, 0.14734959424688307, 0.19299877772424912, 0.0, 0.7142330943932533, 0.7986944325963555, 0.27054734719566115, 0.1496908231459916, -0.19323386896744293, 0.022056882053043795, 0.0, -0.07433579269053947, 0.0, 0.05227891063749567, -0.010953348890971406, -0.014143920587253484, 0.025097269478224892, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 4.101554868718458e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 4.101554868718458e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.7606182106776037e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.7606182106776037e-17
+
+--- Solving at shooting point index: 430 (t=-0.142) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.40224673628112595, 0.04941151038872423, 0.1832284868997589, 0.26967155175906904, 0.19299877772424912, 0.0, 0.8122040199767481, 1.2639197886709783, 0.14778629930730522, 0.07062111600615595, -0.12003262639488019, 0.019044505940337304, 0.0, -0.03678368359137302, 0.0, 0.017739177651035706, -0.009919513033500166, -0.002621607417801422, 0.012541120451301587, 0.0, 0.0], [0.23999973651329615, 0.0, 0.40224673628112595, 0.04941151038872423, 0.33434432434077316, 0.1477862993073052, 0.19299877772424912, 0.0, 0.6610881825357338, 0.8011318036811407, 0.2696715517590691, 0.12886516564526979, -0.178276676033994, 0.019044505940337304, 0.0, -0.0671206538088733, 0.0, 0.048076147868536, -0.009919513033500166, -0.012964769398306564, 0.02288428243180673, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 3.4431944772994274e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 3.4431944772994274e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 1.4253446361053268e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 1.4253446361053268e-17
+
+--- Solving at shooting point index: 572 (t=0.142) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.4170110858487411, 0.054437875965249766, 0.20319348710994267, 0.26791151989923206, 0.19299877772424912, 0.0, 0.7794683022313986, 1.254793877035581, 0.1483893922209553, 0.06122695165836735, -0.11566482762361711, 0.016403405677590004, 0.0, -0.033566839150000104, 0.0, 0.017163433472410103, -0.008992942894889574, -0.002546871461395735, 0.011539814356285311, 0.0, 0.0], [0.23999973651329615, 0.0, 0.4170110858487411, 0.054437875965249766, 0.36685827167612145, 0.14838939222095532, 0.19299877772424912, 0.0, 0.6158035176652199, 0.8020684590457466, 0.26791151989923195, 0.11054298041173283, -0.1649808563769826, 0.016403405677590004, 0.0, -0.06060367766382431, 0.0, 0.0442002719862343, -0.008992942894889574, -0.011841762047791478, 0.02083470494268105, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 3.4969367548130716e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 3.4969367548130716e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.0146247272512753e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.0146247272512753e-17
+
+--- Solving at shooting point index: 715 (t=0.428) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.43321749964660733, 0.05877761243566435, 0.21969766525280632, 0.2675386302718734, 0.19299877772424912, 0.0, 0.747223936113704, 1.2528011007744524, 0.1485134976623301, 0.05219522785359533, -0.11097284028925967, 0.013964239766679229, 0.0, -0.030445204423560326, 0.0, 0.0164809646568811, -0.00814526828982651, -0.002447645706042656, 0.010592913995869166, 0.0, 0.0], [0.23999973651329615, 0.0, 0.43321749964660733, 0.05877761243566435, 0.3957728648294647, 0.14851349766233, 0.19299877772424912, 0.0, 0.5711487365370459, 0.8022163887057369, 0.2675386302718736, 0.09402673821896808, -0.15280435065463244, 0.013964239766679229, 0.0, -0.05484530644040266, 0.0, 0.04088106667372343, -0.008145268289826512, -0.010937264581941103, 0.01908253287176762, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 1.9353022065693008e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 1.9353022065693008e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 1.7461374871273887e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 1.7461374871273887e-17
+
+--- Solving at shooting point index: 858 (t=0.714) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.45056606725009857, 0.06242443130671751, 0.40457757003020406, 0.15429533402471415, 0.19299877772424912, 0.0, 0.5259187012132766, 0.8356461994547597, 0.2605752173071473, 0.07461694854782469, -0.1370413798545422, 0.01151304700009152, 0.0, -0.047222634335760176, 0.0, 0.035709587335668654, -0.007286232138363051, -0.009305033479940415, 0.01659126561830347, 0.0, 0.0], [0.23999973651329615, 0.0, 0.45056606725009857, 0.06242443130671751, 0.23956396142283923, 0.26057521730714783, 0.19299877772424912, 0.0, 0.6909323098206417, 1.2459323364864427, 0.15429533402471385, 0.044183200225525465, -0.10660763153224297, 0.01151304700009152, 0.0, -0.027962107116942563, 0.0, 0.016449060116851044, -0.007286232138363053, -0.00253801322512213, 0.009824245363485182, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.478482863031416e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.478482863031416e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 1.440547133470819e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 1.440547133470819e-17
+
+--- Solving at shooting point index: 1001 (t=1.0) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999973651329615 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999973651329615, 0.0, 0.468854346854178, 0.06533499479192148, 0.30793007971410563, 0.1979553798586015, 0.19299877772424912, 0.0, 0.5166796420475821, 1.0689689364877746, 0.19795537985860157, 0.04132309890704017, -0.10665809369896165, 0.008767719134110468, 0.0, -0.02929367319424997, 0.0, 0.0205259540601395, -0.006215378463057306, -0.003646684774499299, 0.009862063237556604, 0.0, 0.0], [0.23999973651329615, 0.0, 0.468854346854178, 0.06533499479192148, 0.30793007971410596, 0.19795537985860148, 0.19299877772424912, 0.0, 0.5166796420475821, 1.0689689364877744, 0.1979553798586017, 0.04132309890704021, -0.10665809369896169, 0.008767719134110468, 0.0, -0.02929367319425, 0.0, 0.02052595406013953, -0.006215378463057307, -0.003646684774499312, 0.00986206323755662, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+Found 16 solutions total
+
+[ODEPE SOLUTIONS]:
+Solution 1: OrderedDict{Any, Any}(xA(t) => 0.9180681640737715, xB(t) => 0.11422311630699017, xC(t) => 0.3680013844684764, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.1559537450882304, k2 => 0.25375174233745174, eB => 1.1999776361882586)
+Solution 2: OrderedDict{Any, Any}(xA(t) => 0.8464392845744773, xB(t) => 0.1858519958062843, xC(t) => 0.3680013844684764, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.2537517423374515, k2 => 0.15595374508823054, eB => 0.829994300795536)
+Solution 3: OrderedDict{Any, Any}(xA(t) => 0.8386297549644666, xB(t) => 0.1940778495118335, xC(t) => 0.3680011936520492, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.2663290420117593, k2 => 0.14933957246338606, eB => 0.8044342841850194)
+Solution 4: OrderedDict{Any, Any}(xA(t) => 0.9238816842845733, xB(t) => 0.10882592019172672, xC(t) => 0.3680011936520493, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.14933957246338606, k2 => 0.2663290420117593, eB => 1.246600397544426)
+Solution 5: OrderedDict{Any, Any}(xA(t) => 0.9234385958491065, xB(t) => 0.10724248339232341, xC(t) => 0.3679941365160407, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.14734959424688315, k2 => 0.27054734719566104, eB => 1.265814355753452)
+Solution 6: OrderedDict{Any, Any}(xA(t) => 0.8337740600075993, xB(t) => 0.19690701923383047, xC(t) => 0.367994136516041, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.27054734719566115, k2 => 0.14734959424688307, eB => 0.7986944325963555)
+Solution 7: OrderedDict{Any, Any}(xA(t) => 0.9220064410962592, xB(t) => 0.1076864877949117, xC(t) => 0.3679863142664617, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.14778629930730522, k2 => 0.26967155175906904, eB => 1.2639197886709783)
+Solution 8: OrderedDict{Any, Any}(xA(t) => 0.8331931017539348, xB(t) => 0.19649982713723674, xC(t) => 0.3679863142664614, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.26967155175906904, k2 => 0.14778629930730525, eB => 0.8011318036811408)
+Solution 9: OrderedDict{Any, Any}(xA(t) => 0.9234094180657427, xB(t) => 0.10825678082414869, xC(t) => 0.36800667630019107, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.1483893922209553, k2 => 0.26791151989923206, eB => 1.254793877035581)
+Solution 10: OrderedDict{Any, Any}(xA(t) => 0.8362126138599749, xB(t) => 0.19545358502991636, xC(t) => 0.3680066763001915, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.26791151989923195, k2 => 0.14838939222095532, eB => 0.8020684590457466)
+Solution 11: OrderedDict{Any, Any}(xA(t) => 0.9237506680695025, xB(t) => 0.10837803662249243, xC(t) => 0.36801039632112303, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.1485134976623299, k2 => 0.2675386302718737, eB => 1.2528011007744535)
+Solution 12: OrderedDict{Any, Any}(xA(t) => 0.8368918277351102, xB(t) => 0.1952368769568847, xC(t) => 0.3680103963211233, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.26753863027187363, k2 => 0.14851349766232994, eB => 0.8022163887057367)
+Solution 13: OrderedDict{Any, Any}(xA(t) => 0.8220264423316211, xB(t) => 0.1914154393182484, xC(t) => 0.36762045684370975, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.2605752173071473, k2 => 0.15429533402471415, eB => 0.8356461994547597)
+Solution 14: OrderedDict{Any, Any}(xA(t) => 0.9000983739582562, xB(t) => 0.1133435076916134, xC(t) => 0.36762045684370975, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.154295334024714, k2 => 0.26057521730714756, eB => 1.2459323364864419)
+Solution 15: OrderedDict{Any, Any}(xA(t) => 0.7676499187692937, xB(t) => 0.15358216534016125, xC(t) => 0.3722319845064106, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.19795537985860157, k2 => 0.1979553798586015, eB => 1.0689689364877746)
+Solution 16: OrderedDict{Any, Any}(xA(t) => 0.7676499187692932, xB(t) => 0.15358216534016209, xC(t) => 0.3722319845064107, eA(t) => 0.23999973651329615, eC(t) => 0.19299877772424912, k1 => 0.1979553798586017, k2 => 0.19795537985860148, eB => 1.0689689364877744)
+[DEBUG-ODEPE] Derivative order: PE formula=9, heuristic=4, using n=9
+[DEBUG-ODEPE] Starting identifiability analysis with:
+ deriv_level: Dict(4 => 9, 2 => 9, 3 => 9, 1 => 9)
+
+[DEBUG-ODEPE] Before Jacobian computation:
+  varlist: Num[k1, k2, eB, xA(t), xB(t), xC(t), eA(t), eC(t)]
+  parameter_values keys: SymbolicUtils.BasicSymbolic{Real}[k1, k2, eB]
+  ordered_test_points[1] keys: SymbolicUtils.BasicSymbolic{Real}[k1, k2, eB, xA(t), xB(t), xC(t), eA(t), eC(t)]
+[DEBUG-ODEPE] Initial max_rank with n=9: 8
+[DEBUG-ODEPE] Jacobian size: (40, 8)
+[DEBUG-ODEPE] PE would use n=9 derivatives
+[DEBUG-ODEPE] Testing n=8: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=7: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=6: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=5: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=4: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=3: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=2: rank=8 (vs max_rank=8)
+[DEBUG-ODEPE] Testing n=1: rank=6 (vs max_rank=8)
+[DEBUG-ODEPE] Rank dropped! Reverting to n=2
+[DEBUG-ODEPE] Final derivative order after rank reduction: n=2
+[DEBUG-ODEPE] Starting per-measurement refinement...
+[DEBUG-ODEPE] Round 1: Reduced deriv_level[4] from 2 to 1, rank preserved at 8
+[DEBUG-ODEPE] Round 2: Reduced deriv_level[4] from 1 to 0, rank preserved at 8
+[DEBUG-ODEPE] Round 3: Reduced deriv_level[3] from 2 to 1, rank preserved at 8
+[DEBUG-ODEPE] Round 4: Reduced deriv_level[3] from 1 to 0, rank preserved at 8
+[DEBUG-ODEPE] Final deriv_level after refinement: Dict(4 => 0, 2 => 2, 3 => 0, 1 => 2)
+
+[DEBUG-ODEPE] DD structure analysis:
+[DEBUG-ODEPE]   DD.obs_lhs dimensions: (10,)
+[DEBUG-ODEPE]   DD.states_lhs dimensions: (9,)
+[DEBUG-ODEPE]   Sample DD.obs_lhs[1][1:min(3,end)]: SymbolicUtils.BasicSymbolic{Real}[y1(t), y2(t), y3(t)]
+[DEBUG-ODEPE]   Sample DD.states_lhs[1][1:min(3,end)]: SymbolicUtils.BasicSymbolic{Real}[xAˍt(t), xBˍt(t), xCˍt(t)]
+Phase 3: Solving at 8 shooting points using a reused SI template...
+
+--- Solving at shooting point index: 1 (t=-1.0) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999784847162112 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999784847162112, 5.2324621931622065e-33, 0.36807539659958965, 0.029483382253025752, 0.05170536689586366, 0.3097639663271853, 0.193017472206836, 0.0, 1.3752934314160923, 0.3961915204166523, 0.30976396632718534, 0.40999988864910847, -0.43948327090213424, 0.23378972370674142, 0.0, -0.2631392728307421, -8.39229100522761e-34, 0.029349549124000687, -0.1500470112179525, 0.05944451362288548, 0.09060249759506701, 0.0, 0.0], [0.23999784847162112, -1.0052862742269651e-32, 0.36807539659958965, 0.029483382253025752, 0.05170536689586365, 0.3097639663271852, 0.193017472206836, 0.0, 1.375293431416092, 0.3961915204166523, 0.30976396632718534, 0.40999988864910836, -0.4394832709021341, 0.23378972370674142, 0.0, -0.263139272830742, 3.183184346046759e-34, 0.029349549124000594, -0.15004701121795244, 0.05944451362288551, 0.09060249759506694, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+
+--- Solving at shooting point index: 144 (t=-0.714) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23998540056012055 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23998540056012055, -3.320884553051003e-34, 0.377414113943911, 0.03666391528013749, 0.07380709800201891, 0.496753242880984, 0.1930107050868386, 0.0, 1.083188007507022, 1.7032227896938081, 0.0949857951650639, 0.06622355892617819, -0.10288747420631568, 0.03289676765169895, 0.0, -0.04266961620171085, 0.0, 0.009772848550011896, -0.02119627022068684, -0.0009282817905506218, 0.02212455201123746, 0.0, 0.0], [0.23998540056012055, 0.0, 0.377414113943911, 0.03666391528013749, 0.38599366585734074, 0.0949857951650639, 0.1930107050868386, 0.0, 0.7710014396517, 0.5197757570679993, 0.49675324288098405, 0.3463335501327518, -0.38299746541288926, 0.03289676765169895, 0.0, -0.2231520006107492, 0.0, 0.19025523295905025, -0.021196270220686837, -0.09450990394748529, 0.11570617416817212, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.3470346757891237e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.3470346757891237e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 4.950512082402379e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 4.950512082402379e-17
+
+--- Solving at shooting point index: 287 (t=-0.428) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.2399945000342644 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.2399945000342644, -1.974193734893842e-33, 0.38894339560743474, 0.044344108040038556, 0.07879626403099776, 0.22909439679963886, 0.1930117470348285, 0.0, 1.5427688038024292, 0.33867417596322075, 0.229094396799639, 0.33538790593017165, -0.3797320139702102, 0.188745973159833, 0.0, -0.16382996668898403, -6.132561475352123e-35, -0.024916006470848948, -0.09219845423374745, 0.0603740443105248, 0.031824409923222656, 0.0, 0.0], [0.2399945000342644, 1.2031457214916835e-32, 0.38894339560743474, 0.044344108040038556, 0.07879626403099774, 0.22909439679963908, 0.1930117470348285, 0.0, 1.5427688038024294, 0.33867417596322086, 0.22909439679963892, 0.3353879059301715, -0.37973201397021006, 0.188745973159833, 0.0, -0.16382996668898414, 3.9029727490458486e-33, -0.02491600647084886, -0.09219845423374746, 0.06037404431052467, 0.0318244099232228, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+
+--- Solving at shooting point index: 430 (t=-0.142) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23999539850946552 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23999539850946552, -1.7461267508577861e-31, 0.40226863565271803, 0.04806273795048429, -2.758372233242528, -0.017424311835529706, 0.19301101723272462, 0.0, 4.822214293051916, 0.2649331317195644, 0.5855421717306307, 2.775547091753623, -2.823609829704107, -0.04836199804091271, 0.0, -1.6049806337639865, -9.402409390975694e-34, 1.6533426318048992, 0.0279656830526898, -0.9681018352418772, 0.9401361521891874, 0.0, 0.0], [0.23999539850946552, 6.519641912656156e-34, 0.40226863565271803, 0.04806273795048429, 0.08208245327305781, 0.5855421717306307, 0.19301101723272462, 0.0, 1.98175960653633, -0.5980345104884576, -0.01742431183552971, -0.08259353531782997, 0.03453079736734568, -0.04836199804091271, 0.0, 0.04776032265965459, -7.481570522596765e-35, 0.0006016753812581196, 0.027965683052689802, 1.0483779466802702e-5, -0.027976166832156604, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 2.9569297135379224e-16
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 2.9569297135379224e-16
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 9.384604625798943e-18
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 9.384604625798943e-18
+
+--- Solving at shooting point index: 572 (t=0.142) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.2399960803881201 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.2399960803881201, -1.2370896269302786e-33, 0.4170124385656919, 0.05126063351346992, 0.0019057425005413156, 0.011733805524018152, 0.19302819939385715, 0.0, 1.8144553317185321, 0.24122277745698514, 0.011733805524018155, 0.02126810438252289, -0.0725287378959928, 0.5720691562312638, 0.0, -0.0011005939060631362, 0.0, -0.5709685623252007, -0.029603758561208702, 0.03629047847700617, -0.006686719915797472, 0.0, 0.0], [0.2399960803881201, 7.905269132641906e-33, 0.4170124385656919, 0.05126063351346992, 0.001905742500541321, 0.011733805524018178, 0.19302819939385715, 0.0, 1.8144553317185321, 0.24122277745698512, 0.01173380552401818, 0.021268104382522943, -0.07252873789599286, 0.5720691562312638, 0.0, -0.0011005939060631056, 0.0, -0.5709685623252007, -0.029603758561208726, 0.03629047847700622, -0.006686719915797497, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+
+--- Solving at shooting point index: 715 (t=0.428) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.2399975461892629 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.2399975461892629, 1.7755692755757202e-48, 0.433160835280571, 0.027565842980344344, -0.05087062102879971, -0.5418813928915536, 0.19301091626305103, 0.0, 1.9404185992772482, 0.24082846581004783, 31.643267629138105, 61.37361920650691, -61.40118504948725, -33.25722226241777, 0.0, -1909.6769090047408, 0.0, 1942.9341312671586, 1034.8183834243255, -61480.78470147364, 60445.966318049315, 0.0, 0.0], [0.2399975461892629, 4.619198204684476e-31, 0.433160835280571, 0.027565842980344344, 0.0008711440077370786, 31.643267629138116, 0.19301091626305103, 0.0, 1.8886768342407114, 0.1914758359336352, -0.5418813928915533, -1.0510046766407104, 1.0234388336603661, -33.25722226241777, 0.0, 32.70263980169458, 0.0, 0.5545824607231861, 1034.818383424326, 0.30051791628990526, -1035.1189013406158, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 4.4838726568502856e-13
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 4.4838726568502856e-13
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 8.641467880355113e-14
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 8.641467880355113e-14
+
+--- Solving at shooting point index: 858 (t=0.714) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.23994960353966704 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.23994960353966704, -3.415945755679908e-35, 0.4505493792288402, 0.0630490015347694, 0.1137116480231592, 0.5544638797419282, 0.19300979333514917, 0.0, 1.947338539566366, -0.034146651728164175, -0.054580048688330475, -0.16933483383696402, 0.10628583230219461, -0.09389004894469782, 0.0, 0.08808896304276431, 4.779234273163101e-81, 0.00580108590193351, 0.04884214821113443, 0.0003166235509727185, -0.04915877176210715, 0.0, 0.0], [0.23994960353966704, 1.244155056102354e-31, 0.4505493792288402, 0.0630490015347694, -1.1551657253880325, -0.054580048688330475, 0.19300979333514917, 0.0, 3.216215912977557, 0.2669309588711819, 0.5544638797419282, 1.720226551662495, -1.7832755531972644, -0.09389004894469782, 0.0, -0.8948718329299908, 9.154264601467138e-34, 0.9887618818746886, 0.04884214821113444, -0.5482327491651701, 0.49939060095403565, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 3.217425636778246e-17
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 3.217425636778246e-17
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] Found solution with residual: 3.8570721625224847e-16
+[ROBUST] Found 1 unique solution(s)
+[ROBUST] Best residual: 3.8570721625224847e-16
+
+--- Solving at shooting point index: 1001 (t=1.0) ---
+[DEBUG-SI] Max derivative order required by template: 9
+[DEBUG-SI] Created interpolated_values_dict with 40 entries
+[DEBUG-SI] Substitution key sample (up to 5): Any[y2ˍt(t), y2ˍtt(t), y4ˍtt(t), y3ˍtt(t), y1ˍtttttttt(t)]
+[DEBUG-SI] Before substitution (Eq1): -eA_0 + y3(t)
+[DEBUG-SI] After substitution (Eq1): 0.2399926403943742 - eA_0
+[DEBUG-SI] Extracted 23 variables from substituted system: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+solutions: [[0.2399926403943742, 5.124148385067901e-31, 0.4687835324989587, 0.13040767872983114, 0.000882010354567398, 147.8527752588489, 0.19301062376334763, 0.0, 1.964062082899152, 0.19277962870664095, -0.4128725628295281, -0.9413150244527051, 0.8109073457228739, -139.17603875818367, 0.0, 138.84123736413778, 0.0, 0.3348013940458931, 20528.06226466036, 0.1382303095986266, -20528.20049496996, 0.0, 0.0], [0.2399926403943742, -1.0761972206014595e-42, 0.4687835324989587, 0.13040767872983114, -0.3158545528821576, -0.4128725628295282, 0.19301062376334763, 0.0, 2.280798646135877, 0.24012448071391024, 147.85277525884885, 337.0920019590847, -337.22240963781456, -139.17603875818367, 0.0, -49720.09310566908, 0.0, 49859.269144427264, 20528.06226466035, -7.371831315381462e6, 7.351303253116801e6, 0.0, 0.0]]
+hc_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+trivial_dict: Dict{Any, Any}()
+trimmed_vars: Any[eA_0, eA_1, xC_0, xC_1, xB_0, k2_0, eC_0, eC_1, xA_0, eB_0, k1_0, xB_1, xA_1, xC_2, eC_2, xB_2, eA_2, xA_2, xC_3, xA_3, xB_3, eC_3, eA_3]
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+[ROBUST] System: 23 equations, 23 variables
+[ROBUST] Polish mode: true
+[ROBUST] Algorithm: auto
+[ROBUST] Jacobian: symbolic
+[ROBUST] Building symbolic Jacobian...
+[ROBUST] ✓ Symbolic Jacobian built successfully
+[ROBUST] No solutions found
+Found 16 solutions total
+
+[ODEPE SOLUTIONS]:
+Solution 1: OrderedDict{Any, Any}(xA(t) => 1.3752934314160923, xB(t) => 0.05170536689586366, xC(t) => 0.36807539659958965, eA(t) => 0.23999784847162112, eC(t) => 0.193017472206836, k1 => 0.30976396632718534, k2 => 0.3097639663271853, eB => 0.3961915204166523)
+Solution 2: OrderedDict{Any, Any}(xA(t) => 1.375293431416092, xB(t) => 0.05170536689586365, xC(t) => 0.36807539659958965, eA(t) => 0.23999784847162112, eC(t) => 0.193017472206836, k1 => 0.30976396632718534, k2 => 0.3097639663271852, eB => 0.3961915204166523)
+Solution 3: OrderedDict{Any, Any}(xA(t) => 1.1130171591222022, xB(t) => 0.05303261737728387, xC(t) => 0.3683594429534657, eA(t) => 0.23998540056012055, eC(t) => 0.1930107050868386, k1 => 0.0949857951650639, k2 => 0.496753242880984, eB => 1.7032227896938081)
+Solution 4: OrderedDict{Any, Any}(xA(t) => 0.8887017307748423, xB(t) => 0.27734804572464417, xC(t) => 0.3683594429534654, eA(t) => 0.23998540056012055, eC(t) => 0.1930107050868386, k1 => 0.49675324288098405, k2 => 0.0949857951650639, eB => 0.5197757570679993)
+Solution 5: OrderedDict{Any, Any}(xA(t) => 1.7587805887341548, xB(t) => -0.1406451424922527, xC(t) => 0.3923730171989596, eA(t) => 0.2399945000342644, eC(t) => 0.1930117470348285, k1 => 0.229094396799639, k2 => 0.22909439679963886, eB => 0.33867417596322075)
+Solution 6: OrderedDict{Any, Any}(xA(t) => 1.758780588734155, xB(t) => -0.14064514249225252, xC(t) => 0.3923730171989595, eA(t) => 0.2399945000342644, eC(t) => 0.1930117470348285, k1 => 0.22909439679963892, k2 => 0.22909439679963908, eB => 0.33867417596322086)
+Solution 7: OrderedDict{Any, Any}(xA(t) => 7.969552975344983, xB(t) => -5.843317500324328, xC(t) => 0.33987522044144836, eA(t) => 0.23999539850946552, eC(t) => 0.19301101723272462, k1 => 0.5855421717306307, k2 => -0.017424311835529706, eB => 0.2649331317195644)
+Solution 8: OrderedDict{Any, Any}(xA(t) => 1.9523525487427231, xB(t) => 0.17388292627793503, xC(t) => 0.3398752204414481, eA(t) => 0.23999539850946552, eC(t) => 0.19301101723272462, k1 => -0.017424311835529706, k2 => 0.5855421717306307, eB => -0.5980345104884576)
+Solution 9: OrderedDict{Any, Any}(xA(t) => 1.838932675900586, xB(t) => -0.022710257396447074, xC(t) => 0.41715109428062636, eA(t) => 0.2399960803881201, eC(t) => 0.19302819939385715, k1 => 0.011733805524018155, k2 => 0.011733805524018152, eB => 0.24122277745698514)
+Solution 10: OrderedDict{Any, Any}(xA(t) => 1.8389326759005857, xB(t) => -0.02271025739644678, xC(t) => 0.41715109428062636, eA(t) => 0.2399960803881201, eC(t) => 0.19302819939385715, k1 => 0.01173380552401818, k2 => 0.011733805524018178, eB => 0.24122277745698512)
+Solution 11: OrderedDict{Any, Any}(xA(t) => 8.169217525274273e19, xB(t) => -8.031677476340526e19, xC(t) => -1.3754004893374295e18, eA(t) => 0.2399975461892629, eC(t) => 0.19301091626305103, k1 => 31.6432676291379, k2 => -0.5418813928915572, eB => 0.24082846581004785)
+Solution 12: OrderedDict{Any, Any}(xA(t) => 0.8711595550490282, xB(t) => 1.3754004893378493e18, xC(t) => -1.3754004893378493e18, eA(t) => 0.2399975461892629, eC(t) => 0.19301091626305103, k1 => -0.5418813928915533, k2 => 31.643267629138116, eB => 0.1914758359336352)
+Solution 13: OrderedDict{Any, Any}(xA(t) => 1.7734262064303319, xB(t) => 0.586598622674156, xC(t) => 0.15157473771387764, eA(t) => 0.23994960353966704, eC(t) => 0.19300979333514917, k1 => -0.054580048688330475, k2 => 0.5544638797419282, eB => -0.03414665172816418)
+Solution 14: OrderedDict{Any, Any}(xA(t) => 8.319120799070564, xB(t) => -5.959095969966079, xC(t) => 0.1515747377138791, eA(t) => 0.23994960353966704, eC(t) => 0.19300979333514917, k1 => 0.5544638797419278, k2 => -0.054580048688330544, eB => 0.26693095887118196)
+Solution 15: OrderedDict{Any, Any}(xA(t) => 0.8600796258792448, xB(t) => 1.6832603289191705e126, xC(t) => -1.6832603289191705e126, eA(t) => 0.2399926403943742, eC(t) => 0.19301062376334763, k1 => -0.4128725628295281, k2 => 147.8527752588489, eB => 0.19277962870664095)
+Solution 16: OrderedDict{Any, Any}(xA(t) => 6.044714655032573e128, xB(t) => -6.027882051743385e128, xC(t) => -1.6832603289186198e126, eA(t) => 0.2399926403943742, eC(t) => 0.19301062376334763, k1 => 147.85277525884885, k2 => -0.4128725628295282, eB => 0.24012448071391024)
+
+Unidentifiability Analysis from multipoint_parameter_estimation:
+All unidentifiable variables: Set{Any}()
+Unidentifiable variables substitution dictionary: Dict{Any, Any}()
+Trivially solvable variables: Dict{Any, Any}()
+
+=== Model: slowfast ===
+
+Found 24 distinct solution clusters:
+
+Cluster 1: 2 similar solutions
+Best solution (Error: 0.00062):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.375293 |   0.647058
+xB(t)        |   0.196000 |   0.051705 |   0.736197
+xC(t)        |   0.368000 |   0.368075 |   0.000205
+eA(t)        |   0.240000 |   0.239998 |   0.000009
+eC(t)        |   0.193000 |   0.193017 |   0.000091
+k1           |   0.269000 |   0.309764 |   0.151539
+k2           |   0.148000 |   0.309764 |   1.093000
+eB           |   0.801000 |   0.396192 |   0.505379
+
+
+Cluster 2: 1 similar solutions
+Best solution (Error: 0.000553):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.773426 |   1.123864
+xB(t)        |   0.196000 |   0.586599 |   1.992850
+xC(t)        |   0.368000 |   0.151575 |   0.588112
+eA(t)        |   0.240000 |   0.239950 |   0.000210
+eC(t)        |   0.193000 |   0.193010 |   0.000051
+k1           |   0.269000 |  -0.054580 |   1.202900
+k2           |   0.148000 |   0.554464 |   2.746378
+eB           |   0.801000 |  -0.034147 |   1.042630
+
+
+Cluster 3: 1 similar solutions
+Best solution (Error: 0.000553):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   8.319121 |   8.963019
+xB(t)        |   0.196000 |  -5.959096 |  31.403551
+xC(t)        |   0.368000 |   0.151575 |   0.588112
+eA(t)        |   0.240000 |   0.239950 |   0.000210
+eC(t)        |   0.193000 |   0.193010 |   0.000051
+k1           |   0.269000 |   0.554464 |   1.061204
+k2           |   0.148000 |  -0.054580 |   1.368784
+eB           |   0.801000 |   0.266931 |   0.666753
+
+
+Cluster 4: 2 similar solutions
+Best solution (Error: 0.00044):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.838933 |   1.202315
+xB(t)        |   0.196000 |  -0.022710 |   1.115869
+xC(t)        |   0.368000 |   0.417151 |   0.133563
+eA(t)        |   0.240000 |   0.239996 |   0.000016
+eC(t)        |   0.193000 |   0.193028 |   0.000146
+k1           |   0.269000 |   0.011734 |   0.956380
+k2           |   0.148000 |   0.011734 |   0.920718
+eB           |   0.801000 |   0.241223 |   0.698848
+
+
+Cluster 5: 2 similar solutions
+Best solution (Error: 0.000273):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.758781 |   1.106324
+xB(t)        |   0.196000 |  -0.140645 |   1.717577
+xC(t)        |   0.368000 |   0.392373 |   0.066231
+eA(t)        |   0.240000 |   0.239995 |   0.000023
+eC(t)        |   0.193000 |   0.193012 |   0.000061
+k1           |   0.269000 |   0.229094 |   0.148348
+k2           |   0.148000 |   0.229094 |   0.547935
+eB           |   0.801000 |   0.338674 |   0.577186
+
+
+Cluster 6: 2 similar solutions
+Best solution (Error: 0.000114):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.767650 |   0.080659
+xB(t)        |   0.196000 |   0.153582 |   0.216418
+xC(t)        |   0.368000 |   0.372232 |   0.011500
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.197955 |   0.264106
+k2           |   0.148000 |   0.197955 |   0.337536
+eB           |   0.801000 |   1.068969 |   0.334543
+
+
+Cluster 7: 1 similar solutions
+Best solution (Error: 0.000105):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   7.969553 |   8.544375
+xB(t)        |   0.196000 |  -5.843318 |  30.812844
+xC(t)        |   0.368000 |   0.339875 |   0.076426
+eA(t)        |   0.240000 |   0.239995 |   0.000019
+eC(t)        |   0.193000 |   0.193011 |   0.000057
+k1           |   0.269000 |   0.585542 |   1.176737
+k2           |   0.148000 |  -0.017424 |   1.117732
+eB           |   0.801000 |   0.264933 |   0.669247
+
+
+Cluster 8: 1 similar solutions
+Best solution (Error: 0.000105):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.952353 |   1.338147
+xB(t)        |   0.196000 |   0.173883 |   0.112842
+xC(t)        |   0.368000 |   0.339875 |   0.076426
+eA(t)        |   0.240000 |   0.239995 |   0.000019
+eC(t)        |   0.193000 |   0.193011 |   0.000057
+k1           |   0.269000 |  -0.017424 |   1.064774
+k2           |   0.148000 |   0.585542 |   2.956366
+eB           |   0.801000 |  -0.598035 |   1.746610
+
+
+Cluster 9: 1 similar solutions
+Best solution (Error: 4.7e-5):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   1.113017 |   0.332955
+xB(t)        |   0.196000 |   0.053033 |   0.729425
+xC(t)        |   0.368000 |   0.368359 |   0.000977
+eA(t)        |   0.240000 |   0.239985 |   0.000061
+eC(t)        |   0.193000 |   0.193011 |   0.000055
+k1           |   0.269000 |   0.094986 |   0.646893
+k2           |   0.148000 |   0.496753 |   2.356441
+eB           |   0.801000 |   1.703223 |   1.126371
+
+
+Cluster 10: 1 similar solutions
+Best solution (Error: 4.7e-5):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.888702 |   0.064313
+xB(t)        |   0.196000 |   0.277348 |   0.415041
+xC(t)        |   0.368000 |   0.368359 |   0.000977
+eA(t)        |   0.240000 |   0.239985 |   0.000061
+eC(t)        |   0.193000 |   0.193011 |   0.000055
+k1           |   0.269000 |   0.496753 |   0.846666
+k2           |   0.148000 |   0.094986 |   0.358204
+eB           |   0.801000 |   0.519776 |   0.351091
+
+
+Cluster 11: 1 similar solutions
+Best solution (Error: 3.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.918068 |   0.099483
+xB(t)        |   0.196000 |   0.114223 |   0.417229
+xC(t)        |   0.368000 |   0.368001 |   0.000004
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.155954 |   0.420246
+k2           |   0.148000 |   0.253752 |   0.714539
+eB           |   0.801000 |   1.199978 |   0.498099
+
+
+Cluster 12: 1 similar solutions
+Best solution (Error: 3.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.846439 |   0.013700
+xB(t)        |   0.196000 |   0.185852 |   0.051776
+xC(t)        |   0.368000 |   0.368001 |   0.000004
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.253752 |   0.056685
+k2           |   0.148000 |   0.155954 |   0.053742
+eB           |   0.801000 |   0.829994 |   0.036198
+
+
+Cluster 13: 1 similar solutions
+Best solution (Error: 2.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.900098 |   0.077962
+xB(t)        |   0.196000 |   0.113344 |   0.421717
+xC(t)        |   0.368000 |   0.367620 |   0.001031
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.154295 |   0.426411
+k2           |   0.148000 |   0.260575 |   0.760643
+eB           |   0.801000 |   1.245932 |   0.555471
+
+
+Cluster 14: 1 similar solutions
+Best solution (Error: 2.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.822026 |   0.015537
+xB(t)        |   0.196000 |   0.191415 |   0.023391
+xC(t)        |   0.368000 |   0.367620 |   0.001031
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.260575 |   0.031319
+k2           |   0.148000 |   0.154295 |   0.042536
+eB           |   0.801000 |   0.835646 |   0.043254
+
+
+Cluster 15: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.923882 |   0.106445
+xB(t)        |   0.196000 |   0.108826 |   0.444766
+xC(t)        |   0.368000 |   0.368001 |   0.000003
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.149340 |   0.444834
+k2           |   0.148000 |   0.266329 |   0.799521
+eB           |   0.801000 |   1.246600 |   0.556305
+
+
+Cluster 16: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.838630 |   0.004347
+xB(t)        |   0.196000 |   0.194078 |   0.009807
+xC(t)        |   0.368000 |   0.368001 |   0.000003
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.266329 |   0.009929
+k2           |   0.148000 |   0.149340 |   0.009051
+eB           |   0.801000 |   0.804434 |   0.004287
+
+
+Cluster 17: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.836892 |   0.002266
+xB(t)        |   0.196000 |   0.195237 |   0.003893
+xC(t)        |   0.368000 |   0.368010 |   0.000028
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.267539 |   0.005433
+k2           |   0.148000 |   0.148513 |   0.003470
+eB           |   0.801000 |   0.802216 |   0.001519
+
+
+Cluster 18: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.923751 |   0.106288
+xB(t)        |   0.196000 |   0.108378 |   0.447051
+xC(t)        |   0.368000 |   0.368010 |   0.000028
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.148513 |   0.447905
+k2           |   0.148000 |   0.267539 |   0.807693
+eB           |   0.801000 |   1.252801 |   0.564046
+
+
+Cluster 19: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.836213 |   0.001452
+xB(t)        |   0.196000 |   0.195454 |   0.002788
+xC(t)        |   0.368000 |   0.368007 |   0.000018
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.267912 |   0.004046
+k2           |   0.148000 |   0.148389 |   0.002631
+eB           |   0.801000 |   0.802068 |   0.001334
+
+
+Cluster 20: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.923409 |   0.105880
+xB(t)        |   0.196000 |   0.108257 |   0.447669
+xC(t)        |   0.368000 |   0.368007 |   0.000018
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.148389 |   0.448367
+k2           |   0.148000 |   0.267912 |   0.810213
+eB           |   0.801000 |   1.254794 |   0.566534
+
+
+Cluster 21: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.923439 |   0.105914
+xB(t)        |   0.196000 |   0.107242 |   0.452844
+xC(t)        |   0.368000 |   0.367994 |   0.000016
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.147350 |   0.452232
+k2           |   0.148000 |   0.270547 |   0.828023
+eB           |   0.801000 |   1.265814 |   0.580293
+
+
+Cluster 22: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.833774 |   0.001468
+xB(t)        |   0.196000 |   0.196907 |   0.004628
+xC(t)        |   0.368000 |   0.367994 |   0.000016
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.270547 |   0.005752
+k2           |   0.148000 |   0.147350 |   0.004395
+eB           |   0.801000 |   0.798694 |   0.002878
+
+
+Cluster 23: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.833193 |   0.002164
+xB(t)        |   0.196000 |   0.196500 |   0.002550
+xC(t)        |   0.368000 |   0.367986 |   0.000037
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.269672 |   0.002496
+k2           |   0.148000 |   0.147786 |   0.001444
+eB           |   0.801000 |   0.801132 |   0.000165
+
+
+Cluster 24: 1 similar solutions
+Best solution (Error: 1.0e-6):
+--------------------------------------------------
+Variable     | True Value  | Estimated   | Rel. Error
+-----------------------------------------------------
+xA(t)        |   0.835000 |   0.922006 |   0.104199
+xB(t)        |   0.196000 |   0.107686 |   0.450579
+xC(t)        |   0.368000 |   0.367986 |   0.000037
+eA(t)        |   0.240000 |   0.240000 |   0.000001
+eC(t)        |   0.193000 |   0.192999 |   0.000006
+k1           |   0.269000 |   0.147786 |   0.450609
+k2           |   0.148000 |   0.269672 |   0.822105
+eB           |   0.801000 |   1.263920 |   0.577927
+
+
+Best approximation error for slowfast: 1.0e-6
+
+Best maximum relative error for slowfast (excluding ALL unidentifiable parameters): 0.00255
+Best minimum relative error: 1.0e-6
+Best mean relative error: 0.001108
+Best median relative error: 0.000804
+Best maximum relative error: 0.00255
+Best RMS relative error: 0.001563
+
+============================================================
+Parameter Estimation Complete!
+============================================================
+
+Results saved to: /scratch/ad7760/no-matlab-no-worry/results/september_16_2025_search_bound_10/filetree/odepe/slowfast_4_1em4/result.csv
+Number of solutions found: 24
+
+Best solution:
+  States: OrderedDict{Any, Any}(xA(t) => 1.375293431416092, xB(t) => 0.05170536689586365, xC(t) => 0.36807539659958965, eA(t) => 0.23999784847162112, eC(t) => 0.193017472206836)
+  Parameters: OrderedDict{Any, Any}(k1 => 0.30976396632718534, k2 => 0.3097639663271852, eB => 0.3961915204166523)
+  Error metrics:
+    Best error: 0.00255013845528944
+    Min error: 1.0978612660176672e-6
+    Mean error: 0.0011079570369351118
+    Median error: 0.0008042362572853241
+    Max error: 0.00255013845528944
+    Approximation error: 8.766087583155903e-7
+    RMS error: 0.0015625175571144319
+
+
+Time: 498.0186388492584
+===END===

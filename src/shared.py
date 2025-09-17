@@ -13,7 +13,7 @@ STDERR_FILENAME = "stderr.txt"
 JULIA_ENVIRONMENTS = {
     "pe"    : "Symbol(:environments, /, :julia_pe)",
     "odepe" : "Symbol(:environments, /, :julia_odepe)",
-    "sciml" : "Symbol(:environments, /, :julia_odepe)",
+    "sciml" : "Symbol(:environments, /, :julia_sciml)",
     "amigo2": "",
     "iqm"   : ""
 }

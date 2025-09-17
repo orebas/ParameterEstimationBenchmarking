@@ -36,8 +36,8 @@ sampling_times = range(time_interval[1], time_interval[2], length = datasize)
 
 data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false))
 
-# p_rand = rand(Uniform({{lower_bound}}, {{upper_bound}}), length(ic) + length(p_true)) # Random Parameters
-p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
+p_rand = rand(Uniform({{lower_bound}}, {{upper_bound}}), length(ic) + length(p_true)) # Random Parameters
+# p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
 prob = ODEProblem(complete(model), ic, time_interval, p_true)
 sol = solve(remake(prob, u0 = p_rand[1:length(ic)], p = Dict(parameters .=> p_rand[(length(ic) + 1):end])), solver,
             saveat = sampling_times;
@@ -63,8 +63,8 @@ end
 
 adtype = Optimization.AutoForwardDiff() # Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-# optprob = Optimization.OptimizationProblem(optf, p_rand, lb = {{lower_bound}}*ones({{num_states}}+{{num_parameters}}), ub = {{upper_bound}}*ones({{num_states}}+{{num_parameters}}))
-optprob = Optimization.OptimizationProblem(optf, p_rand, lb = 0.0*ones({{num_states}}+{{num_parameters}}), ub = 1.0*ones({{num_states}}+{{num_parameters}}))
+optprob = Optimization.OptimizationProblem(optf, p_rand, lb = {{lower_bound}}*ones({{num_states}}+{{num_parameters}}), ub = {{upper_bound}}*ones({{num_states}}+{{num_parameters}}))
+# optprob = Optimization.OptimizationProblem(optf, p_rand, lb = 0.0*ones({{num_states}}+{{num_parameters}}), ub = 1.0*ones({{num_states}}+{{num_parameters}}))
 
 @time result_ode = Optimization.solve(optprob, BFGS(), callback = callback, maxiters = 200000)
 

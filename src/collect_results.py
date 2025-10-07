@@ -47,7 +47,7 @@ def main(args):
 ###  COLLECTING BENCHMARK RESULTS  ###
 
 DIR                 {args.dir}
-SOFTWARE            {AVAILABLE_SOFTWARE}
+DIR2                {args.run}
 
 OUTPUT:             {args.dir.as_posix()}
   RESULT (json):    {(args.dir / 'result.json').as_posix()}
@@ -55,15 +55,19 @@ OUTPUT:             {args.dir.as_posix()}
 """)
 
   results = { 'results' : [] }
-  for software in AVAILABLE_SOFTWARE:
-    if not (args.dir.resolve().absolute() / args.config['FILETREE'] / software).exists():
-      print(f"Results for {software} not found.")
-      continue
+  for run in args.run:
+    software = run.split("_")[0]
     print(software)
+    assert software in AVAILABLE_SOFTWARE
+    if not (args.dir.resolve().absolute() / args.config['FILETREE'] / run).exists():
+      print(f"Results for {run} not found.")
+      continue
+    print(run)
     for instance in instances['instances']:
       result = {
             'id': instance['id'],
             'name' : instance['name'],
+            'run' : run,
             'software': software,
             'finished': False,
             'has_result' : False,
@@ -72,15 +76,15 @@ OUTPUT:             {args.dir.as_posix()}
       }
             
       # Verify logs
-      log_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
+      log_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / STDOUT_FILENAME
       if not log_path.exists():
-        warn(f"Results for {software} / {instance['id']} not found.")
+        warn(f"Results for {run} / {instance['id']} not found.")
         results['results'].append(result)
         continue
       with open(log_path, 'r') as logs:
          output = logs.read()
       if not output.strip().endswith(END_OF_LOG):
-        warn(f"Results for {software} / {instance['id']} are bad: wrong end of file.")
+        warn(f"Results for {run} / {instance['id']} are bad: wrong end of file.")
         results['results'].append(result)
         continue
       time = 0.
@@ -95,9 +99,9 @@ OUTPUT:             {args.dir.as_posix()}
       })
 
       if software in ("odepe", "pe", "sciml"):
-        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / f"result.csv"
+        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / f"result.csv"
         if not result_path.exists():
-          warn(f"Results for {software} / {instance['id']} not found.")
+          warn(f"Results for {run} / {instance['id']} not found.")
           results['results'].append(result)
           continue
         df = pd.read_csv(result_path, header=None, index_col=False)
@@ -105,15 +109,15 @@ OUTPUT:             {args.dir.as_posix()}
         for i in range(len(data)):
           data[i][0] = data[i][0].rstrip("(t)")
       else:
-        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / software / instance['id'] / STDOUT_FILENAME
+        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / STDOUT_FILENAME
         if not result_path.exists():
-          warn(f"Results for {software} / {instance['id']} not found.")
+          warn(f"Results for {run} / {instance['id']} not found.")
           results['results'].append(result)
           continue
         with open(result_path, 'r') as logs:
           output = logs.read()
         data = parse_output(output, software)
-      info(f"Found results for {software} / {instance['id']}")
+      info(f"Found results for {run} / {instance['id']}")
       try:
         data = list(map(list, data))
         required_vars = [*instance['parameter_variables'], *instance['state_variables']]
@@ -126,7 +130,7 @@ OUTPUT:             {args.dir.as_posix()}
         })
         results['results'].append(result)
       except:
-        warn(f"Error while processing {software} / {instance['id']}")
+        warn(f"Error while processing {run} / {instance['id']}")
 
   if (args.dir / "result.json").exists():
       warn(f"Overwriting existing {args.dir / 'result.json'}")
@@ -136,12 +140,12 @@ OUTPUT:             {args.dir.as_posix()}
   print(f"Collected results: {len(results['results'])}")
   
   info("Generating a CSV..")
-  info(f"Instances: {len(instances['instances'])}   (x5 per software in {AVAILABLE_SOFTWARE})")
+  info(f"Instances: {len(instances['instances'])}")
   info(f"Results:   {len(results['results'])}")
-  results = {(problem['id'], problem['software']) : problem for problem in results['results']}
+  results = {(problem['id'], problem['run']) : problem for problem in results['results']}
   rows_list = []
   for instance in instances['instances']:
-    for software in AVAILABLE_SOFTWARE:
+    for run in args.run:
         dict1 = {}
         dict1.update({
             'index'             : instance['index'],
@@ -155,20 +159,22 @@ OUTPUT:             {args.dir.as_posix()}
             'non_identifiable'  : instance['non_identifiable'],
             'noise'             : args.config['NOISE_LEVEL'][instance['id'].split('_')[-1]],
             'finished'          : False,
-            'has_result'        : False
+            'has_result'        : False,
+            'software'          : run.split("_")[0]
         })
-        if (instance['id'], software) in results:
+        if (instance['id'], run) in results:
             dict1.update({
-            'software'          : results[(instance['id'], software)]['software'],
-            'result'            : results[(instance['id'], software)]['result'],
-            'time'              : results[(instance['id'], software)]['time'],
-            'finished'          : results[(instance['id'], software)]['finished'],
-            'has_result'        : results[(instance['id'], software)]['has_result']
+            'run'               :results[(instance['id'], run)]['run'],
+            'software'          : results[(instance['id'], run)]['software'],
+            'result'            : results[(instance['id'], run)]['result'],
+            'time'              : results[(instance['id'], run)]['time'],
+            'finished'          : results[(instance['id'], run)]['finished'],
+            'has_result'        : results[(instance['id'], run)]['has_result']
             })
         else:
-            dict1.update({'software' : software})
+            dict1.update({'run' : run})
         rows_list.append(dict1)
-  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'software', 'result', 'time'])
+  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'run', 'software', 'result', 'time'])
   print("DataFrame header:")
   print(df.head())
   print("DataFrame columns:", df.columns)
@@ -180,7 +186,9 @@ OUTPUT:             {args.dir.as_posix()}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
+    parser.add_argument("run", help="The directories generated by generate_scipts.py.")
     args = parser.parse_args()
+    args.run = args.run.split(",")
     
     main(args)
 

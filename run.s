@@ -13,14 +13,10 @@ python src/generate_data.py         \
     config/systems.json
 
 # 3. Generate estimation scripts
-python src/generate_scripts.py      \
-    results/EXAMPLE
+python src/generate_scripts.py results/EXAMPLE/ -s odepe -c config/config.json -r tmp
 
 # 4. Run estimation scripts
-python src/estimate.py              \
-    results/EXAMPLE                 \
-    odepe                           \
-    0-1
+python src/estimate.py results/EXAMPLE tmp odepe 0-1
 
 # 5. Collect results and do basic analysis
 python src/collect_results.py       \

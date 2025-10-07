@@ -3,7 +3,7 @@ import getpass
 from datetime import datetime
 from termcolor import colored
 
-AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'iqm', 'amigo2']
+AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2']  # 'iqm'
 
 END_OF_LOG = "===END==="
 

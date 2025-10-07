@@ -113,6 +113,7 @@ def log_invalid_estimation(row, reason, results_dir, counter=None, limit=5, soft
     model_name = row.get('name', 'unknown')
     software = row.get('software', 'unknown')
     row_id = row.get('id', 'unknown')
+    run = row.get('run', 'unknown')
     
     # Check if software should be logged based on filter
     if software_filter is not None and software not in software_filter:
@@ -126,7 +127,7 @@ def log_invalid_estimation(row, reason, results_dir, counter=None, limit=5, soft
         script_ext = '.jl'  # Default to Julia for most software
     
     # Create the correct path: $RESULTS/filetree/$SOFTWARE/$ID/script.m (or .jl)
-    script_path = f"{results_dir}/filetree/{software}/{row_id}/script{script_ext}"
+    script_path = f"{results_dir}/filetree/{run}/{row_id}/script{script_ext}"
     abs_script_path = os.path.abspath(script_path)
     
     # Only show detailed output for first few failures (or all if limit=0), then just count
@@ -350,11 +351,11 @@ def create_accuracy_tables(df, args):
     df['estimation_candidates'] = df['result'].apply(parse_result_string)
     
     invalid_results_counter = {'count': 0}
-    
+   
     def select_and_log_best_estimation(row):
         candidates = row['estimation_candidates']
         true_params = row['true_params_parsed']
-        
+       
         if not candidates:
             log_invalid_estimation(row, "No valid estimation candidates found - parsing failed", results_dir, invalid_results_counter, log_limit, log_software)
             return {}
@@ -434,7 +435,7 @@ def create_accuracy_tables(df, args):
             ), axis=1
         )
     
-    software_list = sorted(df['software'].unique())
+    run_list = sorted(df['run'].unique())
     noise_levels = sorted(df['noise'].unique())
     systems = sorted(df['name'].unique())
 
@@ -447,8 +448,8 @@ def create_accuracy_tables(df, args):
     }
 
     for statistic in statistics:
-        for software in software_list:
-            software_df = df[df['software'] == software].copy()
+        for run in args.run:
+            software_df = df[df['run'] == run].copy()
 
             value_column = statistic_to_column[statistic]
             
@@ -481,10 +482,10 @@ def create_accuracy_tables(df, args):
             accuracy_table = accuracy_table.rename(columns=noise_columns)
             
             # Save the table
-            filename = f"software_{software}_{statistic}_relative_errors.csv"
+            filename = f"software_{run}_{statistic}_relative_errors.csv"
             accuracy_table.to_csv(filename)
             
-            print(f"\n{statistic.title()} Table for {software}:")
+            print(f"\n{statistic.title()} Table for {run}:")
             print("="*60)
             print(accuracy_table.to_string())
             print()
@@ -498,7 +499,7 @@ def create_accuracy_tables(df, args):
             
             if statistic == 'success_ratio':
                 # For success ratio, calculate percentage of successful runs
-                noise_table = noise_df.groupby(['name', 'software'])[value_column].agg([
+                noise_table = noise_df.groupby(['name', 'run'])[value_column].agg([
                     lambda x: round(x.sum() / len(x) * 100, DISPLAY_DIGITS)  # success percentage
                 ]).round(DISPLAY_DIGITS)
                 noise_table.columns = ['success_percentage']
@@ -510,11 +511,11 @@ def create_accuracy_tables(df, args):
                 else:
                     agg_method = 'median'
                     
-                noise_table = noise_df.groupby(['name', 'software'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
+                noise_table = noise_df.groupby(['name', 'run'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
                 noise_table = noise_table.unstack(fill_value=np.nan)
             
             # Reorder columns by software list to ensure consistent ordering
-            noise_table = noise_table.reindex(columns=software_list, fill_value=np.nan)
+            noise_table = noise_table.reindex(columns=run_list, fill_value=np.nan)
             
             # Save the table (without has_result and total_runs columns for these tables)
             noise_str = f"{noise_level:.0e}"
@@ -527,8 +528,8 @@ def create_accuracy_tables(df, args):
             print()
     
     # Additional table: for each software, rows=systems, columns=noise levels, entries=number of estimation results
-    for software in software_list:
-        software_df = df[df['software'] == software].copy()
+    for run in args.run:
+        software_df = df[df['run'] == run].copy()
         
         # Calculate overall stats for this software (Estimation Counts tables should have these columns)
         software_has_result = software_df.groupby('name')['has_result'].sum()
@@ -558,9 +559,9 @@ def create_accuracy_tables(df, args):
         final_count_table = software_overall_stats.join(count_table, rsuffix='_noise')
         
         # Save and print
-        filename = f"software_{software}_estimation_counts.csv"
+        filename = f"software_{run}_estimation_counts.csv"
         final_count_table.to_csv(filename)
-        print(f"\nEstimation Counts for {software} (Rows: Systems, Columns: Noise Levels):")
+        print(f"\nEstimation Counts for {run} (Rows: Systems, Columns: Noise Levels):")
         print("="*70)
         print(final_count_table.to_string())
         print()
@@ -568,8 +569,8 @@ def create_accuracy_tables(df, args):
     for statistic in statistics:
         value_column = statistic_to_column[statistic]
 
-        has_result = df.groupby('software')['has_result'].sum()
-        total_runs = df.groupby('software').size()
+        has_result = df.groupby('run')['has_result'].sum()
+        total_runs = df.groupby('run').size()
         
         overall_stats = pd.DataFrame({
             'has_result': has_result,
@@ -577,7 +578,7 @@ def create_accuracy_tables(df, args):
         })
         
         if statistic == 'success_ratio':
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg([
+            stats_by_noise = df.groupby(['run', 'noise'])[value_column].agg([
                 lambda x: f"{int(round(x.sum() / len(x) * 100, DISPLAY_DIGITS))}%"  # success percentage
             ]).round(0)
             stats_by_noise.columns = ['success_pct']
@@ -589,7 +590,7 @@ def create_accuracy_tables(df, args):
             else:
                 agg_method = 'median'
                 
-            stats_by_noise = df.groupby(['software', 'noise'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
+            stats_by_noise = df.groupby(['run', 'noise'])[value_column].agg(agg_method).round(DISPLAY_DIGITS)
             stats_by_noise = stats_by_noise.unstack(fill_value=np.nan)
         
         noise_columns = {col: f"{col:.0e}" for col in stats_by_noise.columns}
@@ -622,9 +623,9 @@ def create_accuracy_tables(df, args):
             return
         
         # Get unique combinations of model, software, and noise level
-        groups = valid_df.groupby(['name', 'software', 'noise'])
+        groups = valid_df.groupby(['name', 'run', 'noise'])
         
-        for (model_name, software, noise_level), group in groups:
+        for (model_name, run, noise_level), group in groups:
             if len(group) == 0:
                 continue
                 
@@ -643,7 +644,7 @@ def create_accuracy_tables(df, args):
                 print("   No parameters found.")
                 continue
                 
-            print(f"\nModel: {model_name} | Software: {software} | Noise: {noise_level:.0e}")
+            print(f"\nModel: {model_name} | Software: {run} | Noise: {noise_level:.0e}")
             print("-" * 80)
             if identifiable_params and non_identifiable_params:
                 print(f"   Identifiable parameters: {', '.join(sorted(identifiable_params))}")
@@ -737,7 +738,7 @@ def create_accuracy_tables(df, args):
             
             # Save to CSV
             safe_model_name = model_name.replace('/', '_').replace(' ', '_')
-            filename = f"parameter_comparison_{safe_model_name}_{software}_noise_{noise_level:.0e}.csv"
+            filename = f"parameter_comparison_{safe_model_name}_{run}_noise_{noise_level:.0e}.csv"
             comparison_df.to_csv(filename)
             print(f"   Saved to: {filename}")
             print()
@@ -754,7 +755,7 @@ def create_accuracy_tables(df, args):
     
     if not timing_df.empty:
         # Overall timing statistics by software
-        timing_stats = timing_df.groupby('software')['time'].agg([
+        timing_stats = timing_df.groupby('run')['time'].agg([
             'count',
             'mean', 
             'median',
@@ -775,7 +776,7 @@ def create_accuracy_tables(df, args):
         print()
         
         # Timing by noise level and software
-        timing_by_noise = timing_df.groupby(['software', 'noise'])['time'].median().round(DISPLAY_DIGITS)
+        timing_by_noise = timing_df.groupby(['run', 'noise'])['time'].median().round(DISPLAY_DIGITS)
         timing_by_noise = timing_by_noise.unstack(fill_value=np.nan)
         
         # Format noise level columns
@@ -791,9 +792,9 @@ def create_accuracy_tables(df, args):
         print()
         
         # Timing by system (top 10 slowest and fastest)
-        timing_by_system = timing_df.groupby(['name', 'software'])['time'].median().round(DISPLAY_DIGITS)
+        timing_by_system = timing_df.groupby(['name', 'run'])['time'].median().round(DISPLAY_DIGITS)
         timing_by_system = timing_by_system.unstack(fill_value=np.nan)
-        timing_by_system = timing_by_system.reindex(columns=software_list, fill_value=np.nan)
+        timing_by_system = timing_by_system.reindex(columns=run_list, fill_value=np.nan)
         
         # Calculate average time across all software for each system
         timing_by_system['avg_time'] = timing_by_system.mean(axis=1, skipna=True).round(DISPLAY_DIGITS)
@@ -856,6 +857,7 @@ Examples:
         """)
     
     parser.add_argument("dir", help="The directory generated by generate_data.py.")
+    parser.add_argument("run", help="The directory generated by generate_scripts.py.")
     parser.add_argument("--stats", "--statistics", dest="statistics", nargs='+', 
                       choices=['median', 'mean', 'rmse', 'success_ratio', 'max', 'all'],
                       default=['all'],
@@ -869,7 +871,8 @@ Examples:
                       help=f"Only log errors from specific software. Available options: {', '.join(AVAILABLE_SOFTWARE)}. If not specified, logs errors from all software.")
     
     args = parser.parse_args()
-    
+    args.run = args.run.split(",")
+
     # Handle 'all' option
     if 'all' in args.statistics:
         args.statistics = ['median', 'mean', 'rmse', 'success_ratio', 'max']

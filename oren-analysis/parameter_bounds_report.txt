@@ -1,0 +1,62 @@
+================================================================================
+PARAMETER BOUNDS ANALYSIS
+Testing AMIGO's Hard-Bounding Hypothesis
+================================================================================
+
+## OVERALL STATISTICS
+
+Total parameter estimates analyzed: 5632
+
+### ODEPE Estimated Values:
+  Parameters with estimate > 1:  268 (4.8%)
+  Parameters with estimate > 10: 8 (0.1%)
+
+### TRUE Parameter Values:
+  Parameters with true value > 1:  0 (0.0%)
+  Parameters with true value > 10: 0 (0.0%)
+
+  NOTE: Config specifies true params in [0.1, 0.9]
+        So true params should NOT exceed 1.0
+
+### ERROR ANALYSIS:
+
+  Original ODEPE error:          0.549371
+  After clamping to [0, 1]:      0.212109 (0.39× original)
+  After clamping to [0, 10]:     0.352527 (0.64× original)
+
+  ✓ Clamping to [0,1] doesn't hurt (error stays same or decreases)
+
+## PER-EXPERIMENT STATISTICS
+
+Total experiments: 1093
+Experiments where ANY parameter estimate > 1:  167 (15.3%)
+Experiments where ANY parameter estimate > 10: 8 (0.7%)
+
+Mean error across all experiments:
+  Original: 0.402899
+  Clamp to [0,1]: 0.170045
+  Clamp to [0,10]: 0.278338
+
+## ERROR BY SYSTEM
+
+| System | Original Error | Clamp [0,1] | Clamp [0,10] | #Params>1 | #Params>10 |
+|--------|----------------|-------------|--------------|-----------|------------|
+| harmonic           |       0.000184 |    0.000184 |     0.000184 |         0 |          0 |
+| vanderpol          |       0.000700 |    0.000700 |     0.000700 |         0 |          0 |
+| slowfast           |       0.031552 |    0.026598 |     0.031552 |         5 |          0 |
+| fitzhugh_nagumo    |       0.082053 |    0.068784 |     0.079559 |         8 |          0 |
+| hiv                |       0.202140 |    0.135304 |     0.148838 |        29 |          0 |
+| biohydrogenation   |       0.378647 |    0.309934 |     0.327727 |        13 |          0 |
+| daisy_mamil3       |       0.466840 |    0.236965 |     0.293801 |        10 |          0 |
+| seir               |       0.501053 |    0.267744 |     0.445425 |        27 |          0 |
+| lotka_volterra     |       0.549587 |    0.184115 |     0.402907 |        14 |          2 |
+| crauste            |       0.952362 |    0.262001 |     0.498549 |        97 |          2 |
+| daisy_mamil4       |       1.279317 |    0.378630 |     0.835054 |        65 |          4 |
+
+## KEY INSIGHTS
+
+✓ Clamping to [0,1] doesn't significantly hurt ODEPE
+  This suggests AMIGO's poor performance with wide bounds
+  is NOT due to hard-bounding, but rather search space size
+
+================================================================================

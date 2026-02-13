@@ -27,15 +27,19 @@ def generate_instance(args, system, instance_id, param_vals, initial_vals):
         varname: param_vals[i]
         for i, varname in enumerate(system["parameter_variables"]) 
     }
+    # Use per-model time_interval if available, otherwise fall back to global config
+    time_interval = system.get("time_interval", args.config['TIME_INTERVAL'])
     instance = {
         "id": instance_id,
         "state_values": state_values,
         "parameter_values": parameter_values,
-        "time": {"start": args.config['TIME_INTERVAL'][0], "end": args.config['TIME_INTERVAL'][1], "count": args.config['NUM_PTS']},
+        "time": {"start": time_interval[0], "end": time_interval[1], "count": args.config['NUM_PTS']},
         "count": args.config['NUM_PTS'],
         "non_identifiable": system["non_identifiable"]
     }
     instance = instance | system.copy()
+    instance["noise_free_measurements"] = system.get("noise_free_measurements", [])
+    instance["fixed_initial_conditions"] = system.get("fixed_initial_conditions", {})
     return instance
 
 def main(args):
@@ -122,12 +126,19 @@ OUTPUT:             {output_dir.as_posix()}
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
             state_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["state_variables"])).round(3).tolist()
 
+            # Override ICs for states with fixed initial conditions (e.g., oscillator inputs)
+            fixed_ics = system.get("fixed_initial_conditions", {})
+            for idx, varname in enumerate(system["state_variables"]):
+                if varname in fixed_ics:
+                    state_values[idx] = fixed_ics[varname]
+
             instance = generate_instance(args, system, instance_name, param_values, state_values)
             instance_stash[instance_name] = instance
             
             settings = get_settings(args, instance)
             settings.update({'data_filepath'  : data_filepath.as_posix()})
-            settings.update({'julia_env_path' : f'joinpath(dirname(dirname(dirname(dirname(@__DIR__)))), string({JULIA_ENVIRONMENTS["odepe"]}))'})
+            julia_env_abs = str((parent / "environments" / "julia_odepe").resolve())
+            settings.update({'julia_env_path' : f'raw"{julia_env_abs}"'})
 
             with open(parent / args.config['TEMPLATE_GENERATION'], 'r') as template:
                 julia_file = chevron.render(template, settings, warn=True)
@@ -175,12 +186,17 @@ OUTPUT:             {output_dir.as_posix()}
                         df = df
                     else:
                         assert args.config['NOISE_TYPE'] in ("ADDITIVE", "MULTIPLICATIVE")
-                        if args.config['NOISE_TYPE'] == "ADDITIVE":
-                            df.loc[:, df.columns != df.columns[0]] += list(df[df.columns[1:]].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1))
-                        elif args.config['NOISE_TYPE'] == "MULTIPLICATIVE": 
-                            df.loc[:, df.columns != df.columns[0]] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(df.columns)-1)))
-                        else:
-                            assert False
+                        # Skip noise on time column (0) and noise-free measurement columns
+                        noise_free = set(system.get("noise_free_measurements", []))
+                        meas_vars = system["measurement_variables"]
+                        noisy_cols = [i+1 for i, mv in enumerate(meas_vars) if mv not in noise_free]
+                        if noisy_cols:
+                            if args.config['NOISE_TYPE'] == "ADDITIVE":
+                                df.loc[:, noisy_cols] += list(df[noisy_cols].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(noisy_cols)))
+                            elif args.config['NOISE_TYPE'] == "MULTIPLICATIVE":
+                                df.loc[:, noisy_cols] *= (1 + np.random.normal(scale=noise_level, size=(len(df), len(noisy_cols))))
+                            else:
+                                assert False
 
                     instance = {}
                     instance = instance | instance_stash[instance_name]

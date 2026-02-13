@@ -107,7 +107,7 @@ OUTPUT:             {args.dir.as_posix()}
         df = pd.read_csv(result_path, header=None, index_col=False)
         data = df.values.T.tolist()
         for i in range(len(data)):
-          data[i][0] = data[i][0].rstrip("(t)")
+          data[i][0] = data[i][0].removesuffix("(t)")
       else:
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / STDOUT_FILENAME
         if not result_path.exists():
@@ -131,6 +131,7 @@ OUTPUT:             {args.dir.as_posix()}
         results['results'].append(result)
       except:
         warn(f"Error while processing {run} / {instance['id']}")
+        results['results'].append(result)
 
   if (args.dir / "result.json").exists():
       warn(f"Overwriting existing {args.dir / 'result.json'}")

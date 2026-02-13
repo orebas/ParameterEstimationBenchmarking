@@ -1,26 +1,25 @@
-using Pkg; Pkg.activate({{julia_env_path}})
+using Pkg; Pkg.activate({{{julia_env_path}}})
 
 using MKL
 
-using ModelingToolkit, DifferentialEquations, Optimization, OptimizationPolyalgorithms,
+using ModelingToolkit, OrdinaryDiffEq, Optimization, OptimizationPolyalgorithms,
       OptimizationOptimJL, SciMLSensitivity, ForwardDiff
 using Distributions, Random, StaticArrays
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using CSV
 
 solver = Vern9()
 
 @parameters {{#parameters}}{{varname}}{{space}}{{/parameters}}
-@variables t {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
-D = Differential(t)
-# TODO
+@variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
 states = [{{#states}}{{varname}}{{comma}}{{/states}}]
 parameters = [{{#parameters}}{{varname}}{{comma}}{{/parameters}}]
-@named model = ODESystem([
+@named model = System([
                             {{#components}}
                              D({{state_var}}) ~ {{state_expr}},
                             {{/components}}
-                         ], t, states, parameters)
+                         ], t)
 measured_quantities = [
     {{#measured_quantities}}
         {{measurement}} ~ {{measurement_expression}},
@@ -38,13 +37,14 @@ data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(
 
 p_rand = rand(Uniform({{lower_bound}}, {{upper_bound}}), length(ic) + length(p_true)) # Random Parameters
 # p_rand = rand(Uniform(0.0, 1.0), length(ic) + length(p_true)) # Random Parameters
-prob = ODEProblem(complete(model), ic, time_interval, p_true)
-sol = solve(remake(prob, u0 = p_rand[1:length(ic)], p = Dict(parameters .=> p_rand[(length(ic) + 1):end])), solver,
+completed_model = complete(model)
+prob = ODEProblem(completed_model, merge(Dict(states .=> ic), Dict(parameters .=> p_true)), time_interval)
+sol = solve(remake(prob, u0 = Dict(states .=> p_rand[1:length(ic)]), p = Dict(parameters .=> p_rand[(length(ic) + 1):end])), solver,
             saveat = sampling_times;
             abstol = 1e-13, reltol = 1e-13)
 
 function loss(p)
-    sol = solve(remake(prob; u0 = p[1:length(ic)], p = Dict(parameters .=> p[(length(ic) + 1):end])), Tsit5(),
+    sol = solve(remake(prob; u0 = Dict(states .=> p[1:length(ic)]), p = Dict(parameters .=> p[(length(ic) + 1):end])), Tsit5(),
                 saveat = sampling_times;
                 abstol = 1e-13, reltol = 1e-13)
     data_true = [data_sample[v.rhs] for v in measured_quantities]

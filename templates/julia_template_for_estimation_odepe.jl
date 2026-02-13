@@ -1,9 +1,9 @@
-using Pkg; Pkg.activate({{julia_env_path}})
+using Pkg; Pkg.activate({{{julia_env_path}}})
 
 using MKL
 
 using ODEParameterEstimation
-using ModelingToolkit, DifferentialEquations
+using ModelingToolkit, OrdinaryDiffEq
 using BenchmarkTools
 using OrderedCollections
 using ModelingToolkit: t_nounits as t, D_nounits as D
@@ -12,6 +12,7 @@ using CSV
 using GaussianProcesses
 using Statistics
 using Optim, LineSearches
+using Symbolics: Num
 
 name = "{{name}}"
 parameters = @parameters {{#parameters}}{{varname}} {{/parameters}}
@@ -41,7 +42,13 @@ model, mq = create_ordered_ode_system(
     measured_quantities
 )
 
-data_sample = Dict(vcat("t", map(x -> x.rhs, measured_quantities)) .=> CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false))
+# Use mq (model-consistent variables) for data_sample keys, not original measured_quantities
+csv_data = CSV.read(joinpath(@__DIR__, "{{data_filepath}}"), Tuple, header=false)
+data_sample = OrderedDict{Union{String, Num}, Vector{Float64}}()
+data_sample["t"] = collect(Float64, csv_data[1])
+for (i, eq) in enumerate(mq)
+    data_sample[Num(eq.rhs)] = collect(Float64, csv_data[i + 1])
+end
 
 pep = ParameterEstimationProblem(
     name,

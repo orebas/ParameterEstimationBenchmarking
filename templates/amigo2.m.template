@@ -1,6 +1,10 @@
 clear
 addpath(genpath('{{path_to_src}}'))
 addpath(genpath("./"))
+% Suppress GCC 14 strict errors for AMIGO2's legacy C code (int vs mwSize, etc.)
+% Prepend our gcc wrapper directory to PATH so MEX finds it first.
+wrapper_dir = fullfile('{{harness_root}}', 'bin');
+setenv('PATH', [wrapper_dir ':' getenv('PATH')]);
 %======================
 % PATHS RELATED DATA
 %======================

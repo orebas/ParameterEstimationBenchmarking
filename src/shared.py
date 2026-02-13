@@ -53,11 +53,14 @@ def get_settings(args, instance):
             "space": " " if i < len(parameter_variables)-1 else "",
             "true": instance['parameter_values'][varname]
         })
+    # Use per-instance time if available (set from per-model time_interval in generate_data)
+    time_start = instance.get("time", {}).get("start", args.config['TIME_INTERVAL'][0])
+    time_end = instance.get("time", {}).get("end", args.config['TIME_INTERVAL'][1])
     instance = instance | {
         "states": states,
         "parameters": parameters,
-        "time_start": args.config['TIME_INTERVAL'][0],
-        "time_end": args.config['TIME_INTERVAL'][1],
+        "time_start": time_start,
+        "time_end": time_end,
         "count": args.config['NUM_PTS'],
     }
     

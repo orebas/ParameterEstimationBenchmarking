@@ -52,8 +52,9 @@ FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm'}
 def get_sciml_measurements(instance):
     import re
     subs = {}
-    subs = subs | {x : f"sol[{1+idx}, :]" for idx, x in enumerate(instance["state_variables"])}
-    subs = subs | {x : f"p[(length(ic) + {1+idx}):end]" for idx, x in enumerate(instance["parameter_variables"])}
+    # Use symbolic solution indexing (MTK v11 compatible) instead of positional
+    subs = subs | {x : f"sol[{x}]" for x in instance["state_variables"]}
+    subs = subs | {x : f"p[length(ic) + {1+idx}]" for idx, x in enumerate(instance["parameter_variables"])}
     subs = subs | {'*' : '.*'}
     subs = dict((re.escape(k), v) for k, v in subs.items())
     pattern = re.compile("|".join(subs.keys()))
@@ -61,9 +62,9 @@ def get_sciml_measurements(instance):
     return sciml_measurements
 
 instance = {"state_variables": ["x"], "parameter_variables": [], "measurements": {"y1" : "x/x"}}
-assert get_sciml_measurements(instance) == "sol[1, :]/sol[1, :]"
+assert get_sciml_measurements(instance) == "sol[x]/sol[x]"
 instance = {"state_variables" : ["x1", "x2"], "parameter_variables": ["a", "b"], "measurements": {"y1": "x1", "y2": "a*x1^2 + b * b * x2"}}
-assert get_sciml_measurements(instance) == "sol[1, :],p[(length(ic) + 1):end].*sol[1, :]^2 + p[(length(ic) + 2):end] .* p[(length(ic) + 2):end] .* sol[2, :]"
+assert get_sciml_measurements(instance) == "sol[x1],p[length(ic) + 1].*sol[x1]^2 + p[length(ic) + 2] .* p[length(ic) + 2] .* sol[x2]"
 
 def main(args):
     assert args.software in AVAILABLE_SOFTWARE or args.software == 'all'
@@ -110,14 +111,20 @@ OUTPUT:             {args.dir}
             settings["id"] = instance["id"]
             settings["data_filepath"] = 'data.csv'
             settings["estimation_result_filepath"] = 'result.csv'
-            settings["at_time"] = (args.config['TIME_INTERVAL'][1] - args.config['TIME_INTERVAL'][0])/2 + args.config['TIME_INTERVAL'][0]
+            settings["at_time"] = (settings["time_end"] - settings["time_start"])/2 + settings["time_start"]
             settings["data_expr"] = get_sciml_measurements(instance)
             settings["path_to_src"] = args.config["PATH_TO_SRC"]
+            settings["harness_root"] = str(parent)
 
             file_meta_header = get_file_meta_header(SOFTWARE_COMMENT[software])
 
             if software in ['pe','odepe','sciml','amigo2']:
-                settings.update({'julia_env_path' : f'joinpath(dirname(dirname(dirname(dirname(dirname(@__DIR__))))), string({JULIA_ENVIRONMENTS[software]}))'})
+                julia_env_name = {"pe": "julia_pe", "odepe": "julia_odepe", "sciml": "julia_sciml"}.get(software, "")
+                if julia_env_name:
+                    julia_env_abs = str((parent / "environments" / julia_env_name).resolve())
+                    settings.update({'julia_env_path' : f'raw"{julia_env_abs}"'})
+                else:
+                    settings.update({'julia_env_path' : '""'})
                 with open(args.dir / args.config['FILETREE'] / args.run / instance['id'] / f'script.{FILE_EXT[software]}', 'w') as output_file:
                     testfile = chevron.render(open(parent / TEMPLATE_ESTIMATION[software]), settings, warn=True)
                     output_file.write(file_meta_header + testfile)

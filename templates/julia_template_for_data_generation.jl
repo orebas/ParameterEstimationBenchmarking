@@ -1,8 +1,8 @@
-using Pkg; Pkg.activate({{julia_env_path}})
+using Pkg; Pkg.activate({{{julia_env_path}}})
 
 using MKL
 
-using ModelingToolkit, DifferentialEquations
+using ModelingToolkit, OrdinaryDiffEq
 using ODEParameterEstimation, Distributions
 using OrderedCollections
 

@@ -72,9 +72,13 @@ opts = EstimationOptions(
     use_si_template = true,
     polish_solver_solutions = true,
     polish_solutions = {{ODEPE_POLISH}},
-    polish_maxiters = 50,
-    polish_method = PolishLBFGS,
-    # opt_ad_backend = :enzyme,
+    polish_maxiters = 200000,           # Match SciML's 200k iteration budget (was 50)
+    polish_method = PolishBFGS,         # Match SciML's BFGS full Hessian (was PolishLBFGS)
+    opt_maxiters = 200000,              # Match SciML for direct opt path
+    opt_lb = {{lower_bound}} * ones(length(ic) + length(p_true)),  # Match SciML bounds
+    opt_ub = {{upper_bound}} * ones(length(ic) + length(p_true)),  # Match SciML bounds
+    abstol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
+    reltol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
     diagnostics = true)
 
 # Run the analysis with the selected options

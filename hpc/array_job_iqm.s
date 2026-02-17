@@ -8,8 +8,6 @@
 #SBATCH --job-name=array_job_iqm
 #SBATCH --output=output/array_job_iqm_%A_%a.out
 #SBATCH --error=output/array_job_iqm_%A_%a.err
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=ad7760@nyu.edu
 #SBATCH --array=0-49
 
 module purge

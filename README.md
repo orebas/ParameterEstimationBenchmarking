@@ -1,63 +1,163 @@
-# Benchmarking parameter estimation software
+# Parameter Estimation Benchmarking
 
-## Running the scripts
+A benchmarking harness for comparing ODE parameter estimation methods across a suite of dynamical systems from control theory, biology, chemistry, epidemiology, and other domains.
 
-0. We use the following versions of software:
-    - Julia: 1.11.5
-    - Python: 3.9 or 3.10
+## Overview
 
-1. Run the following command:
+This repository generates synthetic ODE data, runs multiple parameter estimation methods on each system under varying noise levels, and collects/summarizes the results. It supports the following estimation backends:
+
+- **ODEPE** — ODE Parameter Estimation via Gaussian Process Regression
+- **SciML** — Scientific Machine Learning (Julia/DiffEqFlux)
+- **AMIGO2** — Advanced Model Identification using Global Optimization (MATLAB)
+- **PE** — ParameterEstimation.jl (Julia)
+
+## Benchmark Systems
+
+| System | Domain | Parameters |
+|---|---|---|
+| Aircraft Pitch | Control | 4 |
+| Bicycle Model | Control | 4 |
+| Biohydrogenation | Biology | 6 |
+| Boost Converter | Control | 3 |
+| Brusselator | Chemistry | 2 |
+| Crauste | Immunology | 12 |
+| CSTR | Chemistry | 5 |
+| DAISY Mamil3 | Compartmental | 5 |
+| DAISY Mamil4 | Compartmental | 7 |
+| DC Motor | Control | 3 |
+| FitzHugh-Nagumo | Neuroscience | 3 |
+| Flexible Arm | Control | 6 |
+| Forced Lotka-Volterra | Ecology | 4 |
+| Harmonic Oscillator | Mechanics | 2 |
+| HIV | Immunology | 10 |
+| Lotka-Volterra | Ecology | 3 |
+| Mass-Spring-Damper | Control | 4 |
+| Quadrotor | Control | 2 |
+| Repressilator | Synth. Biology | 3 |
+| SEIR | Epidemiology | 3 |
+| SIRT Treatment | Epidemiology | 5 |
+| Slow-Fast | Dynamical Sys. | 2 |
+| Two-Compartment PK | Pharmacology | 5 |
+| Van der Pol | Dynamical Sys. | 2 |
+
+## Requirements
+
+- **Python** 3.9+
+- **Julia** 1.11+
+- **MATLAB** (for AMIGO2 backend only)
+- Python packages: see `environments/requirements.txt`
+- Julia packages: instantiated via `environments/julia_*/Project.toml`
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/orebas/ParameterEstimationBenchmarking
+cd ParameterEstimationBenchmarking
+
+# Install Python dependencies
+pip install -r environments/requirements.txt
+
+# Generate synthetic data
+python src/generate_data.py config/config.json config/systems.json
+
+# Generate estimation scripts (e.g., for ODEPE)
+python src/generate_scripts.py <data_dir> odepe
+
+# Run estimation
+python src/estimate.py <data_dir> <run_dir> odepe <array_indices>
+
+# Collect results
+python src/collect_results.py <data_dir>
+
+# Summarize
+python src/summarize_results.py <data_dir>
+```
+
+## Directory Structure
 
 ```
-./run.s
+config/              Configuration files (systems, benchmark parameters)
+environments/        Python requirements and Julia project environments
+hpc/                 SLURM job scripts for HPC clusters
+src/                 Core Python pipeline (data gen, script gen, estimation, collection)
+templates/           Julia/MATLAB template files for each estimation backend
 ```
 
-## Running on HPC
+## Running the Full Benchmark on HPC (SLURM)
 
-Two machines: `host` and `hpc`.
+The benchmark runs **4 estimators** across all 24 systems, 5 noise levels, and 10 trials each = **4800 total jobs**.
 
-- On `host`:
+| Run | Estimator | HPC script | Time | Mem |
+|-----|-----------|------------|------|-----|
+| `amigo2_run` | AMIGO2 (eSS+nl2sol) | `hpc/array_job_amigo2.s` | 4h | 8GB |
+| `sciml_run` | SciML (BFGS, 200k iters) | `hpc/array_job_sciml.s` | 3h | 8GB |
+| `odepe_nopolish` | ODEPE (algebraic only) | `hpc/array_job_odepe.s` | 6h | 16GB |
+| `odepe_polish` | ODEPE (algebraic + BFGS) | `hpc/array_job_odepe.s` | 6h | 16GB |
 
-```
-$ git clone https://github.com/sumiya11/no-matlab-no-worry
-$ cd no-matlab-no-worry
+### Step 1: Generate synthetic data (once)
 
-$ python src/generate_data.py config/config.json config/systems.json
-$ ls
-2025_05_11_18_49  config  hpc  README.md  requirements.txt  src  templates
-
-$ python src/generate_scripts.py 2025_05_11_18_49 pe
-
-$ git add . && git commit "Add data and scripts" && git push
+```bash
+python3 src/generate_data.py config/config.json config/systems.json -d benchmark_2026_02
 ```
 
-- On `hpc`:
+### Step 2: Generate estimation scripts
 
+```bash
+# AMIGO2 and SciML
+python3 src/generate_scripts.py benchmark_2026_02 -s amigo2 -r amigo2_run
+python3 src/generate_scripts.py benchmark_2026_02 -s sciml -r sciml_run
+
+# ODEPE no-polish run (disable polish in config, generate, then re-enable)
+python3 -c "
+import json
+with open('benchmark_2026_02/config/config.json') as f: cfg = json.load(f)
+cfg['ODEPE_POLISH'] = 'false'
+with open('benchmark_2026_02/config/config.json', 'w') as f: json.dump(cfg, f, indent=2)
+"
+python3 src/generate_scripts.py benchmark_2026_02 -s odepe -r odepe_nopolish
+
+# ODEPE polish run (re-enable polish)
+python3 -c "
+import json
+with open('benchmark_2026_02/config/config.json') as f: cfg = json.load(f)
+cfg['ODEPE_POLISH'] = 'true'
+with open('benchmark_2026_02/config/config.json', 'w') as f: json.dump(cfg, f, indent=2)
+"
+python3 src/generate_scripts.py benchmark_2026_02 -s odepe -r odepe_polish
 ```
-$ git clone https://github.com/sumiya11/no-matlab-no-worry
-$ cd no-matlab-no-worry
 
-$ bash hpc/setup_python.s
-$ julia hpc/setup_packages.jl
+### Step 3: Submit HPC jobs (array 0–1199 for all 1200 instances)
 
-$ sbatch hpc/array_job.s
+```bash
+./hpc/submit.sh --array=0-1199 hpc/array_job_amigo2.s benchmark_2026_02 amigo2_run
+./hpc/submit.sh --array=0-1199 hpc/array_job_sciml.s benchmark_2026_02 sciml_run
+./hpc/submit.sh --array=0-1199 hpc/array_job_odepe.s benchmark_2026_02 odepe_nopolish
+./hpc/submit.sh --array=0-1199 hpc/array_job_odepe.s benchmark_2026_02 odepe_polish
 ```
 
-and then, after jobs finish, (perhaps on a compute node)
+The `submit.sh` wrapper prompts for your email on first run (saved to `hpc/user_config.sh`, git-ignored).
 
+### Step 4: Collect results (after all jobs complete)
+
+```bash
+python3 src/collect_results.py benchmark_2026_02 amigo2_run sciml_run odepe_nopolish odepe_polish
 ```
-$ python src/collect_results.py 2025_05_11_18_49
 
-$ git add . && git commit "Add results" && git push
+**Note:** By default, `.julia` is located in `$HOME`. If `$HOME` has limited quota, set `export JULIA_DEPOT_PATH=$SCRATCH` before running Julia.
+
+## Citation
+
+If you use this benchmark suite in your research, please cite:
+
+```bibtex
+@article{TODO,
+  title  = {TODO},
+  author = {TODO},
+  year   = {2026}
+}
 ```
 
-### Notes
+## License
 
-1. By default, .julia may be located in $HOME, and $HOME may limit the size/number of files.
-   To change the location of .julia to $SCRATCH, run `export JULIA_DEPOT_PATH=$SCRATCH`.
-   (and perhaps add the export to .bashrc).
-
-2.
-
-
-
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

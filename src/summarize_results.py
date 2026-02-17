@@ -11,8 +11,6 @@ import chevron
 from pprint import pprint
 from subprocess import Popen, PIPE
 import shutil
-#from julia.api import Julia
-#import csv
 import pandas as pd
 
 # Global configuration for number display precision

@@ -12,12 +12,9 @@ import chevron
 from pprint import pprint
 from subprocess import Popen, PIPE
 import shutil
-#from julia.api import Julia
-#import csv
 import pandas as pd
 pd.set_option("display.precision",16)
 
-import getpass
 import argparse
 from datetime import datetime
 import time
@@ -63,7 +60,6 @@ def _main(args):
         slurm_job_id = os.environ.get("SLURM_JOB_ID")
         slurm_task_id = os.environ.get("SLURM_ARRAY_TASK_ID")
         print(f"### Run on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=stdout_file)
-        print(f"### Run by: {getpass.getuser()}", file=stdout_file)
         slurm_timeout = get_slurm_job_timeout(slurm_job_id)
         print(f"### SLURM job timeout: {slurm_timeout}", file=stdout_file)
         slurm_env = filter(lambda kv: kv[0].startswith('SLURM_'), list(os.environ.items()))

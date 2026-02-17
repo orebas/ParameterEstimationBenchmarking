@@ -10,7 +10,6 @@ import subprocess
 import chevron
 from pprint import pprint
 from subprocess import Popen, PIPE
-#from julia.api import Julia
 import csv
 import pandas as pd
 pd.set_option("display.precision",16)

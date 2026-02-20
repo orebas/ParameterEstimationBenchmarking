@@ -17,10 +17,13 @@
 # Usage (from $SCRATCH):
 #   sbatch ParameterEstimationBenchmarking/hpc/cuny/array_job_odepe_cuny.s <data_dir> <run_name>
 
+export SCRATCH="/scratch/oren-qc-13"
 export JULIA_NUM_THREADS=4
 
 module purge
-export PATH="$HOME/julia-1.12.5/bin:$PATH"
+export PATH="/scratch/oren-qc-13/julia-1.12.5/bin:$PATH"
+export JULIA_DEPOT_PATH="/scratch/oren-qc-13/.julia"
+export JULIA_CPU_TARGET="generic"
 
 cd $SCRATCH
 

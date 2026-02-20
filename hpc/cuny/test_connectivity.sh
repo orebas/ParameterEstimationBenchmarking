@@ -29,7 +29,9 @@ echo ""
 
 # --- Julia ---
 echo "=== Julia test ==="
-export PATH="$HOME/julia-1.12.5/bin:$PATH"
+export PATH="/scratch/oren-qc-13/julia-1.12.5/bin:$PATH"
+export JULIA_DEPOT_PATH="/scratch/oren-qc-13/.julia"
+export JULIA_CPU_TARGET="generic"
 julia --version 2>&1 || echo "Julia not available — install to ~/julia-1.12.5/"
 julia -e 'println("Julia works! Threads: ", Threads.nthreads())' 2>&1 || echo "Julia execution failed"
 echo ""

@@ -27,7 +27,7 @@ def get_cmd(args, instance):
     if args.software in ['pe','odepe','sciml']:
         return shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.jl"))
     elif args.software in ['amigo2', 'iqm']:
-        return shlex.split('matlab -singleCompThread -nodisplay -nosplash -nodesktop -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.m") + '; exit"')
+        return shlex.split('matlab -singleCompThread -nodisplay -nosplash -nodesktop -licmode onlinelicensing -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.m") + '; exit"')
     else:
         warn(f"Do not know this software: {args.software}")
 

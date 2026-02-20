@@ -17,9 +17,15 @@
 # Usage (from $SCRATCH):
 #   sbatch ParameterEstimationBenchmarking/hpc/cuny/array_job_amigo2_cuny.s <data_dir> <run_name>
 
+export SCRATCH="/scratch/oren-qc-13"
+
 module purge
 module load Utils/Matlab/R2024b
-export PATH="$HOME/julia-1.12.5/bin:$PATH"
+# Provide X11/GTK libs missing on some compute nodes (MATLAB R2024b requires them even headless)
+export LD_LIBRARY_PATH="${SCRATCH}/.matlab_libs:${LD_LIBRARY_PATH}"
+export PATH="/scratch/oren-qc-13/julia-1.12.5/bin:$PATH"
+export JULIA_DEPOT_PATH="/scratch/oren-qc-13/.julia"
+export JULIA_CPU_TARGET="generic"
 
 cd $SCRATCH
 

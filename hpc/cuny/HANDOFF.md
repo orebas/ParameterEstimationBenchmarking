@@ -51,7 +51,7 @@ partasrc     up   infinite          1/0/0/1
 
 | Category | Module | Notes |
 |----------|--------|-------|
-| MATLAB | `Utils/Matlab/R2024b` | Only version available |
+| MATLAB | `Utils/Matlab/R2024b` | Only version. Network license broken — uses online licensing. See `MATLAB_WORKAROUNDS.md` |
 | Python | `Python/3.13.7_gnu` (D) | Also: 3.10.12, 3.11.4, 3.11.5 |
 | GNU compiler | `GNU/15.2.0` (D) | Also: 9.3.0 through 14.2.0 |
 | Julia (module) | `DevEnv/Julia/1.9.1` | **Too old — do NOT use** |
@@ -306,8 +306,17 @@ The first argument to `estimate.py` is a path relative to `$SCRATCH`, NOT
 relative to the repo. That's why scripts pass
 `ParameterEstimationBenchmarking/$1` — prepending the repo name.
 
-### AMIGO2 Configuration
+### AMIGO2 / MATLAB Configuration
 Set `PATH_TO_AMIGO2` in `config/config.json` before running AMIGO2 benchmarks.
+
+**MATLAB requires two workarounds on this cluster.** See `MATLAB_WORKAROUNDS.md`
+for full details. In brief:
+1. The network license server is down. Online licensing is used instead
+   (`-licmode onlinelicensing` added to `src/estimate.py`). Requires one-time
+   interactive activation with a MathWorks account.
+2. Most compute nodes are missing X11 libraries that MATLAB R2024b needs even
+   in headless mode. 38 libraries are bundled in `$SCRATCH/.matlab_libs/` and
+   loaded via `LD_LIBRARY_PATH` in the SLURM script.
 
 ## 7. Monitoring
 
@@ -330,6 +339,7 @@ sinfo -p partnsf                   # partition status
 | `test_connectivity.sh` | Connectivity test (debug partition, 30 min) |
 | `setup_cuny.sh` | Environment discovery (run on login node) |
 | `rerun_failed.sh` | Generate rerun scripts for failed instances |
+| `MATLAB_WORKAROUNDS.md` | MATLAB licensing & missing X11 lib fixes |
 | `HANDOFF.md` | This file |
 
 These mirror the NYU scripts in `hpc/` with CUNY-specific partition and module settings.

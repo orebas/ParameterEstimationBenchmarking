@@ -34,7 +34,7 @@
       "name": "bicycle_model",
       "ode_system": {
         "vy": "((160000.0*Cf*(0.05*sin(0.5*t) + (-0.12*r - 0.5*vy) / 20.0) + (8000.0)*Cr*(0.13999999999999999*r - 0.5*vy)) / (3000.0*m_veh) - 2.0*r) / 0.5",
-        "r": "(192000.0*Cf*(0.05*sin(0.5*t) + (-0.12*r - 0.5*vy) / 20.0) - (11200.0)*Cr*(0.13999999999999999*r - 0.5*vy)) / (500.0*Iz)"
+        "r": "(192000.0*Cf*(0.05*sin(0.5*t) + (-0.12*r - 0.5*vy) / 20.0) - (11200.0)*Cr*(0.13999999999999999*r - 0.5*vy)) / 250.0"
       },
       "measurements": {
         "y1": "0.1*r",
@@ -52,8 +52,7 @@
       "parameter_variables": [
         "Cf",
         "Cr",
-        "m_veh",
-        "Iz"
+        "m_veh"
       ],
       "time_interval": [
         0.0,
@@ -204,7 +203,7 @@
     {
       "name": "cstr",
       "ode_system": {
-        "C": "(2.0*Cin - C) / (2.0*tau) - 1.999863916554819*r_eff*C",
+        "C": "(1.0 - C) / (2.0*tau) - 1.999863916554819*r_eff*C",
         "Temp": "(Tin - Temp) / (2.0*tau) + 0.0285694845222117*dH_rhoCP*r_eff*C - 2.0*UA_VrhoCP*Temp + 0.8571428571428571*UA_VrhoCP + 0.05714285714285714*UA_VrhoCP*sin(0.5*t)",
         "r_eff": "12.5*r_eff/(Temp^2)*((Tin - Temp) / (2.0*tau) + 0.0285694845222117*dH_rhoCP*r_eff*C - 2.0*UA_VrhoCP*Temp + 0.8571428571428571*UA_VrhoCP + 0.05714285714285714*UA_VrhoCP*sin(0.5*t))"
       },
@@ -223,7 +222,6 @@
       "parameter_variables": [
         "tau",
         "Tin",
-        "Cin",
         "dH_rhoCP",
         "UA_VrhoCP"
       ],
@@ -307,7 +305,7 @@
     {
       "name": "dc_motor",
       "ode_system": {
-        "omega_m": "(0.2*Kt*i - 0.2*b*omega_m) / (0.02*Jm)",
+        "omega_m": "(0.2*Kt*i - 0.1*omega_m) / (0.02*Jm)",
         "i": "(12.0 - 0.1*omega_m - 2.0*i + 2.0*sin(5.0*t)) / 0.5"
       },
       "measurements": {
@@ -323,8 +321,7 @@
       ],
       "parameter_variables": [
         "Kt",
-        "Jm",
-        "b"
+        "Jm"
       ],
       "time_interval": [
         0.0,
@@ -362,7 +359,7 @@
       "name": "flexible_arm",
       "ode_system": {
         "theta_t": "omega_t",
-        "omega_m": "(tau - 0.1*bm*omega_m - 20.0*k*(-0.5*theta_t + 0.5*theta_m)) / (0.1*Jm)",
+        "omega_m": "(0.5 - 0.1*bm*omega_m - 20.0*k*(-0.5*theta_t + 0.5*theta_m)) / (0.1*Jm)",
         "omega_t": "(-0.05*bt*omega_t - 20.0*k*(0.5*theta_t - 0.5*theta_m)) / (0.05*Jt)",
         "theta_m": "omega_m"
       },
@@ -386,8 +383,7 @@
         "Jt",
         "bm",
         "bt",
-        "k",
-        "tau"
+        "k"
       ],
       "time_interval": [
         0.0,
@@ -528,7 +524,7 @@
     {
       "name": "mass_spring_damper",
       "ode_system": {
-        "vel": "(2.0*F - 0.5*c*vel - 8.0*k*x) / m",
+        "vel": "(1.0 - 0.5*c*vel - 8.0*k*x) / m",
         "x": "0.5*vel"
       },
       "measurements": {
@@ -545,8 +541,7 @@
       "parameter_variables": [
         "m",
         "c",
-        "k",
-        "F"
+        "k"
       ],
       "time_interval": [
         0.0,
@@ -701,7 +696,8 @@
       },
       "measurements": {
         "y1": "10.0*Tr",
-        "y2": "2000.0*Npop"
+        "y2": "2000.0*Npop",
+        "y3": "10.0*In"
       },
       "non_identifiable": [],
       "state_variables": [
@@ -712,7 +708,8 @@
       ],
       "measurement_variables": [
         "y1",
-        "y2"
+        "y2",
+        "y3"
       ],
       "parameter_variables": [
         "a",
@@ -729,8 +726,8 @@
     {
       "name": "two_compartment_pk",
       "ode_system": {
-        "C1": "((2.0*V2*k21*C2) / (2.0*V1) - 20.0*k12*C1 - 6.0*ke*C1) / 20.0",
-        "C2": "(40.0*V1*k12*C1) / (4.0*V2) - 0.5*k21*C2"
+        "C1": "(k21*C2 - 20.0*k12*C1 - 6.0*ke*C1) / 20.0",
+        "C2": "10.0*k12*C1 - 0.5*k21*C2"
       },
       "measurements": {
         "y1": "20.0*C1"
@@ -746,9 +743,7 @@
       "parameter_variables": [
         "k12",
         "k21",
-        "ke",
-        "V1",
-        "V2"
+        "ke"
       ],
       "time_interval": [
         0.0,

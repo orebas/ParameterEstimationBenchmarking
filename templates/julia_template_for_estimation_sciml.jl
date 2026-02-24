@@ -9,7 +9,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using CSV
 
-solver = Vern9()
+solver = AutoVern9(Rodas4P())
 
 @parameters {{#parameters}}{{varname}}{{space}}{{/parameters}}
 @variables {{#states}}{{varname}}(t){{space}}{{/states}} {{#measurements}}{{varname}}(t){{space}}{{/measurements}}
@@ -44,7 +44,7 @@ sol = solve(remake(prob, u0 = Dict(states .=> p_rand[1:length(ic)]), p = Dict(pa
             abstol = 1e-13, reltol = 1e-13)
 
 function loss(p)
-    sol = solve(remake(prob; u0 = Dict(states .=> p[1:length(ic)]), p = Dict(parameters .=> p[(length(ic) + 1):end])), Tsit5(),
+    sol = solve(remake(prob; u0 = Dict(states .=> p[1:length(ic)]), p = Dict(parameters .=> p[(length(ic) + 1):end])), AutoVern9(Rodas4P()),
                 saveat = sampling_times;
                 abstol = 1e-13, reltol = 1e-13)
     data_true = [data_sample[v.rhs] for v in measured_quantities]

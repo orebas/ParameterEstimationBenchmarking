@@ -165,7 +165,7 @@ case $ESTIMATOR in
     odepe)
         DEFAULT_CPUS=4
         DEFAULT_MEM="16GB"
-        DEFAULT_TIME="06:00:00"
+        DEFAULT_TIME="24:00:00"
         ;;
     sciml)
         DEFAULT_CPUS=1

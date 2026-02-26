@@ -7,6 +7,7 @@
 #SBATCH --mem=8GB
 #SBATCH --job-name=array_job_amigo2
 #SBATCH --partition=partnsf
+#SBATCH --account=gbassikqc
 #SBATCH --output=output/array_job_amigo2_%A_%a.out
 #SBATCH --error=output/array_job_amigo2_%A_%a.err
 #SBATCH --array=0-49
@@ -19,7 +20,9 @@
 
 export SCRATCH="/scratch/oren-qc-13"
 
-module purge
+# Stagger startup to avoid NFS contention across concurrent array jobs
+sleep $((SLURM_ARRAY_TASK_ID % 20 * 3))
+
 module load Utils/Matlab/R2024b
 # Provide X11/GTK libs missing on some compute nodes (MATLAB R2024b requires them even headless)
 export LD_LIBRARY_PATH="${SCRATCH}/.matlab_libs:${LD_LIBRARY_PATH}"

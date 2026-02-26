@@ -5,21 +5,24 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --time=24:00:00
 #SBATCH --mem=16GB
-#SBATCH --job-name=array_job_odepe
+#SBATCH --job-name=array_job_odepe_B
 #SBATCH --partition=partnsf
 #SBATCH --account=gbassikqc
-#SBATCH --output=output/array_job_odepe_%A_%a.out
-#SBATCH --error=output/array_job_odepe_%A_%a.err
-#SBATCH --array=0-9
+#SBATCH --output=output/array_job_odepe_B_%A_%a.out
+#SBATCH --error=output/array_job_odepe_B_%A_%a.err
+#SBATCH --array=0-199
 
-# CUNY HPC — ODEPE benchmark
-# Mirrors hpc/array_job_odepe.s but with CUNY-specific environment.
+# CUNY HPC — ODEPE benchmark (batch B: instances 1000-1199)
+# Adds INDEX_OFFSET to SLURM_ARRAY_TASK_ID to reach indices 1000-1199.
 #
 # Usage (from $SCRATCH):
-#   sbatch ParameterEstimationBenchmarking/hpc/cuny/array_job_odepe_cuny.s <data_dir> <run_name>
+#   sbatch ParameterEstimationBenchmarking/hpc/cuny/array_job_odepe_offset_cuny.s <data_dir> <run_name>
 
 export SCRATCH="/scratch/oren-qc-13"
 export JULIA_NUM_THREADS=16
+
+INDEX_OFFSET=1000
+REAL_INDEX=$((SLURM_ARRAY_TASK_ID + INDEX_OFFSET))
 
 # Stagger startup to avoid NFS contention across concurrent array jobs
 sleep $((SLURM_ARRAY_TASK_ID % 20 * 3))
@@ -32,4 +35,4 @@ cd $SCRATCH
 
 source ParameterEstimationBenchmarking/environments/venv/bin/activate
 
-python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/$1 $2 odepe $SLURM_ARRAY_TASK_ID
+python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/$1 $2 odepe $REAL_INDEX

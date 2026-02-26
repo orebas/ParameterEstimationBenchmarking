@@ -79,6 +79,10 @@ opts = EstimationOptions(
     opt_ub = {{upper_bound}} * ones(length(ic) + length(p_true)),  # Match SciML bounds
     abstol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
     reltol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
+    polish_maxtime = {{POLISH_MAXTIME}},
+    polish_divergence_factor = {{POLISH_DIVERGENCE_FACTOR}},
+    polish_stagnation_window = {{POLISH_STAGNATION_WINDOW}},
+    polish_ode_maxiters = {{POLISH_ODE_MAXITERS}},
     diagnostics = true)
 
 # Run the analysis with the selected options

@@ -2,7 +2,9 @@ import sys
 from datetime import datetime
 from termcolor import colored
 
-AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2']  # 'iqm'
+AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2',
+                      'odepe_kernel_se', 'odepe_kernel_rq',
+                      'odepe_kernel_se_plus_rq', 'odepe_kernel_se_times_rq']  # 'iqm'
 
 END_OF_LOG = "===END==="
 
@@ -14,7 +16,11 @@ JULIA_ENVIRONMENTS = {
     "odepe" : "Symbol(:environments, /, :julia_odepe)",
     "sciml" : "Symbol(:environments, /, :julia_sciml)",
     "amigo2": "",
-    "iqm"   : ""
+    "iqm"   : "",
+    "odepe_kernel_se"         : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_kernel_rq"         : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_kernel_se_plus_rq" : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_kernel_se_times_rq": "Symbol(:environments, /, :julia_odepe)",
 }
 
 def warn(msg):

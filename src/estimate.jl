@@ -37,7 +37,8 @@ using Printf
 using Dates
 
 # Define constants (similar to shared.py)
-const AVAILABLE_SOFTWARE = ["pe", "odepe", "sciml"]
+const AVAILABLE_SOFTWARE = ["pe", "odepe", "sciml",
+    "odepe_kernel_se", "odepe_kernel_rq", "odepe_kernel_se_plus_rq", "odepe_kernel_se_times_rq"]
 const END_OF_LOG = "=== END OF LOG ==="
 const STDOUT_FILENAME = "stdout.txt"
 const STDERR_FILENAME = "stderr.txt"
@@ -53,7 +54,7 @@ end
 function get_script_path(args, instance)
     print(args)
     print(args["dir"])
-    if args["software"] in ["pe", "odepe", "sciml"]
+    if args["software"] in AVAILABLE_SOFTWARE
         return joinpath(args["dir"], args["config"]["FILETREE"], args["software"], instance["id"], "script.jl")
     else
         error("Unsupported software for Julia runner: $(args["software"])")

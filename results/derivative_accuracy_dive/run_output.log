@@ -1,0 +1,328 @@
+WARNING: Detected access to binding `KernelFunctions.kernelpdmat` in a world prior to its definition world.
+  Julia 1.12 has introduced more strict world age semantics for global bindings.
+  !!! This code may malfunction under Revise.
+  !!! This code will error in future versions of Julia.
+Hint: Add an appropriate `invokelatest` around the access to this binding.
+To make this warning an error, and hence obtain a stack trace, use `julia --depwarn=error`.
+======================================================================
+Derivative Accuracy Deep Dive: biohydrogenation (quokka config)
+======================================================================
+  datasize=1501, time=[0.0, 10.0]
+  params: k5=0.688, k6=0.87, k7=0.299, k8=0.561, k9=0.574, k10=0.558
+  ICs: x4=0.278, x5=0.862, x6=0.458, x7=0.777
+  Observables: y1 = 8*x4, y2 = 0.5*x5
+
+Solving ODE (Vern9, atol=rtol=1e-14)...
+  Status: Success, 1501 data points, 35 dense steps
+  y1: [2.224, ..., 0.5047611351548263], range [0.5047611351548263, 2.224]
+  y2: [0.431, ..., 1.3832668761325912], range [0.431, 1.3832668761325912]
+  Saved to generated_data.csv
+
+Evaluation points (12 warped shooting points):
+  1: t_phys=0.0, t_norm=-0.5 (idx 1)
+  2: t_phys=0.0067, t_norm=-0.499333 (idx 2)
+  3: t_phys=0.06, t_norm=-0.494 (idx 10)
+  4: t_phys=0.2, t_norm=-0.48 (idx 31)
+  5: t_phys=0.48, t_norm=-0.452 (idx 73)
+  6: t_phys=0.94, t_norm=-0.406 (idx 142)
+  7: t_phys=1.62, t_norm=-0.338 (idx 244)
+  8: t_phys=2.58, t_norm=-0.242 (idx 388)
+  9: t_phys=3.8467, t_norm=-0.115333 (idx 578)
+  10: t_phys=5.48, t_norm=0.048 (idx 823)
+  11: t_phys=7.5133, t_norm=0.251333 (idx 1128)
+  12: t_phys=10.0, t_norm=0.5 (idx 1501)
+
+Computing ground truth derivatives (orders 0-7)...
+  Method: ODE Taylor coefficient recursion via TaylorDiff
+  Ground truth at eval point 1 (t=0.0):
+    y1 (norm-time): [2.224, -2.68252, 1.97402, 0.40407, -1.77675, -3.43326, 3.39053, 36.429]
+    y2 (norm-time): [0.431, 2.24862, -3.70739, 7.12143, -39.3812, 279.852, -2116.93, 17646.9]
+┌ Warning: Assignment to `d0_ok` in soft scope is ambiguous because a global variable by the same name exists: `d0_ok` will be treated as a new local. Disambiguate by using `local d0_ok` to suppress this warning or `global d0_ok` to assign to the existing global variable.
+└ @ ~/ParameterEstimationBenchmark-local/results/derivative_accuracy_dive/01_derivative_accuracy.jl:219
+  d0 verification passed (ground truth matches data)
+
+──────────────────────────────────────────────────
+Interpolator: PureAAA
+──────────────────────────────────────────────────
+  y1: created in 5.07s
+  y2: created in 0.0s
+
+──────────────────────────────────────────────────
+Interpolator: OldGPR
+──────────────────────────────────────────────────
+  y1: LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(7)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(199)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(7)
+LinearAlgebra.PosDefException(46)
+LinearAlgebra.PosDefException(363)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(7)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(42)
+LinearAlgebra.PosDefException(176)
+LinearAlgebra.PosDefException(586)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(17)
+LinearAlgebra.PosDefException(85)
+LinearAlgebra.PosDefException(254)
+LinearAlgebra.PosDefException(453)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(7)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(7)
+LinearAlgebra.PosDefException(12)
+LinearAlgebra.PosDefException(70)
+LinearAlgebra.PosDefException(193)
+LinearAlgebra.PosDefException(279)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+created in 3.42s
+  y2: LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(8)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(202)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(4)
+LinearAlgebra.PosDefException(8)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(102)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(2)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(23)
+LinearAlgebra.PosDefException(89)
+LinearAlgebra.PosDefException(222)
+LinearAlgebra.PosDefException(373)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(8)
+LinearAlgebra.PosDefException(67)
+LinearAlgebra.PosDefException(129)
+LinearAlgebra.PosDefException(240)
+LinearAlgebra.PosDefException(530)
+LinearAlgebra.PosDefException(634)
+LinearAlgebra.PosDefException(803)
+LinearAlgebra.PosDefException(234)
+LinearAlgebra.PosDefException(345)
+LinearAlgebra.PosDefException(410)
+LinearAlgebra.PosDefException(521)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(3)
+LinearAlgebra.PosDefException(5)
+LinearAlgebra.PosDefException(6)
+LinearAlgebra.PosDefException(28)
+LinearAlgebra.PosDefException(89)
+LinearAlgebra.PosDefException(200)
+LinearAlgebra.PosDefException(296)
+LinearAlgebra.PosDefException(369)
+LinearAlgebra.PosDefException(452)
+LinearAlgebra.PosDefException(489)
+LinearAlgebra.PosDefException(483)
+LinearAlgebra.PosDefException(604)
+LinearAlgebra.PosDefException(589)
+LinearAlgebra.PosDefException(561)
+LinearAlgebra.PosDefException(651)
+LinearAlgebra.PosDefException(600)
+LinearAlgebra.PosDefException(603)
+LinearAlgebra.PosDefException(597)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(1)
+LinearAlgebra.PosDefException(701)
+LinearAlgebra.PosDefException(676)
+LinearAlgebra.PosDefException(557)
+LinearAlgebra.PosDefException(613)
+LinearAlgebra.PosDefException(510)
+LinearAlgebra.PosDefException(583)
+LinearAlgebra.PosDefException(552)
+LinearAlgebra.PosDefException(675)
+LinearAlgebra.PosDefException(584)
+LinearAlgebra.PosDefException(601)
+LinearAlgebra.PosDefException(697)
+LinearAlgebra.PosDefException(661)
+LinearAlgebra.PosDefException(644)
+LinearAlgebra.PosDefException(575)
+LinearAlgebra.PosDefException(693)
+LinearAlgebra.PosDefException(577)
+LinearAlgebra.PosDefException(697)
+LinearAlgebra.PosDefException(710)
+LinearAlgebra.PosDefException(720)
+LinearAlgebra.PosDefException(1014)
+LinearAlgebra.PosDefException(622)
+LinearAlgebra.PosDefException(606)
+LinearAlgebra.PosDefException(578)
+LinearAlgebra.PosDefException(651)
+LinearAlgebra.PosDefException(684)
+LinearAlgebra.PosDefException(735)
+LinearAlgebra.PosDefException(673)
+LinearAlgebra.PosDefException(623)
+LinearAlgebra.PosDefException(608)
+LinearAlgebra.PosDefException(594)
+LinearAlgebra.PosDefException(632)
+LinearAlgebra.PosDefException(601)
+LinearAlgebra.PosDefException(800)
+LinearAlgebra.PosDefException(637)
+LinearAlgebra.PosDefException(690)
+LinearAlgebra.PosDefException(623)
+LinearAlgebra.PosDefException(784)
+LinearAlgebra.PosDefException(626)
+LinearAlgebra.PosDefException(626)
+LinearAlgebra.PosDefException(560)
+LinearAlgebra.PosDefException(672)
+LinearAlgebra.PosDefException(716)
+LinearAlgebra.PosDefException(592)
+created in 3.94s
+
+──────────────────────────────────────────────────
+Interpolator: AGPRobust_SE
+──────────────────────────────────────────────────
+  y1: created in 15.87s
+  y2: created in 35.05s
+
+──────────────────────────────────────────────────
+Interpolator: AGPRobust_RQ
+──────────────────────────────────────────────────
+  y1: created in 41.69s
+  y2: created in 78.81s
+
+──────────────────────────────────────────────────
+Interpolator: AGPRobust_SEpRQ
+──────────────────────────────────────────────────
+  y1: created in 76.1s
+  y2: created in 145.49s
+
+──────────────────────────────────────────────────
+Interpolator: AGPRobust_SExRQ
+──────────────────────────────────────────────────
+  y1: created in 33.28s
+  y2: created in 60.59s
+
+──────────────────────────────────────────────────
+Interpolator: FHD
+──────────────────────────────────────────────────
+  y1: created in 0.06s
+  y2: created in 0.0s
+
+Detailed results saved to derivative_errors_detailed.csv
+
+======================================================================
+MEDIAN relative error (y1+y2 combined)
+======================================================================
+Interpolator       | d0           | d1           | d2           | d3           | d4           | d5           | d6           | d7          
+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-------------
+PureAAA            | ~0           | ~0           | 1.1e-9%      | 3.5e-7%      | 9.2e-6%      | 0.00016%     | 0.0027%      | 0.027%      
+OldGPR             | 1.8e-7%      | 6.5e-6%      | 0.00052%     | 0.378%       | 3.67%        | 167.0%       | 1660.0%      | 31700.0%    
+AGPRobust_SE       | 0.0002%      | 0.0032%      | 0.066%       | 9.79%        | 40.4%        | 113.0%       | 165.0%       | 126.0%      
+AGPRobust_RQ       | 0.0002%      | 0.0039%      | 0.112%       | 4.81%        | 40.6%        | 110.0%       | 175.0%       | 137.0%      
+AGPRobust_SEpRQ    | 0.00022%     | 0.0045%      | 0.139%       | 5.38%        | 40.9%        | 93.5%        | 81.4%        | 119.0%      
+AGPRobust_SExRQ    | 0.00031%     | 0.0046%      | 0.167%       | 7.14%        | 46.9%        | 105.0%       | 71.9%        | 115.0%      
+FHD                | ~0           | 7.5e-10%     | 1.4e-6%      | 0.049%       | 22.1%        | 110000.0%    | 2.41e8%      | 6.29e10%    
+
+======================================================================
+MEDIAN relative error: y1 only
+======================================================================
+Interpolator       | d0           | d1           | d2           | d3           | d4           | d5           | d6           | d7          
+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-------------
+PureAAA            | ~0           | ~0           | 1.1e-9%      | 1.4e-6%      | 3.5e-5%      | 0.00078%     | 0.022%       | 0.443%      
+OldGPR             | 9.1e-8%      | 5.6e-6%      | 0.001%       | 0.826%       | 10.1%        | 1040.0%      | 20000.0%     | 741000.0%   
+AGPRobust_SE       | 0.00012%     | 0.0024%      | 0.04%        | 14.9%        | 27.9%        | 118.0%       | 162.0%       | 32.4%       
+AGPRobust_RQ       | 0.00015%     | 0.0027%      | 0.106%       | 16.6%        | 26.8%        | 107.0%       | 123.0%       | 43.9%       
+AGPRobust_SEpRQ    | 0.0002%      | 0.0037%      | 0.158%       | 21.4%        | 28.4%        | 93.0%        | 71.5%        | 58.5%       
+AGPRobust_SExRQ    | 0.00034%     | 0.0058%      | 0.24%        | 30.8%        | 37.9%        | 102.0%       | 40.7%        | 96.3%       
+FHD                | ~0           | 9.0e-10%     | 1.7e-6%      | 0.15%        | 44.7%        | 298000.0%    | 6.83e8%      | 5.87e11%    
+
+======================================================================
+MEDIAN relative error: y2 only
+======================================================================
+Interpolator       | d0           | d1           | d2           | d3           | d4           | d5           | d6           | d7          
+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-------------
+PureAAA            | ~0           | ~0           | 1.5e-9%      | 1.4e-7%      | 1.6e-6%      | 2.3e-5%      | 0.00077%     | 0.0075%     
+OldGPR             | 8.6e-7%      | 8.9e-6%      | 0.00052%     | 0.014%       | 2.24%        | 21.2%        | 42.2%        | 2240.0%     
+AGPRobust_SE       | 0.00027%     | 0.0044%      | 0.138%       | 4.3%         | 55.1%        | 89.4%        | 165.0%       | 157.0%      
+AGPRobust_RQ       | 0.00023%     | 0.0046%      | 0.134%       | 1.77%        | 58.2%        | 122.0%       | 185.0%       | 163.0%      
+AGPRobust_SEpRQ    | 0.00023%     | 0.0046%      | 0.135%       | 1.32%        | 54.5%        | 125.0%       | 186.0%       | 184.0%      
+AGPRobust_SExRQ    | 0.00024%     | 0.0045%      | 0.132%       | 4.16%        | 56.9%        | 110.0%       | 174.0%       | 163.0%      
+FHD                | ~0           | 7.0e-10%     | 6.6e-7%      | 0.0081%      | 4.14%        | 6230.0%      | 2.96e6%      | 3.22e9%     
+
+======================================================================
+MAX relative error (y1+y2 combined)
+======================================================================
+Interpolator       | d0           | d1           | d2           | d3           | d4           | d5           | d6           | d7          
+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-------------
+PureAAA            | ~0           | 1.1e-8%      | 1.8e-7%      | 0.00017%     | 0.887%       | 28800.0%     | 1.2e8%       | 2.51e10%    
+OldGPR             | 2.3e-6%      | 0.007%       | 0.09%        | 76.0%        | 16200.0%     | 104000.0%    | 7.34e6%      | 3.4e7%      
+AGPRobust_SE       | 0.0026%      | 4.55%        | 1.16%        | 23.8%        | 729.0%       | 605.0%       | 6510.0%      | 4500.0%     
+AGPRobust_RQ       | 0.0025%      | 1.98%        | 1.19%        | 23.5%        | 142.0%       | 606.0%       | 15500.0%     | 293.0%      
+AGPRobust_SEpRQ    | 0.0025%      | 1.59%        | 1.22%        | 26.0%        | 197.0%       | 660.0%       | 13700.0%     | 1080.0%     
+AGPRobust_SExRQ    | 0.0025%      | 3.09%        | 1.15%        | 36.5%        | 603.0%       | 232.0%       | 13300.0%     | 2100.0%     
+FHD                | ~0           | 1.3e-6%      | 0.00023%     | 0.868%       | 30900.0%     | 4.65e6%      | 1.38e10%     | 6.73e12%    
+
+======================================================================
+Done! Results in: /home/orebas/ParameterEstimationBenchmark-local/results/derivative_accuracy_dive
+======================================================================

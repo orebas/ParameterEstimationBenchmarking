@@ -41,7 +41,10 @@ def parse_result_string(s):
     """
     if pd.isna(s) or s == 'nan' or s == 'NaN' or s == '':
         return []  # Empty list for missing data
-    result = ast.literal_eval(s)
+    # Replace bare nan/inf values with quoted strings so ast.literal_eval can parse them
+    import re
+    s_clean = re.sub(r'(?<![\'"\w])(nan|NaN|inf|Inf|-inf|-Inf)(?![\'"\w])', r"'\1'", s)
+    result = ast.literal_eval(s_clean)
     
     # Format: [['k5', '0.539', '0.540'], ['k6', '0.672', '0.673'], ...] - multiple estimation results
     # First, collect all parameters and their values

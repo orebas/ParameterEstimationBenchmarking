@@ -124,6 +124,20 @@ OUTPUT:             {output_dir.as_posix()}
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
 
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
+
+            # Bicycle model: reject Cf/Cr > 2.5 (oversteer bifurcation)
+            if system["name"] == "bicycle_model":
+                cf_idx = system["parameter_variables"].index("Cf")
+                cr_idx = system["parameter_variables"].index("Cr")
+                for _ in range(100):
+                    if param_values[cf_idx] / param_values[cr_idx] <= 2.5:
+                        break
+                    param_values = np.random.uniform(
+                        low=args.config['PARAM_INTERVAL'][0],
+                        high=args.config['PARAM_INTERVAL'][1],
+                        size=len(system["parameter_variables"])
+                    ).round(3).tolist()
+
             state_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["state_variables"])).round(3).tolist()
 
             # Override ICs for states with fixed initial conditions (e.g., oscillator inputs)

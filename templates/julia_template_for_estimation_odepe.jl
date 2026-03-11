@@ -70,20 +70,43 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
+    # Multi-interpolator: 12 interpolators, shared SI analysis
+    interpolators = [
+        InterpolatorAAAD,
+        InterpolatorAAADGPR,
+        InterpolatorS2AAAMLE,
+        InterpolatorAGPRobust,
+        InterpolatorAGPRobustRQ,
+        InterpolatorAGPRobustSEpRQ,
+        InterpolatorAGPRobustSExRQ,
+        InterpolatorS3SE,
+        InterpolatorS3RQ,
+        InterpolatorS3SEpRQ,
+        InterpolatorS3SExRQ,
+        InterpolatorFHD,
+    ],
+    # Shooting: 12 warp points clustered near t=0
+    shooting_points = 12,
+    shooting_warp = true,
+    shooting_warp_beta = 3.0,
+    # Parameter homotopy (with complex-projection fix)
+    use_parameter_homotopy = true,
+    # Polishing
     polish_solver_solutions = true,
     polish_solutions = {{ODEPE_POLISH}},
-    polish_maxiters = 5000,             # ODEPE starts from algebraic solutions; 5k suffices (was 50k)
-    polish_method = PolishBFGS,         # Match SciML's BFGS full Hessian (was PolishLBFGS)
-    opt_maxiters = 200000,              # Match SciML for direct opt path
-    opt_lb = {{lower_bound}} * ones(length(ic) + length(p_true)),  # Match SciML bounds
-    opt_ub = {{upper_bound}} * ones(length(ic) + length(p_true)),  # Match SciML bounds
-    abstol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
-    reltol = 1e-13,                     # Match SciML tolerances (was default 1e-14)
+    polish_maxiters = 5000,
+    polish_method = PolishBFGS,
+    opt_maxiters = 200000,
+    opt_lb = {{lower_bound}} * ones(length(ic) + length(p_true)),
+    opt_ub = {{upper_bound}} * ones(length(ic) + length(p_true)),
+    abstol = 1e-13,
+    reltol = 1e-13,
     polish_maxtime = {{POLISH_MAXTIME}},
     polish_divergence_factor = {{POLISH_DIVERGENCE_FACTOR}},
     polish_stagnation_window = {{POLISH_STAGNATION_WINDOW}},
     polish_ode_maxiters = {{POLISH_ODE_MAXITERS}},
-    diagnostics = true)
+    diagnostics = true,
+)
 
 # Run the analysis with the selected options
 meta, results = analyze_parameter_estimation_problem(

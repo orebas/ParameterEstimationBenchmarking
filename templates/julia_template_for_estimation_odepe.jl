@@ -8,6 +8,7 @@ using BenchmarkTools
 using OrderedCollections
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using CSV
+using JSON
 
 using GaussianProcesses
 using Statistics
@@ -108,44 +109,112 @@ opts = EstimationOptions(
     diagnostics = true,
 )
 
-# Run the analysis with the selected options
-meta, results = analyze_parameter_estimation_problem(
-    pep,
-    opts,  # Use the main opts, or replace with opts_fast, opts_accurate, or opts_noisy
-)
- 
-(solutions_vector, besterror,
-    best_min_error,
-    best_mean_error,
-    best_median_error,
-    best_max_error,
-    best_approximation_error,
-    best_rms_error) = results
- 
-table = merge(
-    Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
-    Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
+function ordered_pairs_to_string_dict(items)
+    out = Dict{String, Float64}()
+    for (k, v) in items
+        out[string(k)] = Float64(v)
+    end
+    return out
+end
+
+function ordered_dict_to_string_dict(items)
+    out = Dict{String, Float64}()
+    for (k, v) in pairs(items)
+        out[string(k)] = Float64(v)
+    end
+    return out
+end
+
+function result_metadata(best_sol)
+    provenance = best_sol.provenance
+    return Dict(
+        "parameters" => ordered_pairs_to_string_dict(collect(best_sol.parameters)),
+        "states" => ordered_pairs_to_string_dict(collect(best_sol.states)),
+        "all_unidentifiable" => [string(x) for x in best_sol.all_unidentifiable],
+        "primary_method" => string(provenance.primary_method),
+        "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
+        "rescue_path" => string(provenance.rescue_path),
+        "source_shooting_index" => provenance.source_shooting_index,
+        "source_candidate_index" => provenance.source_candidate_index,
+        "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
+        "residual_fix_set" => ordered_dict_to_string_dict(provenance.residual_fix_set),
+        "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
+        "template_status_before_residual_fix" => isnothing(provenance.template_status_before_residual_fix) ? nothing : string(provenance.template_status_before_residual_fix),
+        "template_status_after_residual_fix" => isnothing(provenance.template_status_after_residual_fix) ? nothing : string(provenance.template_status_after_residual_fix),
+        "equations_dropped_by_rank_trimming" => provenance.equations_dropped_by_rank_trimming,
+        "practical_identifiability_status" => string(provenance.practical_identifiability_status),
+        "notes" => [string(x) for x in provenance.notes],
+    )
+end
+
+sidecar_file = joinpath(@__DIR__, "odepe_metadata.json")
+metadata = Dict{String, Any}(
+    "status" => "error",
+    "raw_count" => 0,
+    "best_count" => 0,
 )
 
-result_file = joinpath(@__DIR__, "result.csv")
-CSV.write(result_file, table, header = string.(collect(keys(table))))
+try
+    raw_results, analysis, _ = analyze_parameter_estimation_problem(
+        pep,
+        opts,
+    )
 
-println("\n" * "="^60)
-println("Parameter Estimation Complete!")
-println("="^60)
-println("\nResults saved to: ", result_file)
-println("Number of solutions found: ", length(solutions_vector))
-if !isempty(solutions_vector)
-    println("\nBest solution:")
-    best_sol = solutions_vector[1]
-    println("  States: ", best_sol.states)
-    println("  Parameters: ", best_sol.parameters)
-    println("  Error metrics:")
-    println("    Best error: ", besterror)
-    println("    Min error: ", best_min_error)
-    println("    Mean error: ", best_mean_error)
-    println("    Median error: ", best_median_error)
-    println("    Max error: ", best_max_error)
-    println("    Approximation error: ", best_approximation_error)
-    println("    RMS error: ", best_rms_error)
+    (solutions_vector,
+        besterror,
+        best_min_error,
+        best_mean_error,
+        best_median_error,
+        best_max_error,
+        best_approximation_error,
+        best_rms_error) = analysis
+
+    raw_count = (raw_results isa Tuple && length(raw_results) >= 1 && raw_results[1] isa AbstractVector) ? length(raw_results[1]) : 0
+    metadata["status"] = isempty(solutions_vector) ? "no_result" : "ok"
+    metadata["raw_count"] = raw_count
+    metadata["best_count"] = length(solutions_vector)
+    metadata["besterror"] = besterror
+    metadata["best_min_error"] = best_min_error
+    metadata["best_mean_error"] = best_mean_error
+    metadata["best_median_error"] = best_median_error
+    metadata["best_max_error"] = best_max_error
+    metadata["best_approximation_error"] = best_approximation_error
+    metadata["best_rms_error"] = best_rms_error
+
+    table = merge(
+        Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
+        Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
+    )
+
+    result_file = joinpath(@__DIR__, "result.csv")
+    CSV.write(result_file, table, header = string.(collect(keys(table))))
+
+    println("\n" * "="^60)
+    println("Parameter Estimation Complete!")
+    println("="^60)
+    println("\nResults saved to: ", result_file)
+    println("Number of solutions found: ", length(solutions_vector))
+    if !isempty(solutions_vector)
+        best_sol = solutions_vector[1]
+        metadata["best"] = result_metadata(best_sol)
+        println("\nBest solution:")
+        println("  States: ", best_sol.states)
+        println("  Parameters: ", best_sol.parameters)
+        println("  Error metrics:")
+        println("    Best error: ", besterror)
+        println("    Min error: ", best_min_error)
+        println("    Mean error: ", best_mean_error)
+        println("    Median error: ", best_median_error)
+        println("    Max error: ", best_max_error)
+        println("    Approximation error: ", best_approximation_error)
+        println("    RMS error: ", best_rms_error)
+    end
+catch err
+    metadata["status"] = "error"
+    metadata["error"] = sprint(showerror, err, catch_backtrace())
+    rethrow()
+finally
+    open(sidecar_file, "w") do io
+        JSON.print(io, metadata, 4)
+    end
 end

@@ -7,6 +7,7 @@ A benchmarking harness for comparing ODE parameter estimation methods across a s
 This repository generates synthetic ODE data, runs multiple parameter estimation methods on each system under varying noise levels, and collects/summarizes the results. It supports the following estimation backends:
 
 - **ODEPE** — ODE Parameter Estimation via Gaussian Process Regression
+- ODEPE runs now also write an optional `odepe_metadata.json` next to `result.csv` for debugging/provenance; collectors still use `result.csv` as the compatibility artifact.
 - **SciML** — Scientific Machine Learning (Julia/DiffEqFlux)
 - **AMIGO2** — Advanced Model Identification using Global Optimization (MATLAB)
 - **PE** — ParameterEstimation.jl (Julia)

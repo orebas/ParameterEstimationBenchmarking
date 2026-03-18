@@ -23,6 +23,15 @@ from copy import deepcopy
 
 from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONMENTS, get_file_meta_header
 
+DEFAULT_CONFIG_VALUES = {
+    "PATH_TO_AMIGO2": "",
+    "ODEPE_POLISH": "true",
+    "POLISH_MAXTIME": 1200.0,
+    "POLISH_DIVERGENCE_FACTOR": 10.0,
+    "POLISH_STAGNATION_WINDOW": 50,
+    "POLISH_ODE_MAXITERS": 20000,
+}
+
 TEMPLATE_ESTIMATION = {
     "pe"     : "templates/julia_template_for_estimation_pe.jl",
 	"odepe"  : "templates/julia_template_for_estimation_odepe.jl",
@@ -86,7 +95,7 @@ def main(args):
     parent = Path(__file__).parent.parent.resolve()
     
     with open(args.dir / args.config, 'r') as io:
-        args.config = json.load(io)
+        args.config = DEFAULT_CONFIG_VALUES | json.load(io)
         
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)

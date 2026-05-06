@@ -4,7 +4,8 @@ from termcolor import colored
 
 AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2',
                       'odepe_kernel_se', 'odepe_kernel_rq',
-                      'odepe_kernel_se_plus_rq', 'odepe_kernel_se_times_rq']  # 'iqm'
+                      'odepe_kernel_se_plus_rq', 'odepe_kernel_se_times_rq',
+                      'odepe_multipoint']  # 'iqm'
 
 END_OF_LOG = "===END==="
 
@@ -21,6 +22,7 @@ JULIA_ENVIRONMENTS = {
     "odepe_kernel_rq"         : "Symbol(:environments, /, :julia_odepe)",
     "odepe_kernel_se_plus_rq" : "Symbol(:environments, /, :julia_odepe)",
     "odepe_kernel_se_times_rq": "Symbol(:environments, /, :julia_odepe)",
+    "odepe_multipoint"        : "Symbol(:environments, /, :julia_odepe)",
 }
 
 def warn(msg):

@@ -38,6 +38,7 @@ TEMPLATE_ESTIMATION = {
     "odepe_kernel_rq"         : "templates/julia_template_for_estimation_odepe_kernel_rq.jl",
     "odepe_kernel_se_plus_rq" : "templates/julia_template_for_estimation_odepe_kernel_se_plus_rq.jl",
     "odepe_kernel_se_times_rq": "templates/julia_template_for_estimation_odepe_kernel_se_times_rq.jl",
+    "odepe_multipoint"        : "templates/julia_template_for_estimation_odepe_multipoint.jl",
 }
 
 SOFTWARE_COMMENT = {
@@ -50,11 +51,13 @@ SOFTWARE_COMMENT = {
     "odepe_kernel_rq"         : "#",
     "odepe_kernel_se_plus_rq" : "#",
     "odepe_kernel_se_times_rq": "#",
+    "odepe_multipoint"        : "#",
 }
 
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm',
             'odepe_kernel_se': 'jl', 'odepe_kernel_rq': 'jl',
-            'odepe_kernel_se_plus_rq': 'jl', 'odepe_kernel_se_times_rq': 'jl'}
+            'odepe_kernel_se_plus_rq': 'jl', 'odepe_kernel_se_times_rq': 'jl',
+            'odepe_multipoint': 'jl'}
 
 def get_sciml_measurements(instance):
     import re
@@ -127,10 +130,12 @@ OUTPUT:             {args.dir}
             file_meta_header = get_file_meta_header(SOFTWARE_COMMENT[software])
 
             if software in ['pe','odepe','sciml','amigo2',
-                            'odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq']:
+                            'odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq',
+                            'odepe_multipoint']:
                 julia_env_name = {"pe": "julia_pe", "odepe": "julia_odepe", "sciml": "julia_sciml",
                                   "odepe_kernel_se": "julia_odepe", "odepe_kernel_rq": "julia_odepe",
-                                  "odepe_kernel_se_plus_rq": "julia_odepe", "odepe_kernel_se_times_rq": "julia_odepe"}.get(software, "")
+                                  "odepe_kernel_se_plus_rq": "julia_odepe", "odepe_kernel_se_times_rq": "julia_odepe",
+                                  "odepe_multipoint": "julia_odepe"}.get(software, "")
                 if julia_env_name:
                     julia_env_abs = str((parent / "environments" / julia_env_name).resolve())
                     settings.update({'julia_env_path' : f'raw"{julia_env_abs}"'})

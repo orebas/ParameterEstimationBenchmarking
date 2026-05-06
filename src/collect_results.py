@@ -24,6 +24,15 @@ from pathlib import Path
 
 from shared import *
 
+def load_odepe_metadata(path):
+    if not path.exists():
+        return None
+    try:
+        with open(path, 'r') as io:
+            return json.load(io)
+    except Exception:
+        return None
+
 def parse_output(output, software):
     if software == "amigo2":
         pairs = re.findall(r"([A-Za-z0-9\_]+)\s+:\s+([0-9.e+-]+)", output)
@@ -71,7 +80,17 @@ OUTPUT:             {args.dir.as_posix()}
             'finished': False,
             'has_result' : False,
             'result': None,
-            'time': None
+            'time': None,
+            'odepe_status': None,
+            'odepe_raw_count': None,
+            'odepe_best_count': None,
+            'odepe_primary_method': None,
+            'odepe_rescue_path': None,
+            'odepe_interpolator_source': None,
+            'odepe_structural_fix_count': None,
+            'odepe_practical_identifiability_status': None,
+            'odepe_notes': None,
+            'odepe_error': None
       }
             
       # Verify logs
@@ -96,6 +115,24 @@ OUTPUT:             {args.dir.as_posix()}
           'finished': True,
           'time': time
       })
+
+      if software == "odepe":
+        metadata_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / "odepe_metadata.json"
+        metadata = load_odepe_metadata(metadata_path)
+        if metadata is not None:
+          best_meta = metadata.get('best', {}) if isinstance(metadata.get('best', {}), dict) else {}
+          result.update({
+              'odepe_status': metadata.get('status'),
+              'odepe_raw_count': metadata.get('raw_count'),
+              'odepe_best_count': metadata.get('best_count'),
+              'odepe_primary_method': best_meta.get('primary_method'),
+              'odepe_rescue_path': best_meta.get('rescue_path'),
+              'odepe_interpolator_source': best_meta.get('interpolator_source'),
+              'odepe_structural_fix_count': len(best_meta.get('structural_fix_set', {})) if isinstance(best_meta.get('structural_fix_set', {}), dict) else None,
+              'odepe_practical_identifiability_status': best_meta.get('practical_identifiability_status'),
+              'odepe_notes': best_meta.get('notes'),
+              'odepe_error': metadata.get('error'),
+          })
 
       if software in ("odepe", "pe", "sciml"):
         result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / f"result.csv"
@@ -160,7 +197,17 @@ OUTPUT:             {args.dir.as_posix()}
             'noise'             : args.config['NOISE_LEVEL'][instance['id'].split('_')[-1]],
             'finished'          : False,
             'has_result'        : False,
-            'software'          : run.split("_")[0]
+            'software'          : run.split("_")[0],
+            'odepe_status'      : None,
+            'odepe_raw_count'   : None,
+            'odepe_best_count'  : None,
+            'odepe_primary_method' : None,
+            'odepe_rescue_path' : None,
+            'odepe_interpolator_source' : None,
+            'odepe_structural_fix_count' : None,
+            'odepe_practical_identifiability_status' : None,
+            'odepe_notes' : None,
+            'odepe_error' : None
         })
         if (instance['id'], run) in results:
             dict1.update({
@@ -169,12 +216,22 @@ OUTPUT:             {args.dir.as_posix()}
             'result'            : results[(instance['id'], run)]['result'],
             'time'              : results[(instance['id'], run)]['time'],
             'finished'          : results[(instance['id'], run)]['finished'],
-            'has_result'        : results[(instance['id'], run)]['has_result']
+            'has_result'        : results[(instance['id'], run)]['has_result'],
+            'odepe_status'      : results[(instance['id'], run)]['odepe_status'],
+            'odepe_raw_count'   : results[(instance['id'], run)]['odepe_raw_count'],
+            'odepe_best_count'  : results[(instance['id'], run)]['odepe_best_count'],
+            'odepe_primary_method' : results[(instance['id'], run)]['odepe_primary_method'],
+            'odepe_rescue_path' : results[(instance['id'], run)]['odepe_rescue_path'],
+            'odepe_interpolator_source' : results[(instance['id'], run)]['odepe_interpolator_source'],
+            'odepe_structural_fix_count' : results[(instance['id'], run)]['odepe_structural_fix_count'],
+            'odepe_practical_identifiability_status' : results[(instance['id'], run)]['odepe_practical_identifiability_status'],
+            'odepe_notes'       : results[(instance['id'], run)]['odepe_notes'],
+            'odepe_error'       : results[(instance['id'], run)]['odepe_error']
             })
         else:
             dict1.update({'run' : run})
         rows_list.append(dict1)
-  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'run', 'software', 'result', 'time'])
+  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'run', 'software', 'result', 'time', 'odepe_status', 'odepe_raw_count', 'odepe_best_count', 'odepe_primary_method', 'odepe_rescue_path', 'odepe_interpolator_source', 'odepe_structural_fix_count', 'odepe_practical_identifiability_status', 'odepe_notes', 'odepe_error'])
   print("DataFrame header:")
   print(df.head())
   print("DataFrame columns:", df.columns)
@@ -191,4 +248,3 @@ if __name__ == "__main__":
     args.run = args.run.split(",")
     
     main(args)
-

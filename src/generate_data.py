@@ -91,27 +91,38 @@ OUTPUT:             {output_dir.as_posix()}
   HUGE_JSON:        {(output_dir / 'huge_json.json').as_posix()}
 """)
 
-    # Create output directories
+    # Create output directories.
+    # If the directory already exists AND has a MANIFEST.toml from init_benchmark.py,
+    # we treat that as "init was run; just fill in the data." Otherwise prompt to
+    # wipe-and-redo (legacy interactive flow).
     if os.path.exists(output_dir):
-        warn(f"Directory {output_dir} already exists.")
-        answer = input("Would you like to redo the generation? (y/n) ")
-        if answer.lower() == 'y':
-            warn(f"Removing existing directory {output_dir}")
-            shutil.rmtree(output_dir)
+        manifest_path = output_dir / "MANIFEST.toml"
+        if manifest_path.exists():
+            warn(f"Directory {output_dir} exists with MANIFEST.toml; reusing init_benchmark snapshot.")
+            # Idempotent: leave config/ + MANIFEST.toml; just ensure filetree subdirs exist.
         else:
-            warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
-            exit(1)
+            warn(f"Directory {output_dir} already exists.")
+            answer = input("Would you like to redo the generation? (y/n) ")
+            if answer.lower() == 'y':
+                warn(f"Removing existing directory {output_dir}")
+                shutil.rmtree(output_dir)
+            else:
+                warn(f"Try running the script again or delete previous directory. Directory {output_dir} already exists.")
+                exit(1)
 
-    os.makedirs(output_dir)
-    os.makedirs(output_dir / args.config['FILETREE'])
-    os.makedirs(output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'])
-    os.makedirs(output_dir / args.config['FILETREE'] / args.config['DATA_DIR'])
-    os.makedirs(output_dir / "config")
-    
-    with open(output_dir / "config" / "config.json", "w") as io:
-        json.dump(args.config, io, indent=2)
-    with open(output_dir / "config" / "systems.json", "w") as io:
-        json.dump(args.systems, io, indent=2)
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_dir / args.config['FILETREE'], exist_ok=True)
+    os.makedirs(output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'], exist_ok=True)
+    os.makedirs(output_dir / args.config['FILETREE'] / args.config['DATA_DIR'], exist_ok=True)
+    os.makedirs(output_dir / "config", exist_ok=True)
+
+    # Only overwrite frozen config snapshot if init_benchmark didn't already write one.
+    if not (output_dir / "config" / "config.json").exists():
+        with open(output_dir / "config" / "config.json", "w") as io:
+            json.dump(args.config, io, indent=2)
+    if not (output_dir / "config" / "systems.json").exists():
+        with open(output_dir / "config" / "systems.json", "w") as io:
+            json.dump(args.systems, io, indent=2)
 
     # Generate data and populate instances
     instance_stash = {}

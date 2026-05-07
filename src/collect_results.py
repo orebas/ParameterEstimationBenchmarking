@@ -90,7 +90,9 @@ OUTPUT:             {args.dir.as_posix()}
             'odepe_structural_fix_count': None,
             'odepe_practical_identifiability_status': None,
             'odepe_notes': None,
-            'odepe_error': None
+            'odepe_error': None,
+            'odepe_was_terminal_fallback': None,
+            'failure_reason': None,
       }
             
       # Verify logs
@@ -116,11 +118,22 @@ OUTPUT:             {args.dir.as_posix()}
           'time': time
       })
 
+      cell_dir = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id']
+
+      # ODEPE-family provenance: software is "odepe" (since `run.split("_")[0]` collapses
+      # every ODEPE variant — `odepe_multipoint`, `odepe_v2_polish`, `odepe_shade`, etc. —
+      # to just "odepe"). All of them write `odepe_metadata.json` in the same schema.
       if software == "odepe":
-        metadata_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / "odepe_metadata.json"
+        metadata_path = cell_dir / "odepe_metadata.json"
         metadata = load_odepe_metadata(metadata_path)
         if metadata is not None:
           best_meta = metadata.get('best', {}) if isinstance(metadata.get('best', {}), dict) else {}
+          notes = best_meta.get('notes') or []
+          # Terminal-fallback rescue is recorded as :terminal_fallback in `provenance.notes`
+          # (set by note_provenance! at the rescue site in ODEPE), and additionally tagged
+          # via `provenance.rescue_path = :direct_opt_fallback`. The JSON sidecar stringifies
+          # symbols, so the literal strings are what we look for.
+          was_terminal_fallback = ('terminal_fallback' in notes) or (best_meta.get('rescue_path') == 'direct_opt_fallback')
           result.update({
               'odepe_status': metadata.get('status'),
               'odepe_raw_count': metadata.get('raw_count'),
@@ -130,29 +143,46 @@ OUTPUT:             {args.dir.as_posix()}
               'odepe_interpolator_source': best_meta.get('interpolator_source'),
               'odepe_structural_fix_count': len(best_meta.get('structural_fix_set', {})) if isinstance(best_meta.get('structural_fix_set', {}), dict) else None,
               'odepe_practical_identifiability_status': best_meta.get('practical_identifiability_status'),
-              'odepe_notes': best_meta.get('notes'),
+              'odepe_notes': notes,
               'odepe_error': metadata.get('error'),
+              'odepe_was_terminal_fallback': was_terminal_fallback,
           })
 
-      if software in ("odepe", "pe", "sciml"):
-        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / f"result.csv"
-        if not result_path.exists():
-          warn(f"Results for {run} / {instance['id']} not found.")
-          results['results'].append(result)
-          continue
+      # Read failure_reason.txt if the cell wrote one (either the estimator's own catch
+      # block or a SLURM-level wrapper). First line is the category token; rest is detail.
+      failure_path = cell_dir / "failure_reason.txt"
+      if failure_path.exists():
+        try:
+          with open(failure_path, 'r') as fr:
+            first_line = fr.readline().strip()
+            if first_line:
+              result['failure_reason'] = first_line
+        except Exception:
+          pass
+
+      # File-based result.csv branch: ODEPE family + PE + SciML + AMIGO2 (post-numbat).
+      # AMIGO2 falls back to stdout-parsing for backward compatibility with bilby-era runs
+      # where the AMIGO2 template printed to stdout only and didn't write result.csv.
+      result_path = cell_dir / "result.csv"
+      if software in ("odepe", "pe", "sciml", "amigo2") and result_path.exists():
         df = pd.read_csv(result_path, header=None, index_col=False)
         data = df.values.T.tolist()
         for i in range(len(data)):
           data[i][0] = data[i][0].removesuffix("(t)")
-      else:
-        result_path = args.dir.resolve().absolute() / args.config['FILETREE'] / run / instance['id'] / STDOUT_FILENAME
-        if not result_path.exists():
+      elif software == "amigo2" or software == "iqm":
+        # AMIGO2 fallback (bilby) or IQM (always stdout): regex-parse stdout.txt.
+        stdout_path = cell_dir / STDOUT_FILENAME
+        if not stdout_path.exists():
           warn(f"Results for {run} / {instance['id']} not found.")
           results['results'].append(result)
           continue
-        with open(result_path, 'r') as logs:
+        with open(stdout_path, 'r') as logs:
           output = logs.read()
         data = parse_output(output, software)
+      else:
+        warn(f"Results for {run} / {instance['id']} not found.")
+        results['results'].append(result)
+        continue
       info(f"Found results for {run} / {instance['id']}")
       try:
         data = list(map(list, data))
@@ -207,7 +237,9 @@ OUTPUT:             {args.dir.as_posix()}
             'odepe_structural_fix_count' : None,
             'odepe_practical_identifiability_status' : None,
             'odepe_notes' : None,
-            'odepe_error' : None
+            'odepe_error' : None,
+            'odepe_was_terminal_fallback' : None,
+            'failure_reason' : None,
         })
         if (instance['id'], run) in results:
             dict1.update({
@@ -226,12 +258,14 @@ OUTPUT:             {args.dir.as_posix()}
             'odepe_structural_fix_count' : results[(instance['id'], run)]['odepe_structural_fix_count'],
             'odepe_practical_identifiability_status' : results[(instance['id'], run)]['odepe_practical_identifiability_status'],
             'odepe_notes'       : results[(instance['id'], run)]['odepe_notes'],
-            'odepe_error'       : results[(instance['id'], run)]['odepe_error']
+            'odepe_error'       : results[(instance['id'], run)]['odepe_error'],
+            'odepe_was_terminal_fallback' : results[(instance['id'], run)].get('odepe_was_terminal_fallback'),
+            'failure_reason'    : results[(instance['id'], run)].get('failure_reason'),
             })
         else:
             dict1.update({'run' : run})
         rows_list.append(dict1)
-  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'run', 'software', 'result', 'time', 'odepe_status', 'odepe_raw_count', 'odepe_best_count', 'odepe_primary_method', 'odepe_rescue_path', 'odepe_interpolator_source', 'odepe_structural_fix_count', 'odepe_practical_identifiability_status', 'odepe_notes', 'odepe_error'])
+  df = pd.DataFrame(rows_list, columns=['index', 'id', 'true_states', 'true_parameters', 'time_start', 'time_end', 'time_count', 'name', 'non_identifiable', 'noise', 'finished', 'has_result', 'run', 'software', 'result', 'time', 'odepe_status', 'odepe_raw_count', 'odepe_best_count', 'odepe_primary_method', 'odepe_rescue_path', 'odepe_interpolator_source', 'odepe_structural_fix_count', 'odepe_practical_identifiability_status', 'odepe_notes', 'odepe_error', 'odepe_was_terminal_fallback', 'failure_reason'])
   print("DataFrame header:")
   print(df.head())
   print("DataFrame columns:", df.columns)

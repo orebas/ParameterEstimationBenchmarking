@@ -15,7 +15,7 @@ module load matlab/2025a
 
 cd $SCRATCH
 
-source no-matlab-no-worry/environments/venv/bin/activate
+source ParameterEstimationBenchmarking/environments/venv/bin/activate
 
-python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/$1 iqm $SLURM_ARRAY_TASK_ID
+python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/$1 iqm $SLURM_ARRAY_TASK_ID
 

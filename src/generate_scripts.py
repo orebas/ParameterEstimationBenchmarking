@@ -21,7 +21,7 @@ from pathlib import Path
 from termcolor import colored
 from copy import deepcopy
 
-from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONMENTS, get_file_meta_header
+from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONMENTS, get_file_meta_header, cell_seed
 
 DEFAULT_CONFIG_VALUES = {
     "PATH_TO_AMIGO2": "",
@@ -43,11 +43,17 @@ TEMPLATE_ESTIMATION = {
         "models":   "templates/iqm_model.txt.template"
     },
     "sciml" : "templates/julia_template_for_estimation_sciml.jl",
-    "odepe_kernel_se"         : "templates/julia_template_for_estimation_odepe_kernel_se.jl",
-    "odepe_kernel_rq"         : "templates/julia_template_for_estimation_odepe_kernel_rq.jl",
-    "odepe_kernel_se_plus_rq" : "templates/julia_template_for_estimation_odepe_kernel_se_plus_rq.jl",
-    "odepe_kernel_se_times_rq": "templates/julia_template_for_estimation_odepe_kernel_se_times_rq.jl",
+    # Kernel-variant templates archived 2026-05-06; preserved for old-benchmark regen.
+    "odepe_kernel_se"         : "templates/archive/julia_template_for_estimation_odepe_kernel_se.jl",
+    "odepe_kernel_rq"         : "templates/archive/julia_template_for_estimation_odepe_kernel_rq.jl",
+    "odepe_kernel_se_plus_rq" : "templates/archive/julia_template_for_estimation_odepe_kernel_se_plus_rq.jl",
+    "odepe_kernel_se_times_rq": "templates/archive/julia_template_for_estimation_odepe_kernel_se_times_rq.jl",
     "odepe_multipoint"        : "templates/julia_template_for_estimation_odepe_multipoint.jl",
+    # Numbat-era ODEPE variants. Both polish/nopolish render from the same template;
+    # the only difference is `ODEPE_POLISH` injected via SOFTWARE_OVERRIDES below.
+    "odepe_v2_polish"         : "templates/julia_template_for_estimation_odepe_v2.jl",
+    "odepe_v2_nopolish"       : "templates/julia_template_for_estimation_odepe_v2.jl",
+    "odepe_shade"             : "templates/julia_template_for_estimation_odepe_shade.jl",
 }
 
 SOFTWARE_COMMENT = {
@@ -61,12 +67,25 @@ SOFTWARE_COMMENT = {
     "odepe_kernel_se_plus_rq" : "#",
     "odepe_kernel_se_times_rq": "#",
     "odepe_multipoint"        : "#",
+    "odepe_v2_polish"         : "#",
+    "odepe_v2_nopolish"       : "#",
+    "odepe_shade"             : "#",
 }
 
 FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm',
             'odepe_kernel_se': 'jl', 'odepe_kernel_rq': 'jl',
             'odepe_kernel_se_plus_rq': 'jl', 'odepe_kernel_se_times_rq': 'jl',
-            'odepe_multipoint': 'jl'}
+            'odepe_multipoint': 'jl',
+            'odepe_v2_polish': 'jl', 'odepe_v2_nopolish': 'jl',
+            'odepe_shade': 'jl'}
+
+# Per-software Mustache overrides applied AFTER get_settings(). Lets us render
+# multiple distinct runs from a single template — e.g. odepe_v2 polish/nopolish
+# from one file by toggling {{ODEPE_POLISH}}.
+SOFTWARE_OVERRIDES = {
+    "odepe_v2_polish":   {"ODEPE_POLISH": "true"},
+    "odepe_v2_nopolish": {"ODEPE_POLISH": "false"},
+}
 
 def get_sciml_measurements(instance):
     import re
@@ -125,7 +144,7 @@ OUTPUT:             {args.dir}
     
         for instance in instances['instances']:
             print(instance['id'])
-            
+
             settings = deepcopy(args.config)
             settings = settings | get_settings(args, instance)
             settings["id"] = instance["id"]
@@ -136,15 +155,33 @@ OUTPUT:             {args.dir}
             settings["path_to_src"] = args.config["PATH_TO_AMIGO2"]
             settings["harness_root"] = str(parent)
 
+            # Per-cell deterministic seed — surfaced in templates that need one
+            # (notably odepe_shade, where Metaheuristics.SHADE takes an explicit `shade_seed`).
+            # `instance['id']` has shape `{system_name}_{instance_idx}_{noise_mnemonic}`,
+            # but `system_name` itself can contain underscores (e.g. `daisy_mamil3`).
+            # Use `instance['name']` as the bare system name so the parse is unambiguous.
+            _suffix = instance['id'].removeprefix(instance['name'] + "_")
+            _instance_idx_str, _noise_mnemonic = _suffix.rsplit("_", 1)
+            _instance_idx = int(_instance_idx_str)
+            _seed = cell_seed(instance['name'], _instance_idx, _noise_mnemonic)
+            settings["cell_seed"] = _seed
+            settings["shade_seed"] = _seed
+
+            # Per-software Mustache overrides (e.g. odepe_v2 polish/nopolish toggle)
+            settings.update(SOFTWARE_OVERRIDES.get(software, {}))
+
             file_meta_header = get_file_meta_header(SOFTWARE_COMMENT[software])
 
             if software in ['pe','odepe','sciml','amigo2',
                             'odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq',
-                            'odepe_multipoint']:
+                            'odepe_multipoint',
+                            'odepe_v2_polish','odepe_v2_nopolish','odepe_shade']:
                 julia_env_name = {"pe": "julia_pe", "odepe": "julia_odepe", "sciml": "julia_sciml",
                                   "odepe_kernel_se": "julia_odepe", "odepe_kernel_rq": "julia_odepe",
                                   "odepe_kernel_se_plus_rq": "julia_odepe", "odepe_kernel_se_times_rq": "julia_odepe",
-                                  "odepe_multipoint": "julia_odepe"}.get(software, "")
+                                  "odepe_multipoint": "julia_odepe",
+                                  "odepe_v2_polish": "julia_odepe", "odepe_v2_nopolish": "julia_odepe",
+                                  "odepe_shade": "julia_odepe"}.get(software, "")
                 if julia_env_name:
                     julia_env_abs = str((parent / "environments" / julia_env_name).resolve())
                     settings.update({'julia_env_path' : f'raw"{julia_env_abs}"'})

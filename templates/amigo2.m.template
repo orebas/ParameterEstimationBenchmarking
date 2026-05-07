@@ -51,8 +51,8 @@ inputs.exps.exp_data{1}=[
 ];
 
 
-inputs.ivpsol.rtol=1.0e-13;                            % [] IVP solver integration tolerances
-inputs.ivpsol.atol=1.0e-13;
+inputs.ivpsol.rtol=1.0e-12;                            % [] IVP solver integration tolerances
+inputs.ivpsol.atol=1.0e-12;
 
 inputs.PEsol.id_global_theta='all';
 inputs.PEsol.global_theta_max={{upper_bound}}*ones(1,{{num_parameters}});
@@ -88,7 +88,68 @@ inputs.nlpsol.eSS.local.nl2sol.objrtol			 =     1e-13;
 % inputs.exps.u_interp{1}='sustained';          % Stimuli definition for experiment 1
                                               % Initial and final time
 %inputs.exps.u{1}=1;                           % Values of the inputs for exp 1
-AMIGO_Prep(inputs);
-[PEresults] = AMIGO_PE(inputs);
-PEresults.fit.global_theta_estimated
-PEresults.fit.global_theta_y0_estimated
+
+% Numbat-era AMIGO2 wrapper. Wraps AMIGO_Prep + AMIGO_PE in try/catch so the cell
+% writes a `failure_reason.txt` (with token `matlab_exception`) on any error, a
+% `result.csv` (states then params, one row, header is variable names) on success,
+% and `wall_time_seconds.txt` either way. The `===END===` sentinel at the bottom
+% lets `collect_results.py` recognize the run as complete.
+amigo2_t_start = tic;
+amigo2_failed = false;
+
+try
+    AMIGO_Prep(inputs);
+    [PEresults] = AMIGO_PE(inputs);
+    PEresults.fit.global_theta_estimated
+    PEresults.fit.global_theta_y0_estimated
+
+    % Write result.csv with the same column shape ODEPE produces:
+    %   header line: state_names then param_names, comma-separated
+    %   data line:   one row per estimate (AMIGO2 always returns one)
+    state_names = cellstr(inputs.model.st_names);
+    par_names = cellstr(inputs.model.par_names);
+    all_names = strtrim([state_names(:); par_names(:)]');
+    header_line = strjoin(all_names, ',');
+    state_vals = PEresults.fit.global_theta_y0_estimated(:)';
+    par_vals = PEresults.fit.global_theta_estimated(:)';
+    all_vals = [state_vals, par_vals];
+    val_strs = arrayfun(@(x) sprintf('%.16g', x), all_vals, 'UniformOutput', false);
+    data_line = strjoin(val_strs, ',');
+    result_fid = fopen('result.csv', 'w');
+    if result_fid ~= -1
+        fprintf(result_fid, '%s\n', header_line);
+        fprintf(result_fid, '%s\n', data_line);
+        fclose(result_fid);
+    end
+catch ME
+    amigo2_failed = true;
+    fprintf(2, 'AMIGO2 estimation failed: %s\n', getReport(ME, 'extended'));
+    % Pick a category token from ME.identifier when possible; default to matlab_exception.
+    token = 'matlab_exception';
+    if ~isempty(ME.identifier) && contains(ME.identifier, 'mklJac')
+        token = 'mklJac_crash';
+    elseif ~isempty(ME.identifier) && contains(lower(ME.identifier), 'mex')
+        token = 'mex_compile_failed';
+    end
+    failure_fid = fopen('failure_reason.txt', 'w');
+    if failure_fid ~= -1
+        fprintf(failure_fid, '%s\n', token);
+        fprintf(failure_fid, '%s\n', getReport(ME, 'extended'));
+        fclose(failure_fid);
+    end
+end
+
+% Always write wall_time_seconds.txt so the collector can populate `time` even on failure.
+wall_fid = fopen('wall_time_seconds.txt', 'w');
+if wall_fid ~= -1
+    fprintf(wall_fid, '%.6f\n', toc(amigo2_t_start));
+    fclose(wall_fid);
+end
+
+% END_OF_LOG sentinel + machine-parseable Total time line for legacy stdout parser.
+fprintf('Total time: %.6f\n', toc(amigo2_t_start));
+fprintf('===END===\n');
+
+if amigo2_failed
+    exit(1);
+end

@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import hashlib
 import numpy as np
 import shlex
 import subprocess
@@ -16,7 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
 
-from shared import warn, get_settings, JULIA_ENVIRONMENTS, get_file_meta_header
+from shared import (warn, get_settings, JULIA_ENVIRONMENTS, get_file_meta_header,
+                    cell_seed, CELL_SEED_FILENAME, DATA_HASH_FILENAME)
     
 def generate_instance(args, system, instance_id, param_vals, initial_vals):
     state_values = { 
@@ -43,7 +45,11 @@ def generate_instance(args, system, instance_id, param_vals, initial_vals):
     return instance
 
 def main(args):
-    np.random.seed(0)
+    # No global seed: every RNG-consuming block reseeds deterministically
+    # via cell_seed(system, instance, noise_mnemonic). This makes any single
+    # cell bit-reproducible without depending on harness traversal order,
+    # so adding/reordering systems in `systems.json` cannot perturb other
+    # instances' data.
 
     with open(args.config, 'r') as io:
         args.config_path = args.config
@@ -123,6 +129,11 @@ OUTPUT:             {output_dir.as_posix()}
             data_generation_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + ".jl")
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
 
+            # Deterministic per-(system, instance) seed for parameter / IC sampling.
+            # The noise-injection pass below reseeds again per (system, instance, noise_level).
+            instance_idx = int(instance_name.rsplit("_", 1)[-1])
+            np.random.seed(cell_seed(system["name"], instance_idx, "noise_free"))
+
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
 
             # Bicycle model: reject Cf/Cr > 2.5 (oversteer bifurcation)
@@ -196,6 +207,12 @@ OUTPUT:             {output_dir.as_posix()}
                         continue
 
                     df = pd.read_csv(data_filepath_orig, header=None, index_col=False)
+
+                    # Deterministic per-cell seed BEFORE drawing noise so that re-running a single
+                    # noisy instance (without rerunning everything) gives bit-identical data.
+                    seed_for_cell = cell_seed(system["name"], i, mnemonic)
+                    np.random.seed(seed_for_cell)
+
                     if noise_level == 0:
                         df = df
                     else:
@@ -203,7 +220,7 @@ OUTPUT:             {output_dir.as_posix()}
                         # Skip noise on time column (0) and noise-free measurement columns
                         noise_free = set(system.get("noise_free_measurements", []))
                         meas_vars = system["measurement_variables"]
-                        noisy_cols = [i+1 for i, mv in enumerate(meas_vars) if mv not in noise_free]
+                        noisy_cols = [j+1 for j, mv in enumerate(meas_vars) if mv not in noise_free]
                         if noisy_cols:
                             if args.config['NOISE_TYPE'] == "ADDITIVE":
                                 df.loc[:, noisy_cols] += list(df[noisy_cols].mean()) * np.random.normal(scale=noise_level, size=(len(df), len(noisy_cols)))
@@ -220,7 +237,17 @@ OUTPUT:             {output_dir.as_posix()}
 
                     instance_path = output_dir / args.config['FILETREE'] / args.config['DATA_DIR_NOISY'] / instance['id']
                     os.makedirs(instance_path, exist_ok=True)
-                    df.to_csv(instance_path / 'data.csv', index=False, header=False)
+                    data_csv_path = instance_path / 'data.csv'
+                    df.to_csv(data_csv_path, index=False, header=False)
+                    # Stamp this cell's RNG seed and a sha256 of the noisy data file for
+                    # downstream integrity checks. Writers and readers must agree on these
+                    # filename constants in `shared.py`.
+                    with open(instance_path / CELL_SEED_FILENAME, 'w') as io_seed:
+                        io_seed.write(f"{seed_for_cell}\n")
+                    with open(data_csv_path, 'rb') as io_data:
+                        data_hash = hashlib.sha256(io_data.read()).hexdigest()
+                    with open(instance_path / DATA_HASH_FILENAME, 'w') as io_hash:
+                        io_hash.write(f"{data_hash}  data.csv\n")
         
     instances['instances'] = [instance | {'index': i} for i, instance in enumerate(instances['instances'])]
 

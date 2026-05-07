@@ -22,5 +22,5 @@ cd $SCRATCH
 
 source venv/bin/activate
 
-python no-matlab-no-worry/src/estimate.py no-matlab-no-worry/DATA amigo2 $SLURM_ARRAY_TASK_ID
+python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/DATA amigo2 $SLURM_ARRAY_TASK_ID
 

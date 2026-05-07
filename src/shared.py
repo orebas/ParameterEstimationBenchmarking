@@ -1,16 +1,37 @@
 import sys
+import hashlib
 from datetime import datetime
 from termcolor import colored
 
 AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2',
                       'odepe_kernel_se', 'odepe_kernel_rq',
                       'odepe_kernel_se_plus_rq', 'odepe_kernel_se_times_rq',
-                      'odepe_multipoint']  # 'iqm'
+                      'odepe_multipoint',
+                      'odepe_v2_polish', 'odepe_v2_nopolish', 'odepe_shade']  # 'iqm'
 
 END_OF_LOG = "===END==="
 
 STDOUT_FILENAME = "stdout.txt"
 STDERR_FILENAME = "stderr.txt"
+FAILURE_REASON_FILENAME = "failure_reason.txt"
+WALL_TIME_FILENAME = "wall_time_seconds.txt"
+CELL_SEED_FILENAME = "cell_seed.txt"
+DATA_HASH_FILENAME = "data.csv.sha256"
+
+# Failure reason category tokens. The first line of failure_reason.txt MUST be one of these
+# (or "unknown" as a last resort); subsequent lines hold a free-form traceback / detail.
+# Keep this list extensible — add new tokens as new failure modes are observed.
+FAILURE_REASON_TOKENS = (
+    "julia_exception",
+    "matlab_exception",
+    "mklJac_crash",
+    "slurm_timeout",
+    "slurm_oom",
+    "mex_compile_failed",
+    "no_estimated_section",
+    "data_hash_mismatch",
+    "unknown",
+)
 
 JULIA_ENVIRONMENTS = {
     "pe"    : "Symbol(:environments, /, :julia_pe)",
@@ -23,7 +44,26 @@ JULIA_ENVIRONMENTS = {
     "odepe_kernel_se_plus_rq" : "Symbol(:environments, /, :julia_odepe)",
     "odepe_kernel_se_times_rq": "Symbol(:environments, /, :julia_odepe)",
     "odepe_multipoint"        : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_v2_polish"         : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_v2_nopolish"       : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_shade"             : "Symbol(:environments, /, :julia_odepe)",
 }
+
+
+def cell_seed(system_name: str, instance_idx: int, noise_mnemonic: str) -> int:
+    """Stable 32-bit RNG seed for a (system, instance, noise) cell.
+
+    Uses md5 over a canonical string. Re-running with the same tuple gives a
+    bit-identical seed, regardless of: process, machine, prior calls, system
+    list ordering, or any unrelated harness state. Adding or reordering
+    systems in `systems.json` does not perturb existing instances' seeds.
+
+    `noise_mnemonic` is the key from `config.json`'s `NOISE_LEVEL` dict
+    (e.g. "0e+00", "1e-08"); use the literal string "noise_free" for the
+    parameter/IC sampling pass that runs before noise is applied.
+    """
+    h = hashlib.md5(f"{system_name}_{instance_idx}_{noise_mnemonic}".encode()).hexdigest()[:8]
+    return int(h, 16)
 
 def warn(msg):
     print(colored("[WARN] " + msg, "red"))

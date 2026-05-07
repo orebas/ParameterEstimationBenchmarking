@@ -34,4 +34,9 @@ cd $SCRATCH
 
 source ParameterEstimationBenchmarking/environments/venv/bin/activate
 
-python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/$1 $2 amigo2 $SLURM_ARRAY_TASK_ID
+# Cluster MaxArraySize=1001 caps SLURM_ARRAY_TASK_ID at <=1000. For numbat (1150
+# cells per estimator) the workaround is two submissions: one with INDEX_OFFSET=0
+# (default) covering 0-999, and a second with INDEX_OFFSET=1000 covering 0-149.
+# Inject via:  sbatch --export=ALL,INDEX_OFFSET=1000 ...
+REAL_INDEX=$((${INDEX_OFFSET:-0} + SLURM_ARRAY_TASK_ID))
+python ParameterEstimationBenchmarking/src/estimate.py ParameterEstimationBenchmarking/$1 $2 amigo2 $REAL_INDEX

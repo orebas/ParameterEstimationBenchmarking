@@ -2,9 +2,9 @@
 #
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=2
 #SBATCH --time=36:00:00
-#SBATCH --mem=16GB
+#SBATCH --mem=8GB
 #SBATCH --job-name=array_job_odepe_v2_nopolish
 #SBATCH --partition=partnsf
 #SBATCH --account=gbassikqc
@@ -16,7 +16,7 @@
 # Mirrors hpc/array_job_odepe_v2_nopolish.s but with CUNY environment.
 
 export SCRATCH="/scratch/oren-qc-13"
-export JULIA_NUM_THREADS=16
+export JULIA_NUM_THREADS=${SLURM_CPUS_PER_TASK:-2}
 
 sleep $((SLURM_ARRAY_TASK_ID % 20 * 3))
 

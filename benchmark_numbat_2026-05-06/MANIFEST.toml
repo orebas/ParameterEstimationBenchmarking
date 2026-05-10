@@ -1,0 +1,47 @@
+[run]
+benchmark_dir = "benchmark_numbat_2026-05-06"
+phase = "init"
+init_utc = "2026-05-07T03:06:10Z"
+host = "arrow3.arrow.local"
+platform = "Linux x86_64"
+expected_cells = 4600
+software_list = ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade", "amigo2"]
+
+[git.peb]
+sha = "fcdf5bb5f1d3c7027eaea6b1470df98a40916536"
+dirty = false
+url = ""
+
+[git.odepe]
+sha = "a4f5058da37de6eb1263d457879d5f20cf3928e0"
+dirty = false
+path = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/ODEParameterEstimation"
+
+[julia]
+version = "julia version 1.12.5"
+manifest_julia_odepe_sha256 = "6a53e5528e4d7f5276fc29b8067c0515a21f4b163f025de58c67ea5de9cd81d3"
+project_julia_odepe_sha256 = "fa34ab29f747680de755100da223bb7dab001383badd3e999df911b1b8423087"
+
+[python]
+version = "3.13.12"
+executable = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/venv/bin/python3"
+pip_freeze_sha256 = ""
+
+[matlab]
+matlab_path = ""
+amigo2_path = "/scratch/oren-qc-13/AMIGO2_R2025"
+
+[config]
+config_json_sha256 = "7d3b81e193b7c34646fd1247045543f905da9ff52defb76bc3a6d34a176e39d4"
+systems_json_sha256 = "992003616afba354d032d892c5e360cb77ce8d41d84244ab1ab6def2d38ebfcf"
+noise_type = "ADDITIVE"
+num_pts = 750
+num_tests = 10
+noise_levels = ["0", "1em8", "1em6", "1em4", "1em2"]
+param_interval = [0.1, 0.9]
+search_bounds = [1e-05, 10.0]
+
+[seeding]
+formula = "cell_seed(system_name, instance_idx, noise_mnemonic) = int(hashlib.md5(f\"{system_name}_{instance_idx}_{noise_mnemonic}\".encode()).hexdigest()[:8], 16)"
+filename = "cell_seed.txt"
+data_hash_filename = "data.csv.sha256"

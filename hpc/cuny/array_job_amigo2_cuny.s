@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=04:00:00
-#SBATCH --mem=8GB
+#SBATCH --mem=4GB
 #SBATCH --job-name=array_job_amigo2
 #SBATCH --partition=partnsf
 #SBATCH --account=gbassikqc

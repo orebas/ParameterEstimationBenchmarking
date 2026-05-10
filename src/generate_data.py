@@ -126,7 +126,13 @@ OUTPUT:             {output_dir.as_posix()}
 
     # Generate data and populate instances
     instance_stash = {}
-    
+    # Per-instance retry counter. When a system's noise-free integration fails (e.g.
+    # ODE blowup with `dt < eps`), we bump this and re-sample with a different seed
+    # so the retry isn't deterministically the same failure. Recorded in the cell's
+    # cell_seed.txt as the actual seed used.
+    seed_retry_count = {}
+    MAX_SEED_RETRIES = 25
+
     instances_to_generate = []
     for system in args.systems["systems"]:
         for i in range(args.config['NUM_TESTS']):
@@ -141,9 +147,14 @@ OUTPUT:             {output_dir.as_posix()}
             log_filepath = output_dir / args.config['FILETREE'] / args.config['DATA_GENERATION_DIR'] / (instance_name + "_logs.txt")
 
             # Deterministic per-(system, instance) seed for parameter / IC sampling.
-            # The noise-injection pass below reseeds again per (system, instance, noise_level).
+            # On retry (e.g. ODE blowup), bump by `seed_retry_count[instance_name]` so
+            # we sample fresh params instead of looping on the same failure.
             instance_idx = int(instance_name.rsplit("_", 1)[-1])
-            np.random.seed(cell_seed(system["name"], instance_idx, "noise_free"))
+            attempt = seed_retry_count.get(instance_name, 0)
+            base_seed = cell_seed(system["name"], instance_idx, "noise_free")
+            actual_seed = (base_seed + attempt) & 0xFFFFFFFF  # keep 32-bit
+            instance_stash[instance_name + "__seed"] = actual_seed
+            np.random.seed(actual_seed)
 
             param_values = np.random.uniform(low=args.config['PARAM_INTERVAL'][0], high=args.config['PARAM_INTERVAL'][1], size=len(system["parameter_variables"])).round(3).tolist()
 
@@ -208,13 +219,18 @@ OUTPUT:             {output_dir.as_posix()}
                 instance_basename = system["name"] + "_"
                 for i in range(args.config['NUM_TESTS']):
                     instance_name = instance_basename + str(i)
-                    
+
                     data_filepath_orig = output_dir / args.config['FILETREE'] / args.config['DATA_DIR'] / (instance_name + ".csv")
 
                     if not os.path.exists(data_filepath_orig):
                         if instance_name not in set(instances_to_generate):
+                            attempt = seed_retry_count.get(instance_name, 0) + 1
+                            if attempt > MAX_SEED_RETRIES:
+                                warn(f"GIVING UP on {instance_name} after {MAX_SEED_RETRIES} retries — likely persistently unstable params; skipping.")
+                                continue
+                            seed_retry_count[instance_name] = attempt
                             instances_to_generate.append(instance_name)
-                            warn(f"Need to regenerate data for {instance_name}")
+                            warn(f"Need to regenerate data for {instance_name} (retry {attempt}/{MAX_SEED_RETRIES} with bumped seed)")
                         continue
 
                     df = pd.read_csv(data_filepath_orig, header=None, index_col=False)
@@ -252,9 +268,14 @@ OUTPUT:             {output_dir.as_posix()}
                     df.to_csv(data_csv_path, index=False, header=False)
                     # Stamp this cell's RNG seed and a sha256 of the noisy data file for
                     # downstream integrity checks. Writers and readers must agree on these
-                    # filename constants in `shared.py`.
+                    # filename constants in `shared.py`. The "noise_free seed" recorded
+                    # is the actual seed that produced the trajectory in this instance —
+                    # which differs from cell_seed(...) when retries bumped it.
+                    noise_free_seed_used = instance_stash.get(instance_name + "__seed", cell_seed(system["name"], i, "noise_free"))
                     with open(instance_path / CELL_SEED_FILENAME, 'w') as io_seed:
-                        io_seed.write(f"{seed_for_cell}\n")
+                        io_seed.write(f"noise_seed={seed_for_cell}\n")
+                        io_seed.write(f"noise_free_seed={noise_free_seed_used}\n")
+                        io_seed.write(f"noise_free_seed_retries={seed_retry_count.get(instance_name, 0)}\n")
                     with open(data_csv_path, 'rb') as io_data:
                         data_hash = hashlib.sha256(io_data.read()).hexdigest()
                     with open(instance_path / DATA_HASH_FILENAME, 'w') as io_hash:

@@ -18,7 +18,7 @@ cd "$SCRIPT_DIR"
 
 # ── Pinned commits ──────────────────────────────────────────────────────────
 ODEPE_REPO="https://github.com/orebas/ODEParameterEstimation.git"
-ODEPE_COMMIT="21be07ff96f61e75a6b171a656ad60652c752325"
+ODEPE_COMMIT="5853a0719d730cf4a6364e2b435a458ef918b39e"
 
 SIAN_REPO="https://github.com/alexeyovchinnikov/SIAN-Julia.git"
 SIAN_COMMIT="d17262c5869eceb7fde431d82df9852262717b46"

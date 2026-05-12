@@ -193,6 +193,7 @@ try
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
         Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
+        Dict("branch_size" => [hasproperty(each, :branch_size) ? each.branch_size : 1 for each in solutions_vector]),
     )
 
     result_file = joinpath(@__DIR__, "result.csv")

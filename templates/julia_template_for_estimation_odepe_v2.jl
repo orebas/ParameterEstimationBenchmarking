@@ -194,6 +194,20 @@ try
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
         Dict((string(x) => [each.parameters[x] for each in solutions_vector] for x in parameters)),
         Dict("branch_size" => [hasproperty(each, :branch_size) ? each.branch_size : 1 for each in solutions_vector]),
+        Dict("polish_source_hc_idx" => [
+            (hasproperty(each, :provenance) && !isnothing(each.provenance.polish_source_hc_idx)) ?
+                each.provenance.polish_source_hc_idx : -1
+            for each in solutions_vector
+        ]),
+        Dict("err" => [
+            (hasproperty(each, :err) && !isnothing(each.err)) ? each.err : NaN
+            for each in solutions_vector
+        ]),
+        Dict("post_polish_error" => [
+            (hasproperty(each, :provenance) && !isnothing(each.provenance.post_polish_error)) ?
+                each.provenance.post_polish_error : NaN
+            for each in solutions_vector
+        ]),
     )
 
     result_file = joinpath(@__DIR__, "result.csv")

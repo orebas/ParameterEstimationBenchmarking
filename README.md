@@ -147,6 +147,30 @@ python3 src/collect_results.py benchmark_2026_02 amigo2_run sciml_run odepe_nopo
 
 **Note:** By default, `.julia` is located in `$HOME`. If `$HOME` has limited quota, set `export JULIA_DEPOT_PATH=$SCRATCH` before running Julia.
 
+## Recent research notes (numbat 2026-05 investigation)
+
+A three-doc package summarizing what we learned during the May 2026 numbat
+reruns and the resulting open questions. Read these together when picking
+up clustering / polish / output-filtering work:
+
+- [`results/numbat_analysis/three_way/HANDOFF.md`](results/numbat_analysis/three_way/HANDOFF.md)
+  — full writeup of the investigation: pipeline overview, the 5 key
+  findings (polish concurrency bug, `_detect_branches` over-clustering,
+  practical non-identifiability, ODE-solver-induced polish failures, err
+  filter), headline 4-way benchmark comparison, repro recipes for every
+  analysis script, and a per-system "hardest cases" map.
+- [`results/numbat_analysis/three_way/INVESTIGATION_column_scaling.md`](results/numbat_analysis/three_way/INVESTIGATION_column_scaling.md)
+  — open investigation 1. Numbat-empirical extension of the ODEPE-side
+  design doc at
+  [`environments/ODEParameterEstimation/docs/2026-05-01_variable_scaling_investigation.md`](environments/ODEParameterEstimation/docs/2026-05-01_variable_scaling_investigation.md).
+  Concrete failing cells (brusselator_6_0 et al.), diagnostic-first plan,
+  Level A implementation recommendation, evaluation protocol.
+- [`results/numbat_analysis/three_way/INVESTIGATION_denoised_polish_target.md`](results/numbat_analysis/three_way/INVESTIGATION_denoised_polish_target.md)
+  — open investigation 2 (speculative). Proposal to polish against a
+  GP-smoothed or blended target instead of raw noisy data. Includes a
+  candid risks section; recommended to attempt after column scaling pans
+  out (or doesn't).
+
 ## Citation
 
 If you use this benchmark suite in your research, please cite:

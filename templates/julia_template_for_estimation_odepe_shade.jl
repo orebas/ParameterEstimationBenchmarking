@@ -78,7 +78,7 @@ opts = EstimationOptions(
     opt_ub = fill({{upper_bound}}, length(states) + length(parameters)),
     # SHADE knobs
     shade_total_max_evals = 200_000,
-    shade_total_max_time = 600.0,
+    shade_total_max_time = 1200.0,
     shade_global_eval_fraction = 0.7,
     shade_n_local_starts = 5,
     shade_population = 0,        # auto: max(50, 10 * n_total)

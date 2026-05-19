@@ -2,9 +2,99 @@
 
 ## Status
 
-**Open.** Soft-wall ruled out as cause (negative probe result). Prime
-remaining suspect: **OrdinaryDiffEq 6.x → 7.0.0 major version bump** in the
-Pkg.update done for wallaby. Other candidates documented below.
+**RESOLVED 2026-05-19** by local-claude in ODEPE commit `84553a3`
+("Revert rank_strategy default to :err_only — fixes wallaby polish regression").
+
+**Actual root cause:** the `is_neg1` secondary key in the S2 sort
+(`rank_strategy = :sat_neg1_err`, the new default in 282fe1a)
+systematically demoted truth-near rows with `polish_source_hc_idx = -1`
+(synthesized aggregates / multipoint candidates / fallback rescues)
+below worse HC-tagged rows. The 282fe1a pipeline (with soft-wall +
+identifiable-subspace clustering) produces more psh=-1 rows than 14
+did, so the heuristic flipped from benign tiebreaker to active
+truth-suppressor.
+
+**Fix:** default `rank_strategy` reverted to `:err_only`. A new opt-in
+`:sat_err` (saturation-demotion without is_neg1) added for callers
+who specifically want the bound-saturation demotion without the
+multipoint/aggregate demotion.
+
+**My investigation doc was wrong about the prime suspect.** I claimed
+OrdinaryDiffEq 6.x → 7.0.0 was the most likely cause based on the
+bicycle_model_7_1em8 polish-residual plateau. But: numbat-14 already
+had OrdinaryDiffEq 7.0.0 (per PEB 272f64319's Manifest.toml). The
+6→7 bump happened pre-14, not into wallaby. My Pkg.update version-diff
+list confused "what's in wallaby's manifest" with "what changed from
+14 to wallaby" — only SciMLBase 3.10→3.13, MTK 11.26.0→11.26.3,
+LinearSolve 3.76.0→3.80.0, Symbolics 7.22.0→7.24.0 actually changed
+between 14 and wallaby; OrdinaryDiffEq was unchanged.
+
+Local-claude tested this directly with two controlled envs:
+- `env_ode6`: OrdinaryDiffEq 6.111 + 282fe1a source → 3.5e-4 (still bad)
+- `env_n14`: exact 14 Manifest + 282fe1a source → 3.5e-4 (still bad)
+
+Then the smoking gun: inspecting env_n14's result.csv for
+bicycle_model_7_1em8 showed the truth-near row (err=1.65e-7, psh=-1)
+existed at **rank 4**, but S2 surfaced a worse HC-tagged row
+(err=3.46e-4, psh=69) at rank 1.
+
+## Offline scheme survey (1147 wallaby polish cells)
+
+| Scheme | ≤1e-9 | ≤1e-4 | ≤1e-3 | ≤0.1 |
+|---|---|---|---|---|
+| `:err_only` (new default) | **36.3%** | **69.7%** | **79.3%** | **87.0%** |
+| `:sat_err` (new opt-in) | 36.3% | 69.6% | 78.6% | 84.8% |
+| `:sat_neg1_err` (was 282fe1a default) | 32.2% | 60.2% | 67.9% | 77.9% |
+
+S2 was -9.5pp at ≤1e-4 and -11.4pp at ≤1e-3 vs err_only on the wallaby
+candidate distribution. The fix recovers all of that gap by changing
+the sort, no re-running needed in principle (the truth-near rows are
+already in result.csv at rank 2-20 for the affected cells).
+
+## What this means for the wallaby paper deck
+
+The wallaby result.csv files contain 20 rows per polish cell, with
+the `err` column and (per local-claude's offline survey) enough
+information to compute the corrected rank-1 selection offline. The
+dual-metric build (see `SLIDE_AUDIT.md`) should add a third metric
+variant: **post-fix rank-1** = lowest-err row from wallaby's existing
+top-20 — which simulates what the fix shipped in ODEPE 84553a3 would
+produce. This is a single-Python-pass change, no rerun needed.
+
+The three metric variants for the deck:
+1. **Top-1 as-shipped (S2)** — what wallaby actually surfaced as rank 1.
+   The numbers in `flat_results_with_metrics.csv`'s `top1_*` columns.
+2. **Top-1 post-fix (err_only sort)** — what wallaby WOULD have surfaced
+   if 84553a3 had been in force when wallaby ran. Needs adding to
+   `build_flat_metrics_wallaby.py`.
+3. **Best-of-K (oracle)** — truth-cheat upper bound. Already in the
+   `oracle_*` columns.
+
+(1) → (2) closes ~9.5pp at ≤1e-4. (2) → (3) is the genuine
+"truth-cheat" gap.
+
+## Outstanding follow-up (per local-claude's caveat)
+
+> The investigation doc also mentioned cells where the candidate set
+> itself regressed (oracle-best across all rows went from tight to
+> loose) — that's separate from this fix and still worth a follow-up
+> if it shows up in the next benchmark.
+
+That refers to cases like bicycle_model_7_1em8 where wallaby's
+result.csv had `post_polish_error` plateaued at 2e-2 across all 20
+rows, vs 14's tight 2.6e-6. If the new env_n14 probe (14 stack +
+282fe1a source) recovered to 1.65e-7 at rank 4, then this is also a
+sort-only issue (the truth-near row exists, just buried). If env_n14
+still showed plateau at 2e-2 even at rank 4+, that would be a real
+candidate-set regression separate from the sort. The FINDINGS doc
+implies the former — but worth confirming on a few additional cells
+before signing off.
+
+(Original investigation content preserved below for reference.)
+
+---
+
+## ORIGINAL (PRE-RESOLUTION) CONTENT
 
 ## Symptom
 

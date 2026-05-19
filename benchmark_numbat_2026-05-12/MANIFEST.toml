@@ -1,0 +1,56 @@
+[run]
+benchmark_dir = "benchmark_numbat_2026-05-12"
+phase = "init"
+init_utc = "2026-05-12T06:06:18Z"
+host = "arrow3.arrow.local"
+platform = "Linux x86_64"
+expected_cells = 4600
+software_list = ["odepe_v2_polish", "odepe_v2_nopolish", "amigo2", "odepe_shade"]
+
+[git.peb]
+sha = "ef9c2a2067427af3998619da5ef8ab0b8f2dbd3c"
+dirty = true
+url = ""
+
+[git.odepe]
+sha = "91b99d7c92979b99a64cb5a2e954791ed9672408"
+dirty = true
+path = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/ODEParameterEstimation"
+
+[julia]
+version = "julia version 1.12.5"
+manifest_julia_odepe_sha256 = "ce3fe70d3619e0b61cf00cb3c7575949884ea463df803aef270fc83c2812afb9"
+project_julia_odepe_sha256 = "fa34ab29f747680de755100da223bb7dab001383badd3e999df911b1b8423087"
+
+[python]
+version = "3.13.12"
+executable = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/venv/bin/python3"
+pip_freeze_sha256 = ""
+
+[matlab]
+matlab_path = ""
+amigo2_path = "/scratch/oren-qc-13/AMIGO2_R2025"
+
+[config]
+config_json_sha256 = "7d3b81e193b7c34646fd1247045543f905da9ff52defb76bc3a6d34a176e39d4"
+systems_json_sha256 = "992003616afba354d032d892c5e360cb77ce8d41d84244ab1ab6def2d38ebfcf"
+noise_type = "ADDITIVE"
+num_pts = 750
+num_tests = 10
+noise_levels = ["0", "1em8", "1em6", "1em4", "1em2"]
+param_interval = [0.1, 0.9]
+search_bounds = [1e-05, 10.0]
+
+[seeding]
+formula = "cell_seed(system_name, instance_idx, noise_mnemonic) = int(hashlib.md5(f\"{system_name}_{instance_idx}_{noise_mnemonic}\".encode()).hexdigest()[:8], 16)"
+filename = "cell_seed.txt"
+data_hash_filename = "data.csv.sha256"
+
+[lineage]
+parent_benchmark = "benchmark_numbat_2026-05-06"
+parent_peb_sha = "fcdf5bb5f1d3c7027eaea6b1470df98a40916536"
+parent_odepe_sha = "a4f5058da37de6eb1263d457879d5f20cf3928e0"
+parent_manifest_julia_odepe_sha256 = "6a53e5528e4d7f5276fc29b8067c0515a21f4b163f025de58c67ea5de9cd81d3"
+change_summary = "Branch-detection candidate-reduction pipeline (default-on in ODEPE 91b99d7) replaces the oracle-cheat sort at the end of analyze_estimation_result. Julia stack aggressively updated: Optim 1.13.3->2.0.1 (via orebas:optim2-compat GP fork), SciMLBase 2.155.1->3.10.0, OrdinaryDiffEq 6.111.0->7.0.0, DiffEqBase 6.218.0->7.3.0, RecursiveArrayTools 3.54.0->4.3.0, plus minor/patch bumps for ModelingToolkit, LineSearches, SymbolicUtils. Ecosystem migration in ODEPE 5853a07 (NLsolve->NonlinearSolve, AutoForwardDiff, Rodas5P default) enabled the major bumps. ODEPE working tree carries one 2-line patch commenting out a now-redundant ldiv! override (PR pending upstream)."
+reused_artifacts = ["data_original", "data_noisy", "data_generation", "amigo2_run", "odepe_shade_run", "huge_json.json"]
+rerun_runs = ["odepe_v2_polish_run", "odepe_v2_nopolish_run"]

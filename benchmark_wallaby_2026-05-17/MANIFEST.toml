@@ -1,0 +1,63 @@
+[run]
+benchmark_dir = "benchmark_wallaby_2026-05-17"
+phase = "init"
+init_utc = "2026-05-18T01:23:41Z"
+host = "arrow3.arrow.local"
+platform = "Linux x86_64"
+expected_cells = 4600
+software_list = ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade", "amigo2"]
+
+[git.peb]
+sha = "858815a69ed56c6d3505a5e3cb0cd6ce55ac5428"
+dirty = true
+url = ""
+
+[git.odepe]
+sha = "282fe1a02c7a9ef277d176105d93a55bdca2b917"
+dirty = false
+path = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/ODEParameterEstimation"
+
+[julia]
+version = "julia version 1.12.5"
+manifest_julia_odepe_sha256 = "59b7ea13a95ffb47126f9839c969ddaba7b2a9b1319defa746af686fc318b2f1"
+project_julia_odepe_sha256 = "fa34ab29f747680de755100da223bb7dab001383badd3e999df911b1b8423087"
+
+[python]
+version = "3.13.12"
+executable = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/venv/bin/python3"
+pip_freeze_sha256 = ""
+
+[matlab]
+matlab_path = ""
+amigo2_path = "/scratch/oren-qc-13/AMIGO2_R2025"
+
+[config]
+config_json_sha256 = "fe1d118d791617984adb41be434f9b80835c1128f708bdbe62dc3329577a159b"
+systems_json_sha256 = "992003616afba354d032d892c5e360cb77ce8d41d84244ab1ab6def2d38ebfcf"
+noise_type = "ADDITIVE"
+num_pts = 750
+num_tests = 10
+noise_levels = ["0", "1em8", "1em6", "1em4", "1em2"]
+param_interval = [0.1, 0.9]
+search_bounds = [1e-05, 10.0]
+
+[seeding]
+formula = "cell_seed(system_name, instance_idx, noise_mnemonic) = int(hashlib.md5(f\"{system_name}_{instance_idx}_{noise_mnemonic}\".encode()).hexdigest()[:8], 16)"
+filename = "cell_seed.txt"
+data_hash_filename = "data.csv.sha256"
+
+[lineage]
+prior_benchmarks = ["benchmark_numbat_2026-05-06", "benchmark_numbat_2026-05-12", "benchmark_numbat_2026-05-13", "benchmark_numbat_2026-05-14"]
+description = "Publication-ready paper-clean rerun. Fully self-contained (no symlinks). Supersedes the numbat 12/13/14 iterative-fix series."
+peb_sha = "858815a69"
+odepe_sha = "282fe1a02c7a9ef277d176105d93a55bdca2b917"
+manifest_julia_odepe_sha256_pre_update = "ce3fe70d3619e0b61cf00cb3c7575949884ea463df803aef270fc83c2812afb9"
+manifest_julia_odepe_sha256_post_update = "59b7ea13a95ffb47126f9839c969ddaba7b2a9b1319defa746af686fc318b2f1"
+post_update_key_versions = "ModelingToolkit 11.26.0→11.26.3, Symbolics 7.22.0→7.24.0, SciMLBase 3.10.0→3.13.0, OrdinaryDiffEq 7.0.0, DiffEqBase 7.3.0→7.5.0, LinearSolve 3.76.0→3.80.0, GaussianProcesses 0.12.6 (repo fork orebas/optim2-compat)"
+changed_knobs_vs_numbat_14 = [
+    "ODEPE pulled to 282fe1a: soft-wall (λ=1e-2, ε=0.10), rank_strategy=:sat_neg1_err (S2), cluster_method=:identifiable_subspace, branch_top_k=20 (was 100)",
+    "SHADE shade_total_max_time: 600 → 1200 (2× budget for the SHADE+LM hybrid)",
+    "Fresh Pkg.update of julia_odepe environment",
+]
+data_regenerated = "from scratch via src/generate_data.py — same physics + deterministic md5 seed as numbat 06 but data.csv differs in last-digit precision because OrdinaryDiffEq jumped from 6.x to 7.0.0 (major version bump = different solver internals). Noise pattern + simulated quantities are equivalent to numbat 06 at the e-15 level"
+estimators = ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade", "amigo2"]

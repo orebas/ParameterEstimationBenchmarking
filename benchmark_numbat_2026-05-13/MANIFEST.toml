@@ -1,0 +1,65 @@
+[run]
+benchmark_dir = "benchmark_numbat_2026-05-13"
+phase = "init"
+init_utc = "2026-05-14T01:49:44Z"
+host = "arrow3.arrow.local"
+platform = "Linux x86_64"
+expected_cells = 4600
+software_list = ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade", "amigo2"]
+
+[git.peb]
+sha = "272f643191c6506b41d688c0e9e07c398bff88eb"
+dirty = false
+url = ""
+
+[git.odepe]
+sha = "6c173247f8a75c9c60cb543c189e4320048aaf21"
+dirty = false
+path = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/ODEParameterEstimation"
+
+[julia]
+version = "julia version 1.12.5"
+manifest_julia_odepe_sha256 = "ce3fe70d3619e0b61cf00cb3c7575949884ea463df803aef270fc83c2812afb9"
+project_julia_odepe_sha256 = "fa34ab29f747680de755100da223bb7dab001383badd3e999df911b1b8423087"
+
+[python]
+version = "3.13.12"
+executable = "/pfssfs1/scratch/oren-qc-13/ParameterEstimationBenchmarking/environments/venv/bin/python3"
+pip_freeze_sha256 = ""
+
+[matlab]
+matlab_path = ""
+amigo2_path = "/scratch/oren-qc-13/AMIGO2_R2025"
+
+[config]
+config_json_sha256 = "fe1d118d791617984adb41be434f9b80835c1128f708bdbe62dc3329577a159b"
+systems_json_sha256 = "992003616afba354d032d892c5e360cb77ce8d41d84244ab1ab6def2d38ebfcf"
+noise_type = "ADDITIVE"
+num_pts = 750
+num_tests = 10
+noise_levels = ["0", "1em8", "1em6", "1em4", "1em2"]
+param_interval = [0.1, 0.9]
+search_bounds = [1e-05, 10.0]
+
+[seeding]
+formula = "cell_seed(system_name, instance_idx, noise_mnemonic) = int(hashlib.md5(f\"{system_name}_{instance_idx}_{noise_mnemonic}\".encode()).hexdigest()[:8], 16)"
+filename = "cell_seed.txt"
+data_hash_filename = "data.csv.sha256"
+
+[lineage]
+parent_benchmarks = ["benchmark_numbat_2026-05-06", "benchmark_numbat_2026-05-12"]
+data_parent = "benchmark_numbat_2026-05-06"
+data_parent_peb_sha = "fcdf5bb5f1d3c7027eaea6b1470df98a40916536"
+prior_rerun = "benchmark_numbat_2026-05-12"
+prior_rerun_peb_sha = "ef9c2a206"
+prior_rerun_odepe_sha = "91b99d7"
+prior_rerun_manifest_julia_odepe_sha256 = "ce3fe70d3619e0b61cf00cb3c7575949884ea463df803aef270fc83c2812afb9"
+change_summary = "Third numbat rerun. Inherits the new Julia stack (Optim 2 / MTK 11.26 / SciMLBase 3 / GP optim2-compat fork) from the rejected 2026-05-12 rerun unchanged. Adds 4 ODEPE behavior changes to fix the 107-cell regression observed in 2026-05-12: (1) polish_max_concurrency capped to Threads.nthreads() with bounded Channel-based dispatch (replaces unbounded Threads.@spawn that caused thread contention and made every polish hit the deadline); (2) polish_maxtime 300 -> 3600 (with bounded concurrency, polishes converge well under 3600s); (3) branch_cluster_eps 0.05 -> 0.001 (preserves distinct basins at low noise); (4) branch_top_k=20 cap on returned cluster reps after err-sort. Plus opt-in instrumentation: dump_raw_candidates_path, dump_polished_path, polish_source_hc_idx on ResultProvenance."
+changed_knobs = [
+    "branch_cluster_eps: 0.05 -> 0.001",
+    "branch_top_k: new field, default 20",
+    "polish_maxtime: 300 -> 3600",
+    "polish_max_concurrency: new field, default Threads.nthreads()",
+]
+reused_artifacts = ["data_original", "data_noisy", "data_generation", "amigo2_run", "odepe_shade_run", "huge_json.json"]
+rerun_runs = ["odepe_v2_polish_run", "odepe_v2_nopolish_run"]

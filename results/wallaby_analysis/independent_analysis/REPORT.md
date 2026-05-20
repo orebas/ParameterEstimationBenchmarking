@@ -1,7 +1,7 @@
 # Independent Benchmark Analysis Report
 ## benchmark_wallaby_2026-05-17 (preview)
 
-**Generated:** 2026-05-18
+**Generated:** 2026-05-19
 **Data:** 4600 rows = 23 systems x 4 methods x 5 noise levels x 10 replicas
 **Noise type:** Additive
 

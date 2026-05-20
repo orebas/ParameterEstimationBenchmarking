@@ -93,18 +93,35 @@ def build_presentation():
     t07 = read_table("T07_failure_catalog.csv")
     t08 = read_table("T08_noise_cliff_detection.csv")
 
-    figs = {}
+    # Oracle (best-of-K) variants of dual-metric tables.
+    t01_oracle = read_table("T01_overall_method_comparison_oracle.csv")
+    t02_oracle = read_table("T02_method_by_noise_oracle.csv")
+    t03_oracle = read_table("T03_system_ranking_oracle.csv")
+    t05_oracle = read_table("T05_polishing_effect_oracle.csv")
+    t08_oracle = read_table("T08_noise_cliff_detection_oracle.csv")
+
+    figs = {}      # top-1 / single-metric figures (existing filenames)
+    figs_oracle = {}  # oracle variants (suffixed `_oracle.png`)
+    listing = os.listdir(FIG_DIR)
     for i in range(1, 15):
-        fname = f"F{i:02d}_"
-        for f in os.listdir(FIG_DIR):
-            if f.startswith(fname):
+        prefix = f"F{i:02d}_"
+        for f in listing:
+            if f.startswith(prefix) and not f.endswith("_oracle.png"):
                 figs[f"F{i:02d}"] = img_b64(f)
+                break
+        for f in listing:
+            if f.startswith(prefix) and f.endswith("_oracle.png"):
+                figs_oracle[f"F{i:02d}"] = img_b64(f)
                 break
     # F02a/F02b are extra heatmap variants (success @ 1% / 50%)
     for variant in ("F02a", "F02b"):
-        for f in os.listdir(FIG_DIR):
-            if f.startswith(f"{variant}_"):
+        for f in listing:
+            if f.startswith(f"{variant}_") and not f.endswith("_oracle.png"):
                 figs[variant] = img_b64(f)
+                break
+        for f in listing:
+            if f.startswith(f"{variant}_") and f.endswith("_oracle.png"):
+                figs_oracle[variant] = img_b64(f)
                 break
 
     methods = ["odepe_v2_polish", "odepe_v2_nopolish", "amigo2", "odepe_shade"]
@@ -120,11 +137,12 @@ def build_presentation():
     n_total = len(df)
     n_systems = df["name"].nunique()
     n_no_result = (df["has_result"] == 0).sum()
-    n_diverged = ((df["max_rel_error"] > 1e4) & (df["has_result"] == 1)).sum()
+    n_diverged = ((df["top1_max_rel_error"] > 1e4) & (df["has_result"] == 1)).sum()
 
+    # Top-1 stats (paper convention)
     m_succ = {}
     for m in methods:
-        m_succ[m] = df[df["run"] == m]["success_at_10pct"].mean() * 100
+        m_succ[m] = df[df["run"] == m]["top1_success_at_10pct"].mean() * 100
 
     ranked_methods = sorted(methods, key=lambda m: -m_succ[m])
     best_method = ranked_methods[0]
@@ -132,33 +150,57 @@ def build_presentation():
     worst_method = ranked_methods[-1]
     worst_label = method_labels[worst_method]
 
-    np_succ = df[df["run"] == "odepe_v2_nopolish"]["success_at_10pct"].mean() * 100
-    p_succ = df[df["run"] == "odepe_v2_polish"]["success_at_10pct"].mean() * 100
+    np_succ = df[df["run"] == "odepe_v2_nopolish"]["top1_success_at_10pct"].mean() * 100
+    p_succ = df[df["run"] == "odepe_v2_polish"]["top1_success_at_10pct"].mean() * 100
     polish_uplift = p_succ - np_succ
+
+    # Oracle stats (set-credit ceiling)
+    m_succ_oracle = {}
+    for m in methods:
+        m_succ_oracle[m] = df[df["run"] == m]["oracle_success_at_10pct"].mean() * 100
+    ranked_methods_oracle = sorted(methods, key=lambda m: -m_succ_oracle[m])
+    best_method_oracle = ranked_methods_oracle[0]
+    best_label_oracle = method_labels[best_method_oracle]
+
+    np_succ_oracle = df[df["run"] == "odepe_v2_nopolish"]["oracle_success_at_10pct"].mean() * 100
+    p_succ_oracle = df[df["run"] == "odepe_v2_polish"]["oracle_success_at_10pct"].mean() * 100
+    polish_uplift_oracle = p_succ_oracle - np_succ_oracle
     np_time = df[df["run"] == "odepe_v2_nopolish"]["time"].median()
     p_time = df[df["run"] == "odepe_v2_polish"]["time"].median()
 
-    sys_succ = df.groupby("name")["success_at_10pct"].mean().sort_values()
+    sys_succ = df.groupby("name")["top1_success_at_10pct"].mean().sort_values()
     hardest_3 = list(sys_succ.head(3).index)
     easiest_3 = list(sys_succ.tail(3).index)[::-1]
 
-    succ_noise0 = df[df["noise"] == 0.0]["success_at_10pct"].mean() * 100
-    succ_noise_hi = df[df["noise"] == 0.01]["success_at_10pct"].mean() * 100
+    succ_noise0 = df[df["noise"] == 0.0]["top1_success_at_10pct"].mean() * 100
+    succ_noise_hi = df[df["noise"] == 0.01]["top1_success_at_10pct"].mean() * 100
 
     fail_summary = t07["failure_type"].value_counts().to_dict()
 
     n_helps = (t05["success_uplift_pp"] > 0).sum()
     n_hurts = (t05["success_uplift_pp"] < 0).sum()
     n_neutral = (t05["success_uplift_pp"] == 0).sum()
+    n_helps_oracle = (t05_oracle["success_uplift_pp"] > 0).sum()
+    n_hurts_oracle = (t05_oracle["success_uplift_pp"] < 0).sum()
 
     t01_display = t01[["method", "success_at_1pct", "success_at_10pct", "success_at_50pct",
                         "median_time_s", "n_no_result", "n_diverged"]].copy()
     t01_display.columns = ["Method", "Success@1%", "Success@10%", "Success@50%",
                            "Med. Time (s)", "No Result", "Diverged"]
 
+    t01_oracle_display = t01_oracle[["method", "success_at_1pct", "success_at_10pct", "success_at_50pct",
+                        "median_time_s", "n_no_result", "n_diverged"]].copy()
+    t01_oracle_display.columns = ["Method", "Success@1%", "Success@10%", "Success@50%",
+                           "Med. Time (s)", "No Result", "Diverged"]
+
     t02_display = t02[["method", "noise", "success_at_1pct", "success_at_10pct",
                         "success_at_50pct", "median_error", "median_time_s"]].copy()
     t02_display.columns = ["Method", "Noise", "Success@1%", "Success@10%",
+                           "Success@50%", "Median Error", "Med. Time (s)"]
+
+    t02_oracle_display = t02_oracle[["method", "noise", "success_at_1pct", "success_at_10pct",
+                        "success_at_50pct", "median_error", "median_time_s"]].copy()
+    t02_oracle_display.columns = ["Method", "Noise", "Success@1%", "Success@10%",
                            "Success@50%", "Median Error", "Med. Time (s)"]
 
     t03_display = t03[["system", "domain", "n_id_params", "mean_success_at_10pct",
@@ -176,6 +218,10 @@ def build_presentation():
                                                 "cliff_from_noise", "cliff_to_noise"]].copy()
     t08_top.columns = ["System", "Method", "Drop (pp)", "From Noise", "To Noise"]
 
+    t08_oracle_top = t08_oracle.nlargest(10, "max_drop_pp")[["system", "method", "max_drop_pp",
+                                                "cliff_from_noise", "cliff_to_noise"]].copy()
+    t08_oracle_top.columns = ["System", "Method", "Drop (pp)", "From Noise", "To Noise"]
+
     method_noise_tables = {}
     for m_key, m_label in method_labels.items():
         sub = t02[t02["method"] == m_label][["noise", "success_at_1pct", "success_at_10pct",
@@ -185,7 +231,7 @@ def build_presentation():
 
     best_for_method = {}
     for m in methods:
-        s = df[df["run"]==m].groupby("name")["success_at_10pct"].mean().sort_values(ascending=False)
+        s = df[df["run"]==m].groupby("name")["top1_success_at_10pct"].mean().sort_values(ascending=False)
         best_for_method[method_labels[m]] = list(s.head(5).index)
 
     domain_map = {
@@ -205,8 +251,8 @@ def build_presentation():
 
     polish_by_noise = []
     for noise, nl in zip(noise_levels, noise_labels):
-        np_s = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["success_at_10pct"].mean()*100
-        p_s = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["success_at_10pct"].mean()*100
+        np_s = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["top1_success_at_10pct"].mean()*100
+        p_s = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["top1_success_at_10pct"].mean()*100
         np_t = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["time"].median()
         p_t = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["time"].median()
         polish_by_noise.append({
@@ -214,6 +260,18 @@ def build_presentation():
             "Uplift": f"+{p_s-np_s:.1f} pp", "Time Overhead": f"+{p_t-np_t:.0f}s"
         })
     polish_noise_df = pd.DataFrame(polish_by_noise)
+
+    polish_by_noise_oracle = []
+    for noise, nl in zip(noise_levels, noise_labels):
+        np_s = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["oracle_success_at_10pct"].mean()*100
+        p_s = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["oracle_success_at_10pct"].mean()*100
+        np_t = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["time"].median()
+        p_t = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["time"].median()
+        polish_by_noise_oracle.append({
+            "Noise": nl, "No Polish": f"{np_s:.1f}%", "Polish": f"{p_s:.1f}%",
+            "Uplift": f"+{p_s-np_s:.1f} pp", "Time Overhead": f"+{p_t-np_t:.0f}s"
+        })
+    polish_noise_df_oracle = pd.DataFrame(polish_by_noise_oracle)
 
     polish_hurts = t05[t05["success_uplift_pp"] < -5][["system","noise","success_uplift_pp"]].copy()
     polish_hurts.columns = ["System","Noise","Uplift (pp)"]
@@ -242,6 +300,15 @@ def build_presentation():
 
     def img_tag(fig_key, width="85%"):
         return f'<img src="data:image/png;base64,{figs[fig_key]}" style="max-width:{width}; max-height:70vh;">'
+
+    def img_tag_oracle(fig_key, width="85%"):
+        return f'<img src="data:image/png;base64,{figs_oracle[fig_key]}" style="max-width:{width}; max-height:70vh;">'
+
+    def metric_badge(metric):
+        if metric == "top1":
+            return '<span style="background:#3498db; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">TOP-1</span>'
+        else:
+            return '<span style="background:#9b59b6; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">ORACLE</span>'
 
     def section_start():
         nonlocal slides_html
@@ -369,6 +436,38 @@ def build_presentation():
     </div>
     """, bg="#16213e")
 
+    # TWO-METRIC EXPLAINER
+    slide(f"""
+    <h2>Two metrics, side by side</h2>
+    <div class="columns">
+        <div class="col">
+            <h3 style="color:#3498db;">Top-1 (paper convention)</h3>
+            <p style="font-size:0.75em;">
+                Score the <strong>row 0</strong> of each cell's <code>result.csv</code>
+                — sorted by <code>err</code> for ODEPE, single answer
+                for AMIGO2 / SHADE. This is what a user actually gets.
+            </p>
+        </div>
+        <div class="col">
+            <h3 style="color:#9b59b6;">Best-of-K (oracle)</h3>
+            <p style="font-size:0.75em;">
+                <strong>argmin</strong> over all rows of <code>result.csv</code>
+                on identifiable axes. For K=1 (AMIGO2, SHADE) this is
+                the same as top-1. For ODEPE (K=20) it's the set-credit
+                ceiling: what the row-0 sort could have achieved.
+            </p>
+        </div>
+    </div>
+    <div class="takeaway" style="margin-top:1.5em;">
+        <strong>Why both:</strong> ODEPE polish at top-1 is
+        <strong>{p_succ:.1f}%</strong>; at oracle it's
+        <strong>{p_succ_oracle:.1f}%</strong>. The <strong>{p_succ_oracle - p_succ:+.1f}pp gap</strong>
+        is rank-1 sort headroom — algebraically the truth-near candidate
+        often <em>is</em> in the K=20 set, just not at row 0.
+    </div>
+    <p class="footnote">From here on, slides labeled {metric_badge('top1')} use top-1; slides labeled {metric_badge('oracle')} use best-of-K. Single-metric slides (failure, timing, replica spread) are not labeled.</p>
+    """, bg="#16213e")
+
     # OVERALL METHOD COMPARISON
     section_start()
 
@@ -378,7 +477,7 @@ def build_presentation():
     )
 
     vslide(f"""
-    <h2>Overall Method Comparison</h2>
+    <h2>Overall Method Comparison {metric_badge('top1')}</h2>
     {df_to_html(t01_display, float_fmt=".1f")}
     <div class="takeaway">
         {takeaway_text}
@@ -386,33 +485,72 @@ def build_presentation():
     """)
 
     vslide(f"""
-    <h2>Success Rate vs Noise Level</h2>
+    <h2>Overall Method Comparison {metric_badge('oracle')}</h2>
+    {df_to_html(t01_oracle_display, float_fmt=".1f")}
+    <div class="takeaway">
+        <strong>Key:</strong> {best_label_oracle} leads in best-of-K accuracy ({m_succ_oracle[best_method_oracle]:.1f}%).
+        Polish gains {p_succ_oracle - p_succ:+.1f}pp moving from top-1 to oracle.
+    </div>
+    """)
+
+    vslide(f"""
+    <h2>Success Rate vs Noise Level {metric_badge('top1')}</h2>
     {img_tag("F01", "80%")}
     <p class="caption">All methods degrade with noise. {best_label} maintains the flattest curve.</p>
     """)
 
     vslide(f"""
-    <h2>Method Rankings</h2>
+    <h2>Success Rate vs Noise Level {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F01", "80%")}
+    <p class="caption">Set-credit ceiling: ODEPE polish lifts substantially under oracle vs top-1.</p>
+    """)
+
+    vslide(f"""
+    <h2>Method Rankings {metric_badge('top1')}</h2>
     {img_tag("F14", "75%")}
     <p class="caption">How often each method ranks 1st/2nd/3rd/4th across all (system, noise) pairs.</p>
     """)
 
     vslide(f"""
-    <h2>System-Level Heatmap (success @ 10%)</h2>
+    <h2>Method Rankings {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F14", "75%")}
+    <p class="caption">Best-of-K view: ODEPE polish dominates the 1st-place share more strongly.</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 10%) {metric_badge('top1')}</h2>
     {img_tag("F02", "55%")}
     <p class="caption">Systems sorted by difficulty (mean across methods). Clear clustering visible.</p>
     """)
 
     vslide(f"""
-    <h2>System-Level Heatmap (success @ 1%)</h2>
+    <h2>System-Level Heatmap (success @ 10%) {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F02", "55%")}
+    <p class="caption">Best-of-K view: more cells light up green on ODEPE polish.</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 1%) {metric_badge('top1')}</h2>
     {img_tag("F02a", "55%")}
     <p class="caption">Tighter threshold: all params recovered to 1% relative error.</p>
     """)
 
     vslide(f"""
-    <h2>System-Level Heatmap (success @ 50%)</h2>
+    <h2>System-Level Heatmap (success @ 1%) {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F02a", "55%")}
+    <p class="caption">Best-of-K at the tight threshold.</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 50%) {metric_badge('top1')}</h2>
     {img_tag("F02b", "55%")}
     <p class="caption">Looser threshold: all params recovered to 50% relative error (i.e. roughly the right ballpark).</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 50%) {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F02b", "55%")}
+    <p class="caption">Best-of-K at the coarse threshold.</p>
     """)
 
     section_end()
@@ -427,7 +565,7 @@ def build_presentation():
                      "amigo2":"amigo","odepe_shade":"sciml"}[m_key]
         m_df = method_noise_tables[m_label]
         best_systems = ", ".join(best_for_method[m_label][:5])
-        succ_vals = [df[(df["run"]==m_key)&(df["noise"]==n)]["success_at_10pct"].mean()*100
+        succ_vals = [df[(df["run"]==m_key)&(df["noise"]==n)]["top1_success_at_10pct"].mean()*100
                      for n in noise_levels]
         time_med = df[df["run"]==m_key]["time"].median()
         nr = (df[df["run"]==m_key]["has_result"]==0).sum()
@@ -466,21 +604,40 @@ def build_presentation():
     """, bg="#1a1a2e")
 
     vslide(f"""
-    <h2>Method x Noise Detail</h2>
+    <h2>Method x Noise Detail {metric_badge('top1')}</h2>
     {df_to_html(t02_display, float_fmt=".1f", classes="compact small-text")}
     """)
 
     vslide(f"""
-    <h2>Noise Cliffs</h2>
+    <h2>Method x Noise Detail {metric_badge('oracle')}</h2>
+    {df_to_html(t02_oracle_display, float_fmt=".1f", classes="compact small-text")}
+    """)
+
+    vslide(f"""
+    <h2>Noise Cliffs {metric_badge('top1')}</h2>
     {img_tag("F10", "55%")}
     <p class="caption">Maximum success-rate drop between adjacent noise levels.</p>
     """)
 
     vslide(f"""
-    <h2>Worst Noise Cliffs</h2>
+    <h2>Noise Cliffs {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F10", "55%")}
+    <p class="caption">Best-of-K view: cliffs are typically shallower because polish retains a truth-near row that survives the noise jump.</p>
+    """)
+
+    vslide(f"""
+    <h2>Worst Noise Cliffs {metric_badge('top1')}</h2>
     {df_to_html(t08_top, float_fmt=".0f")}
     <div class="takeaway">
         Several systems experience <strong>&gt;50 pp drops</strong> at a single noise transition.
+    </div>
+    """)
+
+    vslide(f"""
+    <h2>Worst Noise Cliffs {metric_badge('oracle')}</h2>
+    {df_to_html(t08_oracle_top, float_fmt=".0f")}
+    <div class="takeaway">
+        Under best-of-K, the cliffs shrink — but some systems still drop sharply.
     </div>
     """)
 
@@ -490,43 +647,69 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>The Polishing Effect</h2>
+    <h2>The Polishing Effect — the slide where the metric matters most</h2>
     <div class="columns">
         <div class="col">
+            <h3 style="color:#3498db;">Top-1</h3>
             <div class="big-stat">
                 <span class="stat-val">+{polish_uplift:.1f} pp</span>
-                <span class="stat-label">Overall success uplift</span>
+                <span class="stat-label">Overall success@10% uplift</span>
             </div>
         </div>
         <div class="col">
+            <h3 style="color:#9b59b6;">Oracle</h3>
             <div class="big-stat">
-                <span class="stat-val">+{p_time - np_time:.0f}s</span>
-                <span class="stat-label">Median time overhead</span>
+                <span class="stat-val">+{polish_uplift_oracle:.1f} pp</span>
+                <span class="stat-label">Best-of-K success@10% uplift</span>
             </div>
         </div>
     </div>
+    <p class="footnote" style="margin-top:1.5em;">
+        Polish often <em>finds</em> the truth basin (boosts oracle) but
+        the row-0 sort doesn't always <em>surface</em> the truth-near row
+        at rank 1 (smaller top-1 uplift). The {polish_uplift_oracle - polish_uplift:+.1f}pp
+        gap is the rank-1 sort opportunity.
+    </p>
+    <p class="footnote">Median time overhead: +{p_time - np_time:.0f}s/cell.</p>
     """, bg="#16213e")
 
     vslide(f"""
-    <h2>Polishing: Success by Noise</h2>
+    <h2>Polishing: Success by Noise {metric_badge('top1')}</h2>
     {img_tag("F04", "75%")}
     """)
 
     vslide(f"""
-    <h2>Polishing by Noise Level</h2>
+    <h2>Polishing: Success by Noise {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F04", "75%")}
+    """)
+
+    vslide(f"""
+    <h2>Polishing by Noise Level {metric_badge('top1')}</h2>
     {df_to_html(polish_noise_df, classes="compact")}
     """)
 
     vslide(f"""
-    <h2>Per-System Polishing Uplift</h2>
+    <h2>Polishing by Noise Level {metric_badge('oracle')}</h2>
+    {df_to_html(polish_noise_df_oracle, classes="compact")}
+    """)
+
+    vslide(f"""
+    <h2>Per-System Polishing Uplift {metric_badge('top1')}</h2>
     {img_tag("F05", "55%")}
     <p class="caption">{n_helps} of {len(t05)} pairs benefit; {n_hurts} hurt; {n_neutral} neutral.</p>
     """)
 
+    vslide(f"""
+    <h2>Per-System Polishing Uplift {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F05", "55%")}
+    <p class="caption">Under best-of-K: {n_helps_oracle} of {len(t05_oracle)} pairs benefit; {n_hurts_oracle} hurt.</p>
+    """)
+
     if len(polish_hurts) > 0:
         vslide(f"""
-        <h2>When Does Polishing Hurt?</h2>
+        <h2>When Does Polishing Hurt? {metric_badge('top1')}</h2>
         {df_to_html(polish_hurts.head(15), float_fmt=".1f", classes="compact")}
+        <p class="footnote">These are cells where polish surfaces a worse row-0 than nopolish — even though polish found a better row deeper in K=20.</p>
         """)
 
     section_end()
@@ -535,8 +718,13 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>System Difficulty Spectrum</h2>
+    <h2>System Difficulty Spectrum {metric_badge('top1')}</h2>
     {img_tag("F03", "60%")}
+    """)
+
+    vslide(f"""
+    <h2>System Difficulty Spectrum {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F03", "60%")}
     """)
 
     vslide(f"""
@@ -559,8 +747,13 @@ def build_presentation():
     """)
 
     vslide(f"""
-    <h2>Parameter Count vs Difficulty</h2>
+    <h2>Parameter Count vs Difficulty {metric_badge('top1')}</h2>
     {img_tag("F13", "75%")}
+    """)
+
+    vslide(f"""
+    <h2>Parameter Count vs Difficulty {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F13", "75%")}
     """)
 
     vslide(f"""
@@ -576,8 +769,13 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>Domain Analysis</h2>
+    <h2>Domain Analysis {metric_badge('top1')}</h2>
     {img_tag("F06", "65%")}
+    """)
+
+    vslide(f"""
+    <h2>Domain Analysis {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F06", "65%")}
     """)
 
     vslide(f"""
@@ -615,7 +813,7 @@ def build_presentation():
     for m in methods:
         m_sub = df[df["run"]==m]
         nr = int((m_sub["has_result"]==0).sum())
-        dv = int(((m_sub["max_rel_error"]>1e4)&(m_sub["has_result"]==1)).sum())
+        dv = int(((m_sub["top1_max_rel_error"]>1e4)&(m_sub["has_result"]==1)).sum())
         fail_method_rows.append({
             "Method": method_labels[m], "No Result": nr, "Diverged": dv,
             "Total": nr+dv, "Rate": f"{(nr+dv)/len(m_sub)*100:.1f}%"
@@ -660,8 +858,13 @@ def build_presentation():
     """)
 
     vslide(f"""
-    <h2>Speed-Accuracy Trade-off</h2>
+    <h2>Speed-Accuracy Trade-off {metric_badge('top1')}</h2>
     {img_tag("F12", "75%")}
+    """)
+
+    vslide(f"""
+    <h2>Speed-Accuracy Trade-off {metric_badge('oracle')}</h2>
+    {img_tag_oracle("F12", "75%")}
     """)
 
     section_end()
@@ -713,11 +916,33 @@ def build_presentation():
         )
 
     vslide(f"""
-    <h2>Conclusions: Method Rankings</h2>
+    <h2>Conclusions: Method Rankings {metric_badge('top1')}</h2>
     <table class="data-table ranking-table">
         <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
         {ranking_rows_html}
     </table>
+    """, bg="#1a1a2e")
+
+    # Oracle ranking table
+    ranking_rows_oracle_html = ""
+    for rank_idx, m in enumerate(ranked_methods_oracle):
+        strengths, weaknesses = method_traits(m)
+        ranking_rows_oracle_html += (
+            f'<tr class="{rank_css[rank_idx]}"><td>{rank_idx+1}</td>'
+            f'<td>{method_labels[m]}</td><td>{m_succ_oracle[m]:.1f}%</td>'
+            f'<td>{strengths}</td><td>{weaknesses}</td></tr>\n'
+        )
+
+    vslide(f"""
+    <h2>Conclusions: Method Rankings {metric_badge('oracle')}</h2>
+    <table class="data-table ranking-table">
+        <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
+        {ranking_rows_oracle_html}
+    </table>
+    <p class="footnote" style="margin-top:1em;">
+        Under best-of-K, {best_label_oracle} takes the top spot at {m_succ_oracle[best_method_oracle]:.1f}% —
+        a {m_succ_oracle[best_method_oracle] - m_succ[best_method]:+.1f}pp gain over the top-1 leader.
+    </p>
     """, bg="#1a1a2e")
 
     vslide(f"""
@@ -725,15 +950,21 @@ def build_presentation():
     <div class="takeaway-grid">
         <div class="takeaway-card">
             <h3>Noise Dominates</h3>
-            <p>Success drops <strong>{succ_noise0-succ_noise_hi:.0f} pp</strong> from clean to 1% noise.</p>
+            <p>Top-1 success drops <strong>{succ_noise0-succ_noise_hi:.0f} pp</strong> from clean to 1% noise.</p>
         </div>
         <div class="takeaway-card">
             <h3>Polish Is Worth It</h3>
-            <p>+{polish_uplift:.1f} pp uplift at +{p_time-np_time:.0f}s cost. Helps in {n_helps}/{len(t05)} cases.</p>
+            <p><strong>Top-1</strong>: +{polish_uplift:.1f}pp.
+               <strong>Oracle</strong>: +{polish_uplift_oracle:.1f}pp.
+               Time cost +{p_time-np_time:.0f}s/cell.</p>
+        </div>
+        <div class="takeaway-card">
+            <h3>Top-1 → Oracle gap</h3>
+            <p>ODEPE polish at top-1 = {p_succ:.1f}%; at oracle = {p_succ_oracle:.1f}%. The <strong>{p_succ_oracle - p_succ:+.1f}pp</strong> gap is rank-1 sort headroom.</p>
         </div>
         <div class="takeaway-card">
             <h3>No Universal Winner</h3>
-            <p>{best_label} wins most often but specific systems favor other methods.</p>
+            <p>Top-1: {best_label}. Oracle: {best_label_oracle}.</p>
         </div>
         <div class="takeaway-card">
             <h3>Full Dataset</h3>

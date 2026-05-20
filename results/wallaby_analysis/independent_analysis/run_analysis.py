@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 """
-Independent Benchmark Analysis for benchmark_wallaby_2026-05-17 (preview) (complete)
-Produces 8 CSV tables, 14 PNG figures, and a REPORT.md summary.
+Independent Benchmark Analysis for benchmark_wallaby_2026-05-17 (dual-metric).
+Produces 8+5 CSV tables, 14+10 PNG figures, and a REPORT.md summary.
 
-All rankings and conclusions are data-driven (not hardcoded).
+Dual-metric: each metric-dependent output is produced for both
+  - "top1"   — score the algorithm's row-0 pick (paper-headline metric)
+  - "oracle" — argmin over all rows (best-of-K, set-credit upper bound)
+
+Single-metric outputs (failure mode, timing, replica spread) don't
+depend on metric choice and are produced once.
+
+Output naming convention:
+  - top1 outputs use the existing filenames (F01_*.png, T01_*.csv)
+  - oracle outputs append `_oracle` (F01_*_oracle.png, T01_*_oracle.csv)
+  - Single-metric outputs are unchanged.
 
 Usage:
     python3 results/wallaby_analysis/independent_analysis/run_analysis.py
@@ -16,7 +26,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import seaborn as sns
 from math import pi
 
@@ -80,6 +89,23 @@ DOMAIN_MAP = {
 
 DIVERGED_THRESHOLD = 1e4
 
+# -- dual-metric machinery --
+METRIC_VARIANTS = ["top1", "oracle"]
+METRIC_LABELS = {
+    "top1": "Top-1 (algorithm's pick)",
+    "oracle": "Best-of-K (oracle)",
+}
+
+
+def col(metric, base):
+    """Column name in flat_results_with_metrics.csv for this metric family."""
+    return f"{metric}_{base}"
+
+
+def suffix(metric):
+    """Filename suffix. Top-1 outputs are at the default filenames; oracle gets `_oracle`."""
+    return "" if metric == "top1" else "_oracle"
+
 
 # -- load data --
 def load_data():
@@ -91,17 +117,20 @@ def load_data():
         ordered=True,
     )
     df["method_label"] = df["run"].map(METHOD_LABELS)
-    df["diverged"] = (df["max_rel_error"] > DIVERGED_THRESHOLD) & (df["has_result"] == 1)
+    # "diverged" uses top-1 max_rel_error — diverging means the algorithm's
+    # primary pick is catastrophically off, which is a metric-independent
+    # signal of failure.
+    df["diverged"] = (df["top1_max_rel_error"] > DIVERGED_THRESHOLD) & (df["has_result"] == 1)
     df["no_result"] = df["has_result"] == 0
     df["unfinished"] = (df["finished"] == 0) & (df["has_result"] == 1)
     return df
 
 
 # ======================================================================
-#  TABLES
+#  TABLES (dual: T01, T02, T03, T04, T05, T08; single: T06, T07)
 # ======================================================================
 
-def make_T01(df):
+def make_T01(df, metric):
     rows = []
     for m in METHOD_ORDER:
         sub = df[df["run"] == m]
@@ -110,11 +139,11 @@ def make_T01(df):
             "method": METHOD_LABELS[m],
             "n_rows": len(sub),
             "has_result_pct": sub["has_result"].mean() * 100,
-            "success_at_1pct": sub["success_at_1pct"].mean() * 100,
-            "success_at_10pct": sub["success_at_10pct"].mean() * 100,
-            "success_at_50pct": sub["success_at_50pct"].mean() * 100,
-            "median_median_rel_error": clean["median_rel_error"].median(),
-            "median_mean_rel_error": clean["mean_rel_error"].median(),
+            "success_at_1pct": sub[col(metric, "success_at_1pct")].mean() * 100,
+            "success_at_10pct": sub[col(metric, "success_at_10pct")].mean() * 100,
+            "success_at_50pct": sub[col(metric, "success_at_50pct")].mean() * 100,
+            "median_median_rel_error": clean[col(metric, "median_rel_error")].median(),
+            "median_mean_rel_error": clean[col(metric, "mean_rel_error")].median(),
             "median_time_s": sub["time"].median(),
             "mean_time_s": sub["time"].mean(),
             "n_diverged": sub["diverged"].sum(),
@@ -122,42 +151,42 @@ def make_T01(df):
             "n_unfinished": sub["unfinished"].sum(),
         })
     t = pd.DataFrame(rows)
-    t.to_csv(os.path.join(TABLE_DIR, "T01_overall_method_comparison.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T01_overall_method_comparison{suffix(metric)}.csv"), index=False)
     return t
 
 
-def make_T02(df):
+def make_T02(df, metric):
     rows = []
     for m in METHOD_ORDER:
         for noise in NOISE_ORDER:
             sub = df[(df["run"] == m) & (df["noise"] == noise)]
             clean = sub[~sub["diverged"] & (sub["has_result"] == 1)]
-            q25 = clean["median_rel_error"].quantile(0.25) if len(clean) > 0 else np.nan
-            q75 = clean["median_rel_error"].quantile(0.75) if len(clean) > 0 else np.nan
+            q25 = clean[col(metric, "median_rel_error")].quantile(0.25) if len(clean) > 0 else np.nan
+            q75 = clean[col(metric, "median_rel_error")].quantile(0.75) if len(clean) > 0 else np.nan
             rows.append({
                 "method": METHOD_LABELS[m],
                 "noise": NOISE_FLOAT_TO_LABEL.get(noise, f"{noise:g}"),
                 "n_rows": len(sub),
-                "success_at_1pct": sub["success_at_1pct"].mean() * 100,
-                "success_at_10pct": sub["success_at_10pct"].mean() * 100,
-                "success_at_50pct": sub["success_at_50pct"].mean() * 100,
-                "median_error": clean["median_rel_error"].median() if len(clean) > 0 else np.nan,
+                "success_at_1pct": sub[col(metric, "success_at_1pct")].mean() * 100,
+                "success_at_10pct": sub[col(metric, "success_at_10pct")].mean() * 100,
+                "success_at_50pct": sub[col(metric, "success_at_50pct")].mean() * 100,
+                "median_error": clean[col(metric, "median_rel_error")].median() if len(clean) > 0 else np.nan,
                 "error_IQR_low": q25,
                 "error_IQR_high": q75,
                 "median_time_s": sub["time"].median(),
             })
     t = pd.DataFrame(rows)
-    t.to_csv(os.path.join(TABLE_DIR, "T02_method_by_noise.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T02_method_by_noise{suffix(metric)}.csv"), index=False)
     return t
 
 
-def make_T03(df):
+def make_T03(df, metric):
     rows = []
     for sys_name in sorted(df["name"].unique()):
         sub = df[df["name"] == sys_name]
         method_success = {}
         for m in METHOD_ORDER:
-            ms = sub[sub["run"] == m]["success_at_10pct"].mean() * 100
+            ms = sub[sub["run"] == m][col(metric, "success_at_10pct")].mean() * 100
             method_success[METHOD_LABELS[m]] = ms
         best_m = max(method_success, key=method_success.get)
         worst_m = min(method_success, key=method_success.get)
@@ -166,7 +195,7 @@ def make_T03(df):
             "domain": DOMAIN_MAP.get(sys_name, "Unknown"),
             "n_id_params": sub["n_id_params"].iloc[0],
             "n_nonid_params": sub["n_nonid_params"].iloc[0],
-            "mean_success_at_10pct": sub["success_at_10pct"].mean() * 100,
+            "mean_success_at_10pct": sub[col(metric, "success_at_10pct")].mean() * 100,
             "best_method": best_m,
             "best_method_success": method_success[best_m],
             "worst_method": worst_m,
@@ -174,17 +203,17 @@ def make_T03(df):
             **{f"success_{METHOD_LABELS[m]}": method_success[METHOD_LABELS[m]] for m in METHOD_ORDER},
         })
     t = pd.DataFrame(rows).sort_values("mean_success_at_10pct", ascending=True).reset_index(drop=True)
-    t.to_csv(os.path.join(TABLE_DIR, "T03_system_ranking.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T03_system_ranking{suffix(metric)}.csv"), index=False)
     return t
 
 
-def make_T04(df):
+def make_T04(df, metric):
     rows = []
     for domain in sorted(df["domain"].unique()):
         sub = df[df["domain"] == domain]
         method_success = {}
         for m in METHOD_ORDER:
-            ms = sub[sub["run"] == m]["success_at_10pct"].mean() * 100
+            ms = sub[sub["run"] == m][col(metric, "success_at_10pct")].mean() * 100
             method_success[METHOD_LABELS[m]] = ms
         best_m = max(method_success, key=method_success.get)
         worst_m = min(method_success, key=method_success.get)
@@ -196,22 +225,22 @@ def make_T04(df):
             "worst_method": worst_m,
         })
     t = pd.DataFrame(rows)
-    t.to_csv(os.path.join(TABLE_DIR, "T04_domain_method_success.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T04_domain_method_success{suffix(metric)}.csv"), index=False)
     return t
 
 
-def make_T05(df):
+def make_T05(df, metric):
     rows = []
     for sys_name in sorted(df["name"].unique()):
         for noise in NOISE_ORDER:
             np_sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == "odepe_v2_nopolish")]
             p_sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == "odepe_v2_polish")]
-            np_succ = np_sub["success_at_10pct"].mean() * 100
-            p_succ = p_sub["success_at_10pct"].mean() * 100
+            np_succ = np_sub[col(metric, "success_at_10pct")].mean() * 100
+            p_succ = p_sub[col(metric, "success_at_10pct")].mean() * 100
             np_clean = np_sub[np_sub["has_result"] == 1]
             p_clean = p_sub[p_sub["has_result"] == 1]
-            np_err = np_clean["median_rel_error"].median() if len(np_clean) > 0 else np.nan
-            p_err = p_clean["median_rel_error"].median() if len(p_clean) > 0 else np.nan
+            np_err = np_clean[col(metric, "median_rel_error")].median() if len(np_clean) > 0 else np.nan
+            p_err = p_clean[col(metric, "median_rel_error")].median() if len(p_clean) > 0 else np.nan
             np_time = np_sub["time"].median()
             p_time = p_sub["time"].median()
             rows.append({
@@ -229,11 +258,12 @@ def make_T05(df):
                 "time_overhead_pct": ((p_time - np_time) / np_time * 100) if np_time > 0 else np.nan,
             })
     t = pd.DataFrame(rows)
-    t.to_csv(os.path.join(TABLE_DIR, "T05_polishing_effect.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T05_polishing_effect{suffix(metric)}.csv"), index=False)
     return t
 
 
 def make_T06(df):
+    """Single-metric: replica IQR/CV use top-1 (the algorithm's primary pick is what users see)."""
     rows = []
     for m in METHOD_ORDER:
         sub = df[(df["run"] == m) & (df["has_result"] == 1) & (~df["diverged"])]
@@ -241,13 +271,13 @@ def make_T06(df):
         cvs = []
         agreements = []
         for (sys_name, noise), grp in sub.groupby(["name", "noise"]):
-            errs = grp["median_rel_error"].values
-            if len(errs) >= 4:  # 10 replicas but some may be missing
+            errs = grp["top1_median_rel_error"].values
+            if len(errs) >= 4:
                 iqr = np.percentile(errs, 75) - np.percentile(errs, 25)
                 iqrs.append(iqr)
                 if np.mean(errs) > 0:
                     cvs.append(np.std(errs) / np.mean(errs))
-                succ = grp["success_at_10pct"].values
+                succ = grp["top1_success_at_10pct"].values
                 agreements.append(np.mean(succ == succ[0]))
         rows.append({
             "method": METHOD_LABELS[m],
@@ -263,6 +293,7 @@ def make_T06(df):
 
 
 def make_T07(df):
+    """Single-metric: failure catalog (crashed / no_result / diverged) doesn't depend on metric."""
     failures = df[df["no_result"] | df["diverged"] | df["unfinished"]].copy()
     failures["failure_type"] = "unknown"
     failures.loc[failures["no_result"], "failure_type"] = "no_result"
@@ -270,14 +301,15 @@ def make_T07(df):
     failures.loc[failures["unfinished"], "failure_type"] = "unfinished"
     failures.loc[failures["diverged"] & failures["unfinished"], "failure_type"] = "diverged"
     out = failures[["name", "run", "noise", "id", "failure_type", "has_result",
-                     "finished", "max_rel_error", "time"]].copy()
+                     "finished", "top1_max_rel_error", "time"]].copy()
+    out = out.rename(columns={"top1_max_rel_error": "max_rel_error"})
     out["method"] = out["run"].map(METHOD_LABELS)
     out = out.sort_values(["name", "run", "noise"]).reset_index(drop=True)
     out.to_csv(os.path.join(TABLE_DIR, "T07_failure_catalog.csv"), index=False)
     return out
 
 
-def make_T08(df):
+def make_T08(df, metric):
     rows = []
     for sys_name in sorted(df["name"].unique()):
         for m in METHOD_ORDER:
@@ -287,7 +319,7 @@ def make_T08(df):
             cliff_to = None
             for i, noise in enumerate(NOISE_ORDER):
                 sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == m)]
-                succ = sub["success_at_10pct"].mean() * 100
+                succ = sub[col(metric, "success_at_10pct")].mean() * 100
                 if prev_succ is not None:
                     drop = prev_succ - succ
                     if drop > max_drop:
@@ -298,7 +330,7 @@ def make_T08(df):
             succ_by_noise = {}
             for i, noise in enumerate(NOISE_ORDER):
                 sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == m)]
-                succ_by_noise[NOISE_LABELS[i]] = sub["success_at_10pct"].mean() * 100
+                succ_by_noise[NOISE_LABELS[i]] = sub[col(metric, "success_at_10pct")].mean() * 100
             rows.append({
                 "system": sys_name,
                 "method": METHOD_LABELS[m],
@@ -308,12 +340,12 @@ def make_T08(df):
                 **{f"success_noise_{nl}": succ_by_noise[nl] for nl in NOISE_LABELS},
             })
     t = pd.DataFrame(rows)
-    t.to_csv(os.path.join(TABLE_DIR, "T08_noise_cliff_detection.csv"), index=False)
+    t.to_csv(os.path.join(TABLE_DIR, f"T08_noise_cliff_detection{suffix(metric)}.csv"), index=False)
     return t
 
 
 # ======================================================================
-#  FIGURES
+#  FIGURES (dual: F01-F06, F10, F12-F14; single: F07-F09, F11)
 # ======================================================================
 
 def fig_save(fig, name):
@@ -323,32 +355,36 @@ def fig_save(fig, name):
     print(f"  Saved {name}")
 
 
-def make_F01(df):
+def metric_title_tag(metric):
+    return f"({METRIC_LABELS[metric]})"
+
+
+def make_F01(df, metric):
     fig, ax = plt.subplots(figsize=(8, 5))
     for m in METHOD_ORDER:
         rates = []
         for noise in NOISE_ORDER:
             sub = df[(df["run"] == m) & (df["noise"] == noise)]
-            rates.append(sub["success_at_10pct"].mean() * 100)
+            rates.append(sub[col(metric, "success_at_10pct")].mean() * 100)
         ax.plot(NOISE_LABELS, rates, marker="o", label=METHOD_LABELS[m],
                 color=METHOD_COLORS[m], linewidth=2, markersize=7)
     ax.set_xlabel("Noise Level")
     ax.set_ylabel("Success Rate @ 10% (%)")
-    ax.set_title("Success Rate vs Noise Level by Method")
+    ax.set_title(f"Success Rate vs Noise Level by Method {metric_title_tag(metric)}")
     ax.set_ylim(-2, 102)
     ax.legend(loc="lower left")
     ax.grid(True, alpha=0.3)
-    fig_save(fig, "F01_overall_success_by_noise.png")
+    fig_save(fig, f"F01_overall_success_by_noise{suffix(metric)}.png")
 
 
-def make_F02(df):
+def make_F02(df, metric):
     """Heatmap of success rates by (system, method) — one figure per threshold."""
-    for threshold_col, threshold_label, fname in [
-        ("success_at_10pct", "10%", "F02_method_comparison_heatmap.png"),
-        ("success_at_1pct", "1%", "F02a_method_comparison_heatmap_1pct.png"),
-        ("success_at_50pct", "50%", "F02b_method_comparison_heatmap_50pct.png"),
+    for threshold_key, threshold_label, fname in [
+        ("success_at_10pct", "10%", f"F02_method_comparison_heatmap{suffix(metric)}.png"),
+        ("success_at_1pct", "1%", f"F02a_method_comparison_heatmap_1pct{suffix(metric)}.png"),
+        ("success_at_50pct", "50%", f"F02b_method_comparison_heatmap_50pct{suffix(metric)}.png"),
     ]:
-        pivot = df.groupby(["name", "run"])[threshold_col].mean().unstack("run") * 100
+        pivot = df.groupby(["name", "run"])[col(metric, threshold_key)].mean().unstack("run") * 100
         pivot = pivot[METHOD_ORDER]
         pivot.columns = [METHOD_LABELS[m] for m in METHOD_ORDER]
         pivot["mean"] = pivot.mean(axis=1)
@@ -358,14 +394,14 @@ def make_F02(df):
         sns.heatmap(pivot, annot=True, fmt=".0f", cmap="RdYlGn", vmin=0, vmax=100,
                     linewidths=0.5, ax=ax,
                     cbar_kws={"label": f"Success @ {threshold_label} (%)"})
-        ax.set_title(f"Success Rate @ {threshold_label} by System and Method")
+        ax.set_title(f"Success Rate @ {threshold_label} by System and Method {metric_title_tag(metric)}")
         ax.set_ylabel("")
         ax.set_xlabel("")
         fig_save(fig, fname)
 
 
-def make_F03(df):
-    sys_succ = df.groupby("name")["success_at_10pct"].mean() * 100
+def make_F03(df, metric):
+    sys_succ = df.groupby("name")[col(metric, "success_at_10pct")].mean() * 100
     sys_succ = sys_succ.sort_values()
     domains = [DOMAIN_MAP[s] for s in sys_succ.index]
     domain_colors = {d: c for d, c in zip(
@@ -378,15 +414,15 @@ def make_F03(df):
     ax.set_yticks(range(len(sys_succ)))
     ax.set_yticklabels(sys_succ.index, fontsize=9)
     ax.set_xlabel("Mean Success Rate @ 10% (%)")
-    ax.set_title("System Difficulty Ranking (lower = harder)")
+    ax.set_title(f"System Difficulty Ranking (lower = harder) {metric_title_tag(metric)}")
     ax.set_xlim(0, 105)
     from matplotlib.patches import Patch
     legend_elements = [Patch(facecolor=domain_colors[d], label=d) for d in sorted(domain_colors)]
     ax.legend(handles=legend_elements, loc="lower right", fontsize=8, title="Domain")
-    fig_save(fig, "F03_system_difficulty_ranking.png")
+    fig_save(fig, f"F03_system_difficulty_ranking{suffix(metric)}.png")
 
 
-def make_F04(df):
+def make_F04(df, metric):
     fig, ax = plt.subplots(figsize=(8, 5))
     x = np.arange(len(NOISE_LABELS))
     width = 0.35
@@ -395,8 +431,8 @@ def make_F04(df):
     for noise in NOISE_ORDER:
         np_sub = df[(df["run"] == "odepe_v2_nopolish") & (df["noise"] == noise)]
         p_sub = df[(df["run"] == "odepe_v2_polish") & (df["noise"] == noise)]
-        np_rates.append(np_sub["success_at_10pct"].mean() * 100)
-        p_rates.append(p_sub["success_at_10pct"].mean() * 100)
+        np_rates.append(np_sub[col(metric, "success_at_10pct")].mean() * 100)
+        p_rates.append(p_sub[col(metric, "success_at_10pct")].mean() * 100)
     ax.bar(x - width / 2, np_rates, width, label="ODEPE (no polish)",
            color=METHOD_COLORS["odepe_v2_nopolish"], edgecolor="gray")
     ax.bar(x + width / 2, p_rates, width, label="ODEPE (polish)",
@@ -409,24 +445,24 @@ def make_F04(df):
                         ha="center", fontsize=8, color="green")
     ax.set_xlabel("Noise Level")
     ax.set_ylabel("Success Rate @ 10% (%)")
-    ax.set_title("Effect of Polishing on Success Rate")
+    ax.set_title(f"Effect of Polishing on Success Rate {metric_title_tag(metric)}")
     ax.set_xticks(x)
     ax.set_xticklabels(NOISE_LABELS)
     ax.set_ylim(0, 105)
     ax.legend()
     ax.grid(True, alpha=0.3, axis="y")
-    fig_save(fig, "F04_polishing_effect_by_noise.png")
+    fig_save(fig, f"F04_polishing_effect_by_noise{suffix(metric)}.png")
 
 
-def make_F05(df):
+def make_F05(df, metric):
     systems = sorted(df["name"].unique())
     data = np.zeros((len(systems), len(NOISE_ORDER)))
     for i, sys_name in enumerate(systems):
         for j, noise in enumerate(NOISE_ORDER):
             np_sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == "odepe_v2_nopolish")]
             p_sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == "odepe_v2_polish")]
-            np_succ = np_sub["success_at_10pct"].mean() * 100
-            p_succ = p_sub["success_at_10pct"].mean() * 100
+            np_succ = np_sub[col(metric, "success_at_10pct")].mean() * 100
+            p_succ = p_sub[col(metric, "success_at_10pct")].mean() * 100
             data[i, j] = p_succ - np_succ
     uplift_df = pd.DataFrame(data, index=systems, columns=NOISE_LABELS)
     uplift_df["mean"] = uplift_df.mean(axis=1)
@@ -436,13 +472,13 @@ def make_F05(df):
     sns.heatmap(uplift_df, annot=True, fmt=".0f", cmap="RdBu_r", center=0,
                 vmin=-50, vmax=50, linewidths=0.5, ax=ax,
                 cbar_kws={"label": "Success Uplift (pp)"})
-    ax.set_title("Polishing Effect: Success@10% Uplift (polish - nopolish)")
+    ax.set_title(f"Polishing Effect: Success@10% Uplift (polish - nopolish) {metric_title_tag(metric)}")
     ax.set_ylabel("")
     ax.set_xlabel("Noise Level")
-    fig_save(fig, "F05_polishing_heatmap.png")
+    fig_save(fig, f"F05_polishing_heatmap{suffix(metric)}.png")
 
 
-def make_F06(df):
+def make_F06(df, metric):
     domains = sorted(df["domain"].unique())
     N = len(domains)
     angles = [n / float(N) * 2 * pi for n in range(N)]
@@ -452,7 +488,7 @@ def make_F06(df):
         values = []
         for d in domains:
             sub = df[(df["run"] == m) & (df["domain"] == d)]
-            values.append(sub["success_at_10pct"].mean() * 100)
+            values.append(sub[col(metric, "success_at_10pct")].mean() * 100)
         values += values[:1]
         ax.plot(angles, values, "o-", linewidth=2, label=METHOD_LABELS[m],
                 color=METHOD_COLORS[m], markersize=5)
@@ -460,14 +496,15 @@ def make_F06(df):
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(domains, fontsize=9)
     ax.set_ylim(0, 100)
-    ax.set_title("Method Performance by Domain", y=1.08)
+    ax.set_title(f"Method Performance by Domain {metric_title_tag(metric)}", y=1.08)
     ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1), fontsize=9)
-    fig_save(fig, "F06_domain_radar.png")
+    fig_save(fig, f"F06_domain_radar{suffix(metric)}.png")
 
 
 def make_F07(df):
+    """Single-metric: error distribution boxplot uses top-1 median_rel_error."""
     clean = df[(df["has_result"] == 1) & (~df["diverged"])].copy()
-    clean["log10_error"] = np.log10(clean["median_rel_error"].clip(lower=1e-15))
+    clean["log10_error"] = np.log10(clean["top1_median_rel_error"].clip(lower=1e-15))
     clean["method_label"] = pd.Categorical(
         clean["run"].map(METHOD_LABELS),
         categories=[METHOD_LABELS[m] for m in METHOD_ORDER],
@@ -483,19 +520,20 @@ def make_F07(df):
         ax.set_title(f"Noise = {NOISE_LABELS[idx]}")
         ax.set_xlabel("")
         if idx == 0:
-            ax.set_ylabel("log10(Median Relative Error)")
+            ax.set_ylabel("log10(Median Rel-Error, top-1)")
         else:
             ax.set_ylabel("")
         ax.tick_params(axis="x", rotation=45)
-    fig.suptitle("Error Distribution by Method and Noise Level", fontsize=14, y=1.02)
+    fig.suptitle("Error Distribution by Method and Noise Level (Top-1)", fontsize=14, y=1.02)
     fig.tight_layout()
     fig_save(fig, "F07_replica_stability_boxplot.png")
 
 
 def make_F08(df):
+    """Single-metric: per-system replica strip plot at noise=1e-2 uses top-1."""
     noise_val = 0.01
     sub = df[(df["noise"] == noise_val) & (df["has_result"] == 1) & (~df["diverged"])].copy()
-    sub["log10_error"] = np.log10(sub["median_rel_error"].clip(lower=1e-15))
+    sub["log10_error"] = np.log10(sub["top1_median_rel_error"].clip(lower=1e-15))
     fig, axes = plt.subplots(2, 2, figsize=(14, 12))
     for idx, m in enumerate(METHOD_ORDER):
         ax = axes[idx // 2][idx % 2]
@@ -504,15 +542,16 @@ def make_F08(df):
         sns.stripplot(data=msub, x="log10_error", y="name", order=sys_order,
                       ax=ax, color=METHOD_COLORS[m], alpha=0.7, size=5, jitter=0.2)
         ax.set_title(f"{METHOD_LABELS[m]}")
-        ax.set_xlabel("log10(Median Relative Error)")
+        ax.set_xlabel("log10(Median Rel-Error, top-1)")
         ax.set_ylabel("")
         ax.tick_params(axis="y", labelsize=8)
-    fig.suptitle(f"Replica Spread at Noise = {NOISE_FLOAT_TO_LABEL.get(noise_val, noise_val)} by System", fontsize=14, y=1.01)
+    fig.suptitle(f"Replica Spread at Noise = {NOISE_FLOAT_TO_LABEL.get(noise_val, noise_val)} by System (Top-1)", fontsize=14, y=1.01)
     fig.tight_layout()
     fig_save(fig, "F08_replica_per_system.png")
 
 
 def make_F09(df):
+    """Single-metric: failure-mode breakdown is metric-independent."""
     rows = []
     for m in METHOD_ORDER:
         for noise in NOISE_ORDER:
@@ -521,7 +560,8 @@ def make_F09(df):
             n_no_result = sub["no_result"].sum()
             n_diverged = sub["diverged"].sum()
             n_unfinished = sub["unfinished"].sum() - (sub["diverged"] & sub["unfinished"]).sum()
-            n_success = sub["success_at_10pct"].sum()
+            # "Success" here uses top-1 by convention; the rest of the bar is "marginal".
+            n_success = sub["top1_success_at_10pct"].sum()
             n_marginal = n - n_no_result - n_diverged - n_unfinished - n_success
             rows.append({
                 "method": METHOD_LABELS[m],
@@ -550,12 +590,12 @@ def make_F09(df):
             ax.set_ylabel("Percentage (%)")
         ax.set_ylim(0, 100)
     fig.legend(categories, loc="upper center", ncol=5, bbox_to_anchor=(0.5, 0.0), fontsize=10)
-    fig.suptitle("Outcome Breakdown by Method and Noise", fontsize=14)
+    fig.suptitle("Outcome Breakdown by Method and Noise (top-1 success)", fontsize=14)
     fig.tight_layout(rect=[0, 0.05, 1, 0.95])
     fig_save(fig, "F09_failure_mode_breakdown.png")
 
 
-def make_F10(df):
+def make_F10(df, metric):
     systems = sorted(df["name"].unique())
     cliff_data = []
     for sys_name in systems:
@@ -565,7 +605,7 @@ def make_F10(df):
             max_drop = 0
             for i, noise in enumerate(NOISE_ORDER):
                 sub = df[(df["name"] == sys_name) & (df["noise"] == noise) & (df["run"] == m)]
-                succ = sub["success_at_10pct"].mean() * 100
+                succ = sub[col(metric, "success_at_10pct")].mean() * 100
                 if prev_succ is not None:
                     drop = prev_succ - succ
                     if drop > max_drop:
@@ -580,13 +620,14 @@ def make_F10(df):
     fig, ax = plt.subplots(figsize=(8, 10))
     sns.heatmap(cliff_df, annot=True, fmt=".0f", cmap="YlOrRd", vmin=0,
                 linewidths=0.5, ax=ax, cbar_kws={"label": "Max Success Drop (pp)"})
-    ax.set_title("Noise Cliff: Largest Success Drop Between Adjacent Noise Levels")
+    ax.set_title(f"Noise Cliff: Largest Success Drop Between Adjacent Noise Levels {metric_title_tag(metric)}")
     ax.set_ylabel("")
     ax.set_xlabel("")
-    fig_save(fig, "F10_noise_cliff_heatmap.png")
+    fig_save(fig, f"F10_noise_cliff_heatmap{suffix(metric)}.png")
 
 
 def make_F11(df):
+    """Single-metric: timing is metric-independent."""
     fig, ax = plt.subplots(figsize=(8, 5))
     plot_data = df.copy()
     plot_data["method_label"] = pd.Categorical(
@@ -603,9 +644,9 @@ def make_F11(df):
     fig_save(fig, "F11_timing_comparison.png")
 
 
-def make_F12(df):
+def make_F12(df, metric):
     agg = df[df["has_result"] == 1].groupby(["name", "run"]).agg(
-        mean_success=("success_at_10pct", "mean"),
+        mean_success=(col(metric, "success_at_10pct"), "mean"),
         median_time=("time", "median"),
     ).reset_index()
     fig, ax = plt.subplots(figsize=(9, 6))
@@ -616,16 +657,16 @@ def make_F12(df):
                    alpha=0.7, s=50, edgecolors="gray", linewidth=0.5)
     ax.set_xlabel("Median Time (seconds)")
     ax.set_ylabel("Mean Success Rate @ 10% (%)")
-    ax.set_title("Speed-Accuracy Trade-off by System and Method")
+    ax.set_title(f"Speed-Accuracy Trade-off by System and Method {metric_title_tag(metric)}")
     ax.legend()
     ax.grid(True, alpha=0.3)
-    fig_save(fig, "F12_accuracy_vs_time_scatter.png")
+    fig_save(fig, f"F12_accuracy_vs_time_scatter{suffix(metric)}.png")
 
 
-def make_F13(df):
+def make_F13(df, metric):
     sys_stats = df.groupby("name").agg(
         n_id_params=("n_id_params", "first"),
-        mean_success=("success_at_10pct", "mean"),
+        mean_success=(col(metric, "success_at_10pct"), "mean"),
     ).reset_index()
     sys_stats["mean_success_pct"] = sys_stats["mean_success"] * 100
     fig, ax = plt.subplots(figsize=(9, 6))
@@ -642,19 +683,19 @@ def make_F13(df):
     ax.plot(x_line, b + m_coef * x_line, "--", color="red", alpha=0.5, label=f"Trend (slope={m_coef:.1f})")
     ax.set_xlabel("Number of Identifiable Parameters")
     ax.set_ylabel("Mean Success Rate @ 10% (%)")
-    ax.set_title("System Difficulty vs Parameter Count")
+    ax.set_title(f"System Difficulty vs Parameter Count {metric_title_tag(metric)}")
     ax.legend()
     ax.grid(True, alpha=0.3)
-    fig_save(fig, "F13_param_count_vs_difficulty.png")
+    fig_save(fig, f"F13_param_count_vs_difficulty{suffix(metric)}.png")
 
 
-def make_F14(df):
+def make_F14(df, metric):
     rank_counts = {m: {1: 0, 2: 0, 3: 0, 4: 0} for m in METHOD_ORDER}
     for (sys_name, noise), grp in df.groupby(["name", "noise"]):
         method_succ = {}
         for m in METHOD_ORDER:
             sub = grp[grp["run"] == m]
-            method_succ[m] = sub["success_at_10pct"].mean()
+            method_succ[m] = sub[col(metric, "success_at_10pct")].mean()
         sorted_methods = sorted(method_succ.keys(), key=lambda x: -method_succ[x])
         for rank, m in enumerate(sorted_methods, 1):
             rank_counts[m][rank] += 1
@@ -677,17 +718,17 @@ def make_F14(df):
     ax.set_xticks(x)
     ax.set_xticklabels([METHOD_LABELS[m] for m in METHOD_ORDER])
     ax.set_ylabel("Percentage of Comparisons (%)")
-    ax.set_title("Method Rank Distribution Across All (System, Noise) Pairs")
+    ax.set_title(f"Method Rank Distribution Across All (System, Noise) Pairs {metric_title_tag(metric)}")
     ax.legend(title="Rank")
     ax.set_ylim(0, 100)
-    fig_save(fig, "F14_method_rank_distribution.png")
+    fig_save(fig, f"F14_method_rank_distribution{suffix(metric)}.png")
 
 
 # ======================================================================
-#  REPORT (data-driven rankings)
+#  REPORT (one section per metric for dual; one section total for single)
 # ======================================================================
 
-def generate_report(df, t01, t02, t03, t05):
+def generate_report(df, t01_top1, t01_oracle, t05_top1, t05_oracle):
     n_systems = df["name"].nunique()
     n_methods = df["run"].nunique()
     n_noise = df["noise"].nunique()
@@ -696,38 +737,45 @@ def generate_report(df, t01, t02, t03, t05):
     n_no_result = df["no_result"].sum()
     n_diverged = df["diverged"].sum()
 
-    method_overall = {}
-    for m in METHOD_ORDER:
-        method_overall[m] = df[df["run"] == m]["success_at_10pct"].mean() * 100
+    def method_overall(metric):
+        out = {}
+        for m in METHOD_ORDER:
+            out[m] = df[df["run"] == m][col(metric, "success_at_10pct")].mean() * 100
+        return out
 
-    ranked_methods = sorted(METHOD_ORDER, key=lambda m: -method_overall[m])
+    overall_top1 = method_overall("top1")
+    overall_oracle = method_overall("oracle")
+    ranked_top1 = sorted(METHOD_ORDER, key=lambda m: -overall_top1[m])
+    ranked_oracle = sorted(METHOD_ORDER, key=lambda m: -overall_oracle[m])
 
-    np_overall = df[df["run"] == "odepe_v2_nopolish"]["success_at_10pct"].mean() * 100
-    p_overall = df[df["run"] == "odepe_v2_polish"]["success_at_10pct"].mean() * 100
-    polish_uplift = p_overall - np_overall
+    np_top1 = df[df["run"] == "odepe_v2_nopolish"]["top1_success_at_10pct"].mean() * 100
+    p_top1 = df[df["run"] == "odepe_v2_polish"]["top1_success_at_10pct"].mean() * 100
+    np_oracle = df[df["run"] == "odepe_v2_nopolish"]["oracle_success_at_10pct"].mean() * 100
+    p_oracle = df[df["run"] == "odepe_v2_polish"]["oracle_success_at_10pct"].mean() * 100
+    polish_uplift_top1 = p_top1 - np_top1
+    polish_uplift_oracle = p_oracle - np_oracle
 
-    sys_succ = df.groupby("name")["success_at_10pct"].mean().sort_values()
-    hardest = sys_succ.index[0]
-    easiest = sys_succ.index[-1]
+    sys_succ_top1 = df.groupby("name")["top1_success_at_10pct"].mean().sort_values()
+    hardest = sys_succ_top1.index[0]
+    easiest = sys_succ_top1.index[-1]
 
-    succ_noise0 = df[df["noise"] == 0.0]["success_at_10pct"].mean() * 100
-    succ_noise_high = df[df["noise"] == 0.01]["success_at_10pct"].mean() * 100
+    succ_noise0_top1 = df[df["noise"] == 0.0]["top1_success_at_10pct"].mean() * 100
+    succ_noise_high_top1 = df[df["noise"] == 0.01]["top1_success_at_10pct"].mean() * 100
 
     timing = {METHOD_LABELS[m]: df[df["run"] == m]["time"].median() for m in METHOD_ORDER}
 
-    n_helps = (t05["success_uplift_pp"] > 0).sum()
-    n_hurts = (t05["success_uplift_pp"] < 0).sum()
-    n_neutral = (t05["success_uplift_pp"] == 0).sum()
+    n_helps_top1 = (t05_top1["success_uplift_pp"] > 0).sum()
+    n_hurts_top1 = (t05_top1["success_uplift_pp"] < 0).sum()
+    n_neutral_top1 = (t05_top1["success_uplift_pp"] == 0).sum()
+    n_helps_oracle = (t05_oracle["success_uplift_pp"] > 0).sum()
 
-    best_method = ranked_methods[0]
-    worst_method = ranked_methods[-1]
-    best_label = METHOD_LABELS[best_method]
-    worst_label = METHOD_LABELS[worst_method]
+    best_top1 = ranked_top1[0]
+    best_oracle = ranked_oracle[0]
 
     from datetime import datetime
     today = datetime.now().strftime("%Y-%m-%d")
     report = f"""# Independent Benchmark Analysis Report
-## benchmark_wallaby_2026-05-17 (preview)
+## benchmark_wallaby_2026-05-17
 
 **Generated:** {today}
 **Data:** {n_total} rows = {n_systems} systems x {n_methods} methods x {n_noise} noise levels x {n_replicas} replicas
@@ -735,81 +783,136 @@ def generate_report(df, t01, t02, t03, t05):
 
 ---
 
+## Metric definitions
+
+This report tracks two parallel accuracy metrics per cell:
+
+- **Top-1 (algorithm's pick)** — the algorithm's row-0 answer in
+  `result.csv` (sorted by `err` for ODEPE, single answer for AMIGO2 /
+  SHADE) is scored on `max_rel_error` over identifiable axes only.
+  This is the **paper-headline** metric: what the user actually sees.
+- **Best-of-K (oracle)** — argmin over all rows of `result.csv` on the
+  same identifiable axes. This is the **set-credit ceiling**: the best
+  the algorithm could have done if its row-0 sort were perfect. For
+  K=1 methods (AMIGO2, SHADE) the two are identical. For ODEPE
+  (K=20), they can differ — the gap measures rank-1 sort headroom.
+
+Section 2A reports top-1; section 2B reports oracle. Sections 3+
+(metric-independent: noise cliffs, polishing, replica spread, failure
+analysis, timing) reference both as relevant.
+
+---
+
 ## 1. Executive Summary
 
 This analysis evaluates four parameter estimation methods across {n_systems} ODE systems at five noise levels (0, 1e-8, 1e-6, 1e-4, 1e-2) with {n_replicas} replicas each. Key findings:
 
-- **{best_label}** achieves the highest overall success rate at **{method_overall[best_method]:.1f}%** (success@10%).
-- **{METHOD_LABELS[ranked_methods[1]]}** follows at **{method_overall[ranked_methods[1]]:.1f}%**.
-- Polishing provides a **+{polish_uplift:.1f} pp** uplift over the unpolished ODEPE variant.
-- **{worst_label}** has the lowest success rate at **{method_overall[worst_method]:.1f}%**.
-- Success degrades from **{succ_noise0:.1f}%** at noise=0 to **{succ_noise_high:.1f}%** at noise=1e-2 (averaged across methods).
-- **{n_no_result}** rows produced no result; **{n_diverged}** rows diverged (max_rel_error > 10^4).
+- **Top-1 best**: {METHOD_LABELS[best_top1]} at **{overall_top1[best_top1]:.1f}%** success@10%.
+- **Oracle best**: {METHOD_LABELS[best_oracle]} at **{overall_oracle[best_oracle]:.1f}%** success@10%.
+- Polishing uplift: **+{polish_uplift_top1:.1f} pp** (top-1) / **+{polish_uplift_oracle:.1f} pp** (oracle) over unpolished ODEPE.
+- Success degrades from **{succ_noise0_top1:.1f}%** at noise=0 to **{succ_noise_high_top1:.1f}%** at noise=1e-2 (top-1, across methods).
+- **{n_no_result}** rows produced no result; **{n_diverged}** rows diverged (top-1 max_rel_error > 10^4).
 
 ---
 
-## 2. Overall Method Comparison
+## 2A. Top-1 method comparison (paper convention)
 
-![Success by Noise](figures/F01_overall_success_by_noise.png)
-
-*Figure F01: Success rate at 10% threshold across noise levels.*
+![Success by Noise — Top-1](figures/F01_overall_success_by_noise.png)
 
 | Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
 |--------|-----------|------------|------------|-----------------|-----------|----------|
 """
-    for _, row in t01.iterrows():
+    for _, row in t01_top1.iterrows():
         report += f"| {row['method']} | {row['success_at_1pct']:.1f}% | {row['success_at_10pct']:.1f}% | {row['success_at_50pct']:.1f}% | {row['median_time_s']:.0f} | {int(row['n_no_result'])} | {int(row['n_diverged'])} |\n"
 
     report += f"""
-### Method Rankings
+### Method Rankings (Top-1)
 
-![Rank Distribution](figures/F14_method_rank_distribution.png)
+![Rank Distribution — Top-1](figures/F14_method_rank_distribution.png)
+
+---
+
+## 2B. Best-of-K (oracle) method comparison — set-credit ceiling
+
+For ODEPE (K=20) this reports the lower-bound oracle: what the
+algorithm could have done with a perfect rank-1 picker. For AMIGO2 and
+SHADE (K=1) it equals the top-1 row.
+
+![Success by Noise — Oracle](figures/F01_overall_success_by_noise_oracle.png)
+
+| Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
+|--------|-----------|------------|------------|-----------------|-----------|----------|
+"""
+    for _, row in t01_oracle.iterrows():
+        report += f"| {row['method']} | {row['success_at_1pct']:.1f}% | {row['success_at_10pct']:.1f}% | {row['success_at_50pct']:.1f}% | {row['median_time_s']:.0f} | {int(row['n_no_result'])} | {int(row['n_diverged'])} |\n"
+
+    report += f"""
+### Method Rankings (Oracle)
+
+![Rank Distribution — Oracle](figures/F14_method_rank_distribution_oracle.png)
 
 ---
 
 ## 3. Noise Degradation Analysis
 
-![Method Comparison Heatmap](figures/F02_method_comparison_heatmap.png)
+Top-1 vs oracle heatmaps side-by-side:
 
-- At **noise=0**, the best methods achieve high success rates.
-- The steepest degradation typically occurs between **noise=1e-4 and 1e-2**.
+![Heatmap — Top-1](figures/F02_method_comparison_heatmap.png)
+
+![Heatmap — Oracle](figures/F02_method_comparison_heatmap_oracle.png)
 
 ### Noise Cliffs
 
-![Noise Cliff Heatmap](figures/F10_noise_cliff_heatmap.png)
+![Noise Cliff — Top-1](figures/F10_noise_cliff_heatmap.png)
+
+![Noise Cliff — Oracle](figures/F10_noise_cliff_heatmap_oracle.png)
 
 ---
 
 ## 4. Polishing Effect
 
-![Polishing Effect](figures/F04_polishing_effect_by_noise.png)
+The polishing slide is where the top-1 vs oracle distinction matters
+most. Under top-1, polish helps **+{polish_uplift_top1:.1f}pp**. Under
+oracle, polish helps **+{polish_uplift_oracle:.1f}pp** — the larger
+gap reflects that polish often **finds** the right basin (improving
+oracle), but the row-0 sort doesn't always **surface** the truth-near
+row at rank 1 (reducing top-1 uplift).
 
-![Polishing Heatmap](figures/F05_polishing_heatmap.png)
+![Polishing — Top-1](figures/F04_polishing_effect_by_noise.png)
 
-- Overall polishing uplift: **+{polish_uplift:.1f} percentage points**.
-- Polishing adds a median of **{(df[df['run']=='odepe_polish']['time'].median() - df[df['run']=='odepe_nopolish']['time'].median()):.0f} seconds** overhead.
-- Of {len(t05)} (system, noise) pairs: polishing **helped** in {n_helps}, **hurt** in {n_hurts}, and was **neutral** in {n_neutral}.
+![Polishing — Oracle](figures/F04_polishing_effect_by_noise_oracle.png)
+
+![Polishing Heatmap — Top-1](figures/F05_polishing_heatmap.png)
+
+![Polishing Heatmap — Oracle](figures/F05_polishing_heatmap_oracle.png)
+
+- Of {len(t05_top1)} (system, noise) pairs (top-1): polishing **helped** in {n_helps_top1}, **hurt** in {n_hurts_top1}, **neutral** in {n_neutral_top1}.
+- Same count under oracle: polishing **helped** in {n_helps_oracle}.
 
 ---
 
 ## 5. System Difficulty
 
-![System Ranking](figures/F03_system_difficulty_ranking.png)
+![System Ranking — Top-1](figures/F03_system_difficulty_ranking.png)
 
-- **Hardest system:** `{hardest}` ({sys_succ.iloc[0]*100:.1f}% mean success)
-- **Easiest system:** `{easiest}` ({sys_succ.iloc[-1]*100:.1f}% mean success)
+![System Ranking — Oracle](figures/F03_system_difficulty_ranking_oracle.png)
 
-![Param Count vs Difficulty](figures/F13_param_count_vs_difficulty.png)
+- **Hardest system (top-1):** `{hardest}` ({sys_succ_top1.iloc[0]*100:.1f}% mean success)
+- **Easiest system (top-1):** `{easiest}` ({sys_succ_top1.iloc[-1]*100:.1f}% mean success)
+
+![Param Count vs Difficulty — Top-1](figures/F13_param_count_vs_difficulty.png)
 
 ---
 
 ## 6. Domain Analysis
 
-![Domain Radar](figures/F06_domain_radar.png)
+![Domain Radar — Top-1](figures/F06_domain_radar.png)
+
+![Domain Radar — Oracle](figures/F06_domain_radar_oracle.png)
 
 ---
 
-## 7. Replica Stability
+## 7. Replica Stability (single-metric — top-1)
 
 ![Replica Stability](figures/F07_replica_stability_boxplot.png)
 
@@ -817,7 +920,7 @@ This analysis evaluates four parameter estimation methods across {n_systems} ODE
 
 ---
 
-## 8. Failure Analysis
+## 8. Failure Analysis (single-metric)
 
 ![Failure Breakdown](figures/F09_failure_mode_breakdown.png)
 
@@ -825,27 +928,31 @@ This analysis evaluates four parameter estimation methods across {n_systems} ODE
 
 ## 9. Timing and Speed-Accuracy Trade-off
 
-![Timing](figures/F11_timing_comparison.png)
+![Timing (single-metric)](figures/F11_timing_comparison.png)
 
-![Speed-Accuracy](figures/F12_accuracy_vs_time_scatter.png)
+![Speed-Accuracy — Top-1](figures/F12_accuracy_vs_time_scatter.png)
+
+![Speed-Accuracy — Oracle](figures/F12_accuracy_vs_time_scatter_oracle.png)
 
 ---
 
 ## 10. Conclusions
 
-### Method Rankings (data-driven)
+### Method Rankings (Top-1, paper convention)
 """
-    for rank_idx, m in enumerate(ranked_methods, 1):
-        label = METHOD_LABELS[m]
-        succ = method_overall[m]
-        time_s = timing[label]
-        report += f"{rank_idx}. **{label}** -- {succ:.1f}% success@10%, median {time_s:.0f}s\n"
+    for rank_idx, m in enumerate(ranked_top1, 1):
+        report += f"{rank_idx}. **{METHOD_LABELS[m]}** -- {overall_top1[m]:.1f}% success@10%, median {timing[METHOD_LABELS[m]]:.0f}s\n"
+
+    report += "\n### Method Rankings (Oracle, set-credit ceiling)\n"
+    for rank_idx, m in enumerate(ranked_oracle, 1):
+        report += f"{rank_idx}. **{METHOD_LABELS[m]}** -- {overall_oracle[m]:.1f}% success@10%, median {timing[METHOD_LABELS[m]]:.0f}s\n"
 
     report += f"""
 ### Key Takeaways
-- **Noise is the primary difficulty driver** -- success drops by ~{succ_noise0 - succ_noise_high:.0f} pp from noise=0 to noise=1e-2.
-- **Polishing is almost always worthwhile** -- it helps in {n_helps}/{len(t05)} cases with modest time overhead.
-- **No method dominates everywhere** -- {best_label} wins most often but specific systems favor other methods.
+- **Noise is the primary difficulty driver** — top-1 success drops by ~{succ_noise0_top1 - succ_noise_high_top1:.0f}pp from noise=0 to noise=1e-2.
+- **Polishing helps** — top-1 uplift +{polish_uplift_top1:.1f}pp, oracle uplift +{polish_uplift_oracle:.1f}pp.
+- **The top-1 → oracle gap on ODEPE polish** is +{p_oracle - p_top1:.1f}pp at @10% — that's the room available if the rank-1 sort were perfect.
+- **No method dominates everywhere** — best top-1 is {METHOD_LABELS[best_top1]}, best oracle is {METHOD_LABELS[best_oracle]}.
 """
     with open(REPORT_PATH, "w") as f:
         f.write(report)
@@ -861,34 +968,46 @@ def main():
     df = load_data()
     print(f"  {len(df)} rows, {df['name'].nunique()} systems, {df['run'].nunique()} methods")
 
-    print("\nGenerating tables...")
-    t01 = make_T01(df); print("  T01 done")
-    t02 = make_T02(df); print("  T02 done")
-    t03 = make_T03(df); print("  T03 done")
-    t04 = make_T04(df); print("  T04 done")
-    t05 = make_T05(df); print("  T05 done")
-    t06 = make_T06(df); print("  T06 done")
-    t07 = make_T07(df); print("  T07 done")
-    t08 = make_T08(df); print("  T08 done")
+    # Dual-metric tables
+    t01s = {}
+    t05s = {}
+    for metric in METRIC_VARIANTS:
+        print(f"\nGenerating tables ({metric})...")
+        t01s[metric] = make_T01(df, metric); print(f"  T01 ({metric}) done")
+        make_T02(df, metric); print(f"  T02 ({metric}) done")
+        make_T03(df, metric); print(f"  T03 ({metric}) done")
+        make_T04(df, metric); print(f"  T04 ({metric}) done")
+        t05s[metric] = make_T05(df, metric); print(f"  T05 ({metric}) done")
+        make_T08(df, metric); print(f"  T08 ({metric}) done")
 
-    print("\nGenerating figures...")
-    make_F01(df)
-    make_F02(df)
-    make_F03(df)
-    make_F04(df)
-    make_F05(df)
-    make_F06(df)
+    # Single-metric tables
+    print("\nGenerating single-metric tables...")
+    make_T06(df); print("  T06 done")
+    make_T07(df); print("  T07 done")
+
+    # Dual-metric figures
+    for metric in METRIC_VARIANTS:
+        print(f"\nGenerating figures ({metric})...")
+        make_F01(df, metric)
+        make_F02(df, metric)
+        make_F03(df, metric)
+        make_F04(df, metric)
+        make_F05(df, metric)
+        make_F06(df, metric)
+        make_F10(df, metric)
+        make_F12(df, metric)
+        make_F13(df, metric)
+        make_F14(df, metric)
+
+    # Single-metric figures
+    print("\nGenerating single-metric figures...")
     make_F07(df)
     make_F08(df)
     make_F09(df)
-    make_F10(df)
     make_F11(df)
-    make_F12(df)
-    make_F13(df)
-    make_F14(df)
 
     print("\nGenerating report...")
-    generate_report(df, t01, t02, t03, t05)
+    generate_report(df, t01s["top1"], t01s["oracle"], t05s["top1"], t05s["oracle"])
 
     print("\nDone!")
     print(f"  Tables: {TABLE_DIR}/")

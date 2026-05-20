@@ -118,9 +118,25 @@ def main(args):
     
     with open(args.dir / args.config, 'r') as io:
         args.config = DEFAULT_CONFIG_VALUES | json.load(io)
-        
+
     with open(args.dir / 'huge_json.json', 'r') as io:
         instances = json.load(io)
+
+    # Per-system catalog: read algebraic_multiplicity from config/systems.json
+    # (the repo-level config, which has the catalog field). Older benchmark
+    # snapshots' bench-dir-local systems.json may predate the field — we
+    # fall back to the repo-level config so reruns of older benchmarks
+    # still get up-to-date M values without copying the catalog into the
+    # snapshot.
+    repo_systems_json = parent / "config" / "systems.json"
+    if not repo_systems_json.exists():
+        repo_systems_json = args.dir / "config" / "systems.json"
+    with open(repo_systems_json, "r") as io:
+        _systems_doc = json.load(io)
+    multiplicity_by_system = {
+        s["name"]: int(s.get("algebraic_multiplicity", 1))
+        for s in _systems_doc.get("systems", [])
+    }
     
     for software in args.software:
         print(f"""
@@ -166,6 +182,14 @@ OUTPUT:             {args.dir}
             _seed = cell_seed(instance['name'], _instance_idx, _noise_mnemonic)
             settings["cell_seed"] = _seed
             settings["shade_seed"] = _seed
+
+            # Algebraic multiplicity from the per-system catalog. Threaded into
+            # the ODEPE v2 template via `{{algebraic_multiplicity}}`. When the
+            # template renders, ODEPE truncates result.csv to M rows.
+            # `nothing` literal (Julia) when no catalog value, preserving
+            # legacy K=20 behavior.
+            _M = multiplicity_by_system.get(instance['name'])
+            settings["algebraic_multiplicity"] = str(_M) if _M is not None else "nothing"
 
             # Per-software Mustache overrides (e.g. odepe_v2 polish/nopolish toggle)
             settings.update(SOFTWARE_OVERRIDES.get(software, {}))

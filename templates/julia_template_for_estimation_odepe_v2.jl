@@ -103,6 +103,11 @@ opts = EstimationOptions(
     polish_divergence_factor = {{POLISH_DIVERGENCE_FACTOR}},
     polish_stagnation_window = {{POLISH_STAGNATION_WINDOW}},
     polish_ode_maxiters = {{POLISH_ODE_MAXITERS}},
+    # Algebraic multiplicity from config/systems.json catalog. When set,
+    # ODEPE truncates result.csv to M rows (capped by branch_top_k=20).
+    # `nothing` preserves legacy K=20 behavior (no truncation beyond top_k).
+    # See M_INFERENCE_INVESTIGATION.md in PEB for the inference story.
+    algebraic_multiplicity = {{algebraic_multiplicity}},
     diagnostics = true,
 )
 
@@ -158,6 +163,12 @@ metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
     "best_count" => 0,
+    # Catalog-injected algebraic multiplicity (used by ODEPE to truncate
+    # result.csv to M rows). `algebraic_multiplicity_source = "catalog"`
+    # means PEB looked it up from config/systems.json; replace with
+    # `"si_gate"` / `"hc"` / `"user"` once ODEPE-side auto-compute lands.
+    "algebraic_multiplicity_used" => opts.algebraic_multiplicity,
+    "algebraic_multiplicity_source" => opts.algebraic_multiplicity === nothing ? "fallback_K" : "catalog",
 )
 
 t_start = time()

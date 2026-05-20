@@ -1,5 +1,15 @@
 # Do the top-2 rows capture both algebraic branches?
 
+> **Extended 2026-05-19, end of day:** Analysis extended to all 4
+> multiplicity-2 systems (daisy_mamil4, seir, slow_fast,
+> biohydrogenation) in ODEPE commit `b623e5e`:
+> `environments/ODEParameterEstimation/repro/multiplicity_complete_2026_05_19/top2_branch_capture_all4.py`
+> and `biohydrogenation_top2.txt`. The biohydrogenation alt branch
+> surfaces at rank 9 (not rank 1) — its sign-flipped k9, k10 violate
+> the wallaby opt_lb=1e-5 bound, so PolishLSOBoundedLog cannot refine
+> it and the row only survives as an unpolished raw HC candidate. The
+> daisy_mamil4 / seir / slow_fast numbers below remain valid.
+
 ## Question
 
 For the 3 systems with confirmed algebraic multiplicity 2 (daisy_mamil4,

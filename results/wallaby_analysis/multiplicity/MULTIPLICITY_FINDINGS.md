@@ -1,5 +1,30 @@
 # Algebraic multiplicity per benchmark system
 
+> **Status (2026-05-19, end of day):** This file is the **first-pass**
+> empirical + 16-system SI cross-check. A **complete catalog** covering
+> all 23 systems (including the 7 sin(t)-forced systems that SI rejected
+> here), per-system branch transformations, the algebraic-vs-physical
+> bounds analysis, and a recipe-for-finding-all-branches lives in
+> ODEPE's repro tree at
+> `environments/ODEParameterEstimation/repro/multiplicity_complete_2026_05_19/MULTIPLICITY_COMPLETE.md`
+> (ODEPE commit `b623e5e`). Treat that file as authoritative when it
+> conflicts with what's written here.
+>
+> Highlights from the complete catalog:
+> - **All 23 systems** now have SI verdicts (the sin(t) issue was worked
+>   around: transcribe wallaby's actual `state_equations` and pass
+>   `sin(omega*t)` as a free input variable, no oscillator-state ODE,
+>   matching ODEPE's `transform_pep_for_estimation()` convention).
+> - **biohydrogenation's algebraic second branch is exactly k9 → -k9,
+>   k10 → -k10** (sign-flip preserving the ratio), with k8 and x6
+>   compensating — so it's multiplicity 2 algebraically, not "≥ 2 in
+>   some subspace."
+> - **Physical multiplicity (within wallaby's opt_lb=1e-5, opt_ub=10
+>   bounds) is only 2 of 23 systems**: daisy_mamil4 and seir. Both
+>   slow_fast's xA<0 branch and biohydrogenation's k9,k10<0 branch are
+>   out-of-bounds and the log-space PolishLSOBoundedLog correctly
+>   rejects them.
+
 ## Definition
 
 Given a locally identifiable ODE parameter estimation problem and the
@@ -31,7 +56,7 @@ claims are confirmed; biohydrogenation was revised from `1` to
 |---|---|---|---|
 | aircraft_pitch | 1 | theta(t) | high (cd10 = (1, 20) — 20/20 cells unanimous) |
 | bicycle_model | 1 | — | high (cd10 = (1, 20)) |
-| biohydrogenation | **≥ 2** (in id. subspace) | x7(t) | empirical=1 but SI says ≥ 2 — see SIAN cross-check |
+| biohydrogenation | **2** (algebraic) / 1 (physical, in bounds) | x7(t) | k9→-k9, k10→-k10 sign-flip; alt branch OOB on wallaby — see MULTIPLICITY_COMPLETE.md |
 | boost_converter | 1 | — | high |
 | brusselator | 1 | — | high |
 | crauste | 1 | — | high (cd10 = (1, 10) + (0, 9) — many failures, but single-basin) |
@@ -49,22 +74,32 @@ claims are confirmed; biohydrogenation was revised from `1` to
 | quadrotor | 1 | — | high |
 | repressilator | 1 | — | high |
 | **seir** | **2** | — | **high** (cd10 = (2, 17) + (0, 2) + (9, 1) — 17/20 cells unanimous on 2) |
-| **slow_fast** | **2** | — | **high** (cd10 = (2, 20) — 20/20 unanimous) |
+| **slow_fast** | **2** (algebraic) / 1 (physical, in bounds) | — | k1↔k2 swap, but alt has xA<0 → OOB on wallaby — see MULTIPLICITY_COMPLETE.md |
 | sirt_treatment | 1 | — | high |
 | vanderpol | 1 | — | high |
 
 ## Summary
 
-- **19 systems are globally identifiable** (multiplicity 1).
-- **3 systems have algebraic multiplicity 2** (no continuous unidentifiability):
-  daisy_mamil4, seir, slow_fast — confirmed by SI 2026-05-19.
-- **1 system has algebraic multiplicity ≥ 2 within its identifiable subspace**:
-  biohydrogenation (with x7(t) being separately nonidentifiable, a continuous
-  axis). Empirical analysis read this as "1" earlier; SI revises to "≥ 2 in
-  the identifiable subspace."
-- 2 systems have a structurally unidentifiable axis (aircraft_pitch's
+Revised after the all-23 SI cross-check (`MULTIPLICITY_COMPLETE.md`,
+ODEPE commit `b623e5e`):
+
+- **19 systems are globally identifiable** in their identifiable subspace.
+- **4 systems have algebraic multiplicity 2**: daisy_mamil4, seir,
+  slow_fast, biohydrogenation. Branch transformations explicitly
+  characterized (channel swap; (a,nu) hyperbola; k1↔k2 swap; k9,k10
+  sign-flip respectively).
+- **2 of those 4 are physical multiplicity 2 in wallaby's opt_lb=1e-5,
+  opt_ub=10.0 bounds**: daisy_mamil4 and seir. The slow_fast and
+  biohydrogenation alt branches require negative state/parameter values
+  and are correctly rejected by `PolishLSOBoundedLog` (log-space polish
+  can't handle negatives). Those alt branches still appear in
+  result.csv as unpolished raw HC candidates — explaining the cd10
+  empirical signal that originally triggered this investigation.
+- 2 systems have a continuous unidentifiable axis (aircraft_pitch's
   theta, biohydrogenation's x7) — these are excluded from oracle
-  scoring throughout the benchmark.
+  scoring throughout the benchmark. ODEPE plugs them silently via
+  `representative_completion_value` (1.0 for params, 0.0 for states),
+  see `src/core/parameter_estimation_helpers.jl:380`.
 
 ## Caveats
 
@@ -90,31 +125,45 @@ claims are confirmed; biohydrogenation was revised from `1` to
    marks `k1, k2, xA, xB, eB` as `:locally` identifiable, consistent
    with the conjectured fast/slow exchange symmetry.
 
-5. **biohydrogenation top-2 branch capture not yet measured.** The
-   `TOP2_BRANCH_CAPTURE.md` analysis was run only on the 3 systems
-   the empirical pass called multiplicity-2 (daisy_mamil4, seir,
-   slow_fast). Now that SI has revised biohydrogenation upward,
-   running the same top-2 capture analysis on biohydrogenation is
-   a cheap follow-up. The analysis would need to project out x7(t)
-   (the unidentifiable axis) when computing rel-distance between
-   row 0 and row 1.
+5. ~~**biohydrogenation top-2 branch capture not yet measured.**~~
+   **Done 2026-05-19** — see `top2_branch_capture_all4.py` and
+   `biohydrogenation_top2.txt` in
+   `environments/ODEParameterEstimation/repro/multiplicity_complete_2026_05_19/`.
+   Biohydrogenation's alt branch is rank-9 (not rank-1) on the cell
+   examined, because the sign-flipped k9, k10 branch is OOB and the
+   polish demotes it.
 
 ## Implication for the paper
 
-ODEPE's K=20 output gives "credit" for multiplicity in 4 of 23 systems
-(after SI cross-check): daisy_mamil4, seir, slow_fast, and
-biohydrogenation (the last one in its identifiable subspace, with x7
-separately unidentifiable). For these 4, returning multiple distinct
-candidates is *correct*, not redundant. For the remaining 19 systems,
-returning >1 candidate is either numerical-noise spread of a single
-basin (most cases) or genuine pipeline failure (the cd10 = 0 cells in
-crauste, cstr, etc.).
+Two layers to the K-bound justification:
 
-Concrete numbers per noise level: the multiplicity ≥ 2 systems are
-4/23 = 17% of systems × 50 cells/system × ~3 active noise levels
-= roughly 200-600 cells where K ≥ 2 is theoretically justified.
-The remaining ~3300-4100 cells should have K = 1 as the "correct"
-output if the pipeline converged to truth.
+**Algebraic (structural) catalog:** 4 of 23 systems have multiplicity 2 —
+daisy_mamil4, seir, slow_fast, biohydrogenation — confirmed by SI on
+all 23. The other 19 are globally identifiable (after plugging
+continuous-unidentifiable axes for aircraft_pitch and biohydrogenation).
+
+**Physical catalog (within wallaby's `opt_lb=1e-5, opt_ub=10`):** only 2
+of 23 give multiple bound-satisfying solutions — daisy_mamil4 and seir.
+slow_fast's alt branch has xA<0; biohydrogenation's has k9,k10<0. Both
+get rejected by `PolishLSOBoundedLog` (log-space, no negatives), but
+their unpolished raw HC candidate rows still appear in result.csv,
+which is what generated the empirical cd10 ≥ 2 signal originally.
+
+For the paper claim "we return up to k candidates where k is the
+algebraic multiplicity":
+
+- **Strong form** (algebraic): 4/23 systems justify K ≥ 2; 19/23 should
+  collapse to K=1 after multiplicity-aware dedup.
+- **Operational form** (in bounds): 2/23 (daisy_mamil4, seir) reliably
+  produce 2 physical rows ranked at the top; the other 2 multiplicity-2
+  systems show their second branch only as OOB raw HC candidates that
+  a bound-aware ranker would correctly demote.
+
+The K=20 default is a numerical-safety bound, not the multiplicity
+bound. Either framing is defensible in the paper; the stronger
+algebraic claim is more general (independent of user-chosen bounds),
+while the operational claim better matches what wallaby's
+`result.csv` actually contains row-by-row.
 
 ## SIAN cross-check (2026-05-19)
 
@@ -196,19 +245,24 @@ columns before counting distinct rows** — that's a cheap re-run if
 desired. As-is, biohydrogenation should be treated as having algebraic
 multiplicity ≥ 2 in the identifiable subspace, not 1.
 
-### Status of the 7 untestable systems
+### Status of the 7 sin(t) systems — RESOLVED via `MULTIPLICITY_COMPLETE.md`
 
 `aircraft_pitch, bicycle_model, boost_converter, cstr, dc_motor,
-forced_lotka_volterra, quadrotor` all use `sin(t)` forcing. SI/SIAN
-require polynomial / rational RHS. The empirical multiplicity-1
-finding for these stands but has no SI confirmation. None of these
-systems were flagged as multiplicity > 1 by empirical evidence at
-the tightest cd10 tolerance.
+forced_lotka_volterra, quadrotor` all use `sin(t)` forcing. SI's
+`@ODEmodel` macro rejects this at parse time as written here.
 
-Reproducing the SI verdict for these would require introducing
-auxiliary states `phi(t) = sin(omega*t)`, `psi(t) = cos(omega*t)`
-with `phi'(t) = omega*psi(t)`, `psi'(t) = -omega*phi(t)` and
-substituting in the original RHS — out of scope here.
+**Resolution (per ODEPE commit `b623e5e`):** instead of polynomializing
+sin via auxiliary oscillator states (an approach that triggers a
+Groebner-internal BoundsError on bicycle_model), transcribe each
+wallaby cell's actual `state_equations` and pass `sin(omega*t)` as a
+free input variable `u_sin(t)` — no derivative line, SI auto-infers
+it as input. This matches ODEPE's runtime convention at
+`src/core/si_equation_builder.jl:172`. All 7 systems then run cleanly
+under SI; all are confirmed multiplicity 1 (with `aircraft_pitch`'s
+theta(t) the only continuous unidentifiable axis among them).
+
+See `run_sian_all_23.jl` and `run_sian_all_23.txt` in
+`environments/ODEParameterEstimation/repro/multiplicity_complete_2026_05_19/`.
 
 ## Artifacts
 

@@ -284,13 +284,26 @@ to confirm bit-identity (cheap sign-off check).
 
 ## 10. One-line for the paper
 
-> Under the M-bounded metric (best of M = algebraic-multiplicity
-> returned solutions, M auto-computed via SIAN), ODEPE-v2 polish
-> leads AMIGO2 by **+2.4pp @10%** and **+2.4pp @50%** on the
-> 23-system benchmark, at comparable median per-cell time. Giving
-> the algorithm credit for the M algebraic branches it returns
-> (instead of just row 0) lifts ODEPE polish by **+3.1pp @10%**
-> with no algorithmic change — and lifts the wallaby-vs-14 polish
-> delta from +1.2pp (K=20 oracle) to **+6.5pp (M-bounded)**, showing
-> that the IS-clustering + S2-sort improvements put truth-near rows
-> within the algebraic-bound top M.
+> Under the M-bounded metric (best of M algebraic branches, M
+> established per-system from a SIAN + HC.jl root-count catalog —
+> see `MULTIPLICITY_COMPLETE.md`), ODEPE-v2 polish leads AMIGO2 by
+> **+2.4pp @10%** and **+2.4pp @50%** on the 23-system benchmark, at
+> comparable median per-cell time. Giving the algorithm credit for
+> the M algebraic branches it returns (instead of just row 0) lifts
+> ODEPE polish by **+3.1pp @10%** with no algorithmic change — and
+> lifts the wallaby-vs-14 polish delta from +1.2pp (K=20 oracle) to
+> **+6.5pp (M-bounded)**, showing that the IS-clustering + S2-sort
+> improvements put truth-near rows within the algebraic-bound top M.
+
+**Methodological note on M.** Algebraic multiplicity M is **not** the
+count of SIAN's `:locally`-identifiable variables (that's the
+*dimensionality of the branch-swap subspace* — how many variables
+move together when you cross from one branch to another). The actual
+M for each of the 4 multiplicity-2 systems in our catalog
+(daisy_mamil4, seir, slow_fast, biohydrogenation) was established by
+running HC.jl on the polynomial system *after projecting out
+SIAN's `:nonidentifiable` axes via* `representative_completion_value`,
+then counting distinct real roots in the identifiable subspace at
+cd10 = 1e-10 tolerance. SIAN's internal Bezout bound
+`deg_variety = ∏ total_degree(Et)` is a theoretical upper bound but
+isn't currently exported by SIAN-Julia.

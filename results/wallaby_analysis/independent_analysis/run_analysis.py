@@ -89,10 +89,11 @@ DOMAIN_MAP = {
 
 DIVERGED_THRESHOLD = 1e4
 
-# -- dual-metric machinery --
-METRIC_VARIANTS = ["top1", "oracle"]
+# -- dual-metric machinery (now three variants) --
+METRIC_VARIANTS = ["top1", "mbounded", "oracle"]
 METRIC_LABELS = {
     "top1": "Top-1 (algorithm's pick)",
+    "mbounded": "M-bounded (algebraic multiplicity)",
     "oracle": "Best-of-K (oracle)",
 }
 
@@ -103,8 +104,10 @@ def col(metric, base):
 
 
 def suffix(metric):
-    """Filename suffix. Top-1 outputs are at the default filenames; oracle gets `_oracle`."""
-    return "" if metric == "top1" else "_oracle"
+    """Filename suffix. Top-1 keeps the default filenames; oracle/mbounded get explicit suffixes."""
+    if metric == "top1":
+        return ""
+    return f"_{metric}"
 
 
 # -- load data --
@@ -728,7 +731,11 @@ def make_F14(df, metric):
 #  REPORT (one section per metric for dual; one section total for single)
 # ======================================================================
 
-def generate_report(df, t01_top1, t01_oracle, t05_top1, t05_oracle):
+def generate_report(df, t01s, t05s):
+    """Write REPORT.md with 3-metric (top1 / mbounded / oracle) breakdown.
+
+    t01s, t05s are dicts mapping metric_name -> DataFrame (one per variant).
+    """
     n_systems = df["name"].nunique()
     n_methods = df["run"].nunique()
     n_noise = df["noise"].nunique()
@@ -744,16 +751,27 @@ def generate_report(df, t01_top1, t01_oracle, t05_top1, t05_oracle):
         return out
 
     overall_top1 = method_overall("top1")
+    overall_mbounded = method_overall("mbounded")
     overall_oracle = method_overall("oracle")
     ranked_top1 = sorted(METHOD_ORDER, key=lambda m: -overall_top1[m])
+    ranked_mbounded = sorted(METHOD_ORDER, key=lambda m: -overall_mbounded[m])
     ranked_oracle = sorted(METHOD_ORDER, key=lambda m: -overall_oracle[m])
 
     np_top1 = df[df["run"] == "odepe_v2_nopolish"]["top1_success_at_10pct"].mean() * 100
     p_top1 = df[df["run"] == "odepe_v2_polish"]["top1_success_at_10pct"].mean() * 100
+    np_mbounded = df[df["run"] == "odepe_v2_nopolish"]["mbounded_success_at_10pct"].mean() * 100
+    p_mbounded = df[df["run"] == "odepe_v2_polish"]["mbounded_success_at_10pct"].mean() * 100
     np_oracle = df[df["run"] == "odepe_v2_nopolish"]["oracle_success_at_10pct"].mean() * 100
     p_oracle = df[df["run"] == "odepe_v2_polish"]["oracle_success_at_10pct"].mean() * 100
     polish_uplift_top1 = p_top1 - np_top1
+    polish_uplift_mbounded = p_mbounded - np_mbounded
     polish_uplift_oracle = p_oracle - np_oracle
+    # Aliases used downstream in this function (backwards-compat with old code paths)
+    t01_top1 = t01s["top1"]
+    t01_mbounded = t01s["mbounded"]
+    t01_oracle = t01s["oracle"]
+    t05_top1 = t05s["top1"]
+    t05_oracle = t05s["oracle"]
 
     sys_succ_top1 = df.groupby("name")["top1_success_at_10pct"].mean().sort_values()
     hardest = sys_succ_top1.index[0]
@@ -768,8 +786,10 @@ def generate_report(df, t01_top1, t01_oracle, t05_top1, t05_oracle):
     n_hurts_top1 = (t05_top1["success_uplift_pp"] < 0).sum()
     n_neutral_top1 = (t05_top1["success_uplift_pp"] == 0).sum()
     n_helps_oracle = (t05_oracle["success_uplift_pp"] > 0).sum()
+    n_helps_mbounded = (t05s["mbounded"]["success_uplift_pp"] > 0).sum()
 
     best_top1 = ranked_top1[0]
+    best_mbounded = ranked_mbounded[0]
     best_oracle = ranked_oracle[0]
 
     from datetime import datetime
@@ -785,21 +805,27 @@ def generate_report(df, t01_top1, t01_oracle, t05_top1, t05_oracle):
 
 ## Metric definitions
 
-This report tracks two parallel accuracy metrics per cell:
+This report tracks **three parallel accuracy metrics** per cell:
 
 - **Top-1 (algorithm's pick)** — the algorithm's row-0 answer in
   `result.csv` (sorted by `err` for ODEPE, single answer for AMIGO2 /
   SHADE) is scored on `max_rel_error` over identifiable axes only.
-  This is the **paper-headline** metric: what the user actually sees.
-- **Best-of-K (oracle)** — argmin over all rows of `result.csv` on the
-  same identifiable axes. This is the **set-credit ceiling**: the best
-  the algorithm could have done if its row-0 sort were perfect. For
-  K=1 methods (AMIGO2, SHADE) the two are identical. For ODEPE
-  (K=20), they can differ — the gap measures rank-1 sort headroom.
+  What a user sees if they take only the algorithm's primary
+  recommendation.
+- **M-bounded (algebraic multiplicity)** — argmin over the top `M`
+  rows of `result.csv`, where `M` is the algebraic multiplicity of
+  the system (1 for 19 of 23 systems; 2 for daisy_mamil4, seir,
+  slow_fast, biohydrogenation). This is the **paper-headline** metric:
+  it gives the algorithm credit for returning *all* algebraic
+  branches without punishing it for the K=20 numerical safety cap.
+  For M=1 systems it equals top-1 exactly.
+- **Best-of-K (oracle)** — argmin over **all** K=20 rows. The
+  set-credit upper bound — what the algorithm could have done if the
+  rank-1 sort were perfect. The mbounded → oracle gap measures
+  in-cluster sort headroom (within an algebraic branch).
 
-Section 2A reports top-1; section 2B reports oracle. Sections 3+
-(metric-independent: noise cliffs, polishing, replica spread, failure
-analysis, timing) reference both as relevant.
+For K=1 methods (AMIGO2, SHADE) all three collapse to the same value.
+For ODEPE (K=20): `top1 ≤ mbounded ≤ oracle` per cell.
 
 ---
 
@@ -808,8 +834,10 @@ analysis, timing) reference both as relevant.
 This analysis evaluates four parameter estimation methods across {n_systems} ODE systems at five noise levels (0, 1e-8, 1e-6, 1e-4, 1e-2) with {n_replicas} replicas each. Key findings:
 
 - **Top-1 best**: {METHOD_LABELS[best_top1]} at **{overall_top1[best_top1]:.1f}%** success@10%.
+- **M-bounded best**: {METHOD_LABELS[best_mbounded]} at **{overall_mbounded[best_mbounded]:.1f}%** success@10%.
 - **Oracle best**: {METHOD_LABELS[best_oracle]} at **{overall_oracle[best_oracle]:.1f}%** success@10%.
-- Polishing uplift: **+{polish_uplift_top1:.1f} pp** (top-1) / **+{polish_uplift_oracle:.1f} pp** (oracle) over unpolished ODEPE.
+- Polishing uplift: **+{polish_uplift_top1:.1f} pp** (top-1) / **+{polish_uplift_mbounded:.1f} pp** (M-bounded) / **+{polish_uplift_oracle:.1f} pp** (oracle) over unpolished ODEPE.
+- ODEPE-v2 polish: top-1 = {p_top1:.1f}%, M-bounded = {p_mbounded:.1f}% (**+{p_mbounded - p_top1:.1f}pp** from counting both algebraic branches), oracle = {p_oracle:.1f}%.
 - Success degrades from **{succ_noise0_top1:.1f}%** at noise=0 to **{succ_noise_high_top1:.1f}%** at noise=1e-2 (top-1, across methods).
 - **{n_no_result}** rows produced no result; **{n_diverged}** rows diverged (top-1 max_rel_error > 10^4).
 
@@ -832,7 +860,30 @@ This analysis evaluates four parameter estimation methods across {n_systems} ODE
 
 ---
 
-## 2B. Best-of-K (oracle) method comparison — set-credit ceiling
+## 2B. M-bounded method comparison (paper headline)
+
+The M-bounded metric scores the best of the top `M` rows per cell,
+where `M = algebraic_multiplicity` from `config/systems.json`.
+For multiplicity-1 systems this is identical to top-1; for the
+4 multiplicity-2 systems, the algorithm gets credit for finding
+both branches as long as either one is near truth.
+
+![Success by Noise — M-bounded](figures/F01_overall_success_by_noise_mbounded.png)
+
+| Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
+|--------|-----------|------------|------------|-----------------|-----------|----------|
+"""
+    for _, row in t01_mbounded.iterrows():
+        report += f"| {row['method']} | {row['success_at_1pct']:.1f}% | {row['success_at_10pct']:.1f}% | {row['success_at_50pct']:.1f}% | {row['median_time_s']:.0f} | {int(row['n_no_result'])} | {int(row['n_diverged'])} |\n"
+
+    report += f"""
+### Method Rankings (M-bounded)
+
+![Rank Distribution — M-bounded](figures/F14_method_rank_distribution_mbounded.png)
+
+---
+
+## 2C. Best-of-K (oracle) method comparison — set-credit ceiling
 
 For ODEPE (K=20) this reports the lower-bound oracle: what the
 algorithm could have done with a perfect rank-1 picker. For AMIGO2 and
@@ -855,9 +906,11 @@ SHADE (K=1) it equals the top-1 row.
 
 ## 3. Noise Degradation Analysis
 
-Top-1 vs oracle heatmaps side-by-side:
+Top-1, M-bounded, and oracle heatmaps:
 
 ![Heatmap — Top-1](figures/F02_method_comparison_heatmap.png)
+
+![Heatmap — M-bounded](figures/F02_method_comparison_heatmap_mbounded.png)
 
 ![Heatmap — Oracle](figures/F02_method_comparison_heatmap_oracle.png)
 
@@ -865,35 +918,50 @@ Top-1 vs oracle heatmaps side-by-side:
 
 ![Noise Cliff — Top-1](figures/F10_noise_cliff_heatmap.png)
 
+![Noise Cliff — M-bounded](figures/F10_noise_cliff_heatmap_mbounded.png)
+
 ![Noise Cliff — Oracle](figures/F10_noise_cliff_heatmap_oracle.png)
 
 ---
 
 ## 4. Polishing Effect
 
-The polishing slide is where the top-1 vs oracle distinction matters
-most. Under top-1, polish helps **+{polish_uplift_top1:.1f}pp**. Under
-oracle, polish helps **+{polish_uplift_oracle:.1f}pp** — the larger
-gap reflects that polish often **finds** the right basin (improving
-oracle), but the row-0 sort doesn't always **surface** the truth-near
-row at rank 1 (reducing top-1 uplift).
+The metric choice matters here. Under top-1, polish helps
+**+{polish_uplift_top1:.1f}pp**. Under M-bounded, polish helps
+**+{polish_uplift_mbounded:.1f}pp**. Under oracle, polish helps
+**+{polish_uplift_oracle:.1f}pp**. The interpretation:
+
+- Top-1 → M-bounded gap is **rank-1 sort within the K=20 list,
+  *across* algebraic branches** — small for polish (row 0 is usually
+  truth or near-truth) but large for nopolish (row 0 is often the
+  wrong branch).
+- M-bounded → oracle gap is **within-branch sort headroom** — when
+  it's nonzero, the algorithm has a near-truth row deeper than row M.
+  Smaller than the top-1 → M-bounded gap.
 
 ![Polishing — Top-1](figures/F04_polishing_effect_by_noise.png)
+
+![Polishing — M-bounded](figures/F04_polishing_effect_by_noise_mbounded.png)
 
 ![Polishing — Oracle](figures/F04_polishing_effect_by_noise_oracle.png)
 
 ![Polishing Heatmap — Top-1](figures/F05_polishing_heatmap.png)
 
+![Polishing Heatmap — M-bounded](figures/F05_polishing_heatmap_mbounded.png)
+
 ![Polishing Heatmap — Oracle](figures/F05_polishing_heatmap_oracle.png)
 
 - Of {len(t05_top1)} (system, noise) pairs (top-1): polishing **helped** in {n_helps_top1}, **hurt** in {n_hurts_top1}, **neutral** in {n_neutral_top1}.
-- Same count under oracle: polishing **helped** in {n_helps_oracle}.
+- Under M-bounded: polishing **helped** in {n_helps_mbounded}.
+- Under oracle: polishing **helped** in {n_helps_oracle}.
 
 ---
 
 ## 5. System Difficulty
 
 ![System Ranking — Top-1](figures/F03_system_difficulty_ranking.png)
+
+![System Ranking — M-bounded](figures/F03_system_difficulty_ranking_mbounded.png)
 
 ![System Ranking — Oracle](figures/F03_system_difficulty_ranking_oracle.png)
 
@@ -907,6 +975,8 @@ row at rank 1 (reducing top-1 uplift).
 ## 6. Domain Analysis
 
 ![Domain Radar — Top-1](figures/F06_domain_radar.png)
+
+![Domain Radar — M-bounded](figures/F06_domain_radar_mbounded.png)
 
 ![Domain Radar — Oracle](figures/F06_domain_radar_oracle.png)
 
@@ -932,16 +1002,22 @@ row at rank 1 (reducing top-1 uplift).
 
 ![Speed-Accuracy — Top-1](figures/F12_accuracy_vs_time_scatter.png)
 
+![Speed-Accuracy — M-bounded](figures/F12_accuracy_vs_time_scatter_mbounded.png)
+
 ![Speed-Accuracy — Oracle](figures/F12_accuracy_vs_time_scatter_oracle.png)
 
 ---
 
 ## 10. Conclusions
 
-### Method Rankings (Top-1, paper convention)
+### Method Rankings (Top-1, what users see by default)
 """
     for rank_idx, m in enumerate(ranked_top1, 1):
         report += f"{rank_idx}. **{METHOD_LABELS[m]}** -- {overall_top1[m]:.1f}% success@10%, median {timing[METHOD_LABELS[m]]:.0f}s\n"
+
+    report += "\n### Method Rankings (M-bounded, paper-headline)\n"
+    for rank_idx, m in enumerate(ranked_mbounded, 1):
+        report += f"{rank_idx}. **{METHOD_LABELS[m]}** -- {overall_mbounded[m]:.1f}% success@10%, median {timing[METHOD_LABELS[m]]:.0f}s\n"
 
     report += "\n### Method Rankings (Oracle, set-credit ceiling)\n"
     for rank_idx, m in enumerate(ranked_oracle, 1):
@@ -950,9 +1026,10 @@ row at rank 1 (reducing top-1 uplift).
     report += f"""
 ### Key Takeaways
 - **Noise is the primary difficulty driver** — top-1 success drops by ~{succ_noise0_top1 - succ_noise_high_top1:.0f}pp from noise=0 to noise=1e-2.
-- **Polishing helps** — top-1 uplift +{polish_uplift_top1:.1f}pp, oracle uplift +{polish_uplift_oracle:.1f}pp.
-- **The top-1 → oracle gap on ODEPE polish** is +{p_oracle - p_top1:.1f}pp at @10% — that's the room available if the rank-1 sort were perfect.
-- **No method dominates everywhere** — best top-1 is {METHOD_LABELS[best_top1]}, best oracle is {METHOD_LABELS[best_oracle]}.
+- **Polishing helps** under all three metrics: top-1 +{polish_uplift_top1:.1f}pp, M-bounded +{polish_uplift_mbounded:.1f}pp, oracle +{polish_uplift_oracle:.1f}pp.
+- **The top-1 → M-bounded gap on ODEPE polish** is +{p_mbounded - p_top1:.1f}pp at @10%. That's how much paper-headline success comes from giving the algorithm credit for finding all M algebraic branches instead of just row 0.
+- **The M-bounded → oracle gap on ODEPE polish** is +{p_oracle - p_mbounded:.1f}pp at @10%. Within-branch sort headroom — smaller than the cross-branch gap.
+- **Best paper-headline method**: {METHOD_LABELS[best_mbounded]} at {overall_mbounded[best_mbounded]:.1f}%.
 """
     with open(REPORT_PATH, "w") as f:
         f.write(report)
@@ -1007,7 +1084,7 @@ def main():
     make_F11(df)
 
     print("\nGenerating report...")
-    generate_report(df, t01s["top1"], t01s["oracle"], t05s["top1"], t05s["oracle"])
+    generate_report(df, t01s, t05s)
 
     print("\nDone!")
     print(f"  Tables: {TABLE_DIR}/")

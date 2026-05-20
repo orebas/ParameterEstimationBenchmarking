@@ -64,7 +64,13 @@ def read_non_id_per_system(bench: Path) -> dict:
     return out
 
 
-def per_cell_oracle(result_csv: Path, truth_id_vars: dict):
+def per_cell_oracle(result_csv: Path, truth_id_vars: dict, k_cap: int = None):
+    """Per-cell oracle: argmin over rows[:k_cap] (None = all rows) on identifiable axes.
+
+    With k_cap=None this is the classic K=20 oracle (set-credit ceiling).
+    With k_cap=M (algebraic multiplicity) this is the M-bounded oracle —
+    the algorithm gets credit for the M algebraic branches it returned.
+    """
     if not result_csv.exists():
         return None
     rows, fieldnames = read_csv_dicts(result_csv)
@@ -90,9 +96,18 @@ def per_cell_oracle(result_csv: Path, truth_id_vars: dict):
                 vals.append(abs(ev - tv))
         return max(vals) if vals else float("inf")
 
-    errs = [row_err(r) for r in rows]
+    pool = rows if k_cap is None else rows[:k_cap]
+    errs = [row_err(r) for r in pool]
     best_i = min(range(len(errs)), key=lambda i: errs[i])
     return errs[best_i], len(rows)
+
+
+def load_multiplicities() -> dict:
+    """Load algebraic_multiplicity per system from the repo-level systems.json."""
+    cfg_path = REPO / "config" / "systems.json"
+    with open(cfg_path) as f:
+        data = json.load(f)
+    return {s["name"]: int(s.get("algebraic_multiplicity", 1)) for s in data["systems"]}
 
 
 def load_wall(p: Path):
@@ -108,6 +123,9 @@ def main():
     # Use wallaby as the canonical truth source; the deterministic md5 seeds
     # mean all 5 benchmarks have bit-identical (params, IC, data) for each cell.
     instances = load_huge_json(BENCH_WB)
+    multiplicities = load_multiplicities()
+    n_mult2 = sum(1 for m in multiplicities.values() if m >= 2)
+    print(f"Loaded multiplicities for {len(multiplicities)} systems ({n_mult2} with M ≥ 2)")
     non_id = {}
     for bench in (BENCH_WB, BENCH_14, BENCH_13, BENCH_12, BENCH_06):
         per_bench = read_non_id_per_system(bench)
@@ -127,27 +145,34 @@ def main():
             for v, val in (inst.get("parameter_values") or {}).items():
                 if v not in non_id_set:
                     truth_id[v] = val
+            M = multiplicities.get(sn, 1)
 
             def stats_for(bench: Path):
                 cd = bench / "filetree" / f"{est}_run" / cell_id
-                o = per_cell_oracle(cd / "result.csv", truth_id)
+                o = per_cell_oracle(cd / "result.csv", truth_id, k_cap=None)
+                ombv = per_cell_oracle(cd / "result.csv", truth_id, k_cap=M)
                 w = load_wall(cd / "wall_time_seconds.txt")
-                return (o[0] if o else None, o[1] if o else None, w)
+                return (
+                    o[0] if o else None,
+                    o[1] if o else None,
+                    ombv[0] if ombv else None,
+                    w,
+                )
 
-            o06, n06, w06 = stats_for(BENCH_06)
-            o12, n12, w12 = stats_for(BENCH_12)
-            o13, n13, w13 = stats_for(BENCH_13)
-            o14, n14, w14 = stats_for(BENCH_14)
-            owb, nwb, wwb = stats_for(BENCH_WB)
+            o06, n06, omb06, w06 = stats_for(BENCH_06)
+            o12, n12, omb12, w12 = stats_for(BENCH_12)
+            o13, n13, omb13, w13 = stats_for(BENCH_13)
+            o14, n14, omb14, w14 = stats_for(BENCH_14)
+            owb, nwb, ombwb, wwb = stats_for(BENCH_WB)
 
             rows_out.append({
                 "system": sn, "run": est, "noise_label": cell_id.rsplit("_", 1)[1], "id": cell_id,
-                "non_id_vars": ";".join(sorted(non_id_set)),
-                "o06": o06, "n06": n06, "w06": w06,
-                "o12": o12, "n12": n12, "w12": w12,
-                "o13": o13, "n13": n13, "w13": w13,
-                "o14": o14, "n14": n14, "w14": w14,
-                "owb": owb, "nwb": nwb, "wwb": wwb,
+                "non_id_vars": ";".join(sorted(non_id_set)), "M": M,
+                "o06": o06, "n06": n06, "omb06": omb06, "w06": w06,
+                "o12": o12, "n12": n12, "omb12": omb12, "w12": w12,
+                "o13": o13, "n13": n13, "omb13": omb13, "w13": w13,
+                "o14": o14, "n14": n14, "omb14": omb14, "w14": w14,
+                "owb": owb, "nwb": nwb, "ombwb": ombwb, "wwb": wwb,
                 "status_wb": "ok" if owb is not None else "incomplete",
             })
 
@@ -184,16 +209,32 @@ def main():
     o13s = median([r['o13'] for r in rows_out])
     o14s = median([r['o14'] for r in rows_out])
     owbs = median([r['owb'] for r in rows_out])
-    print(f"{'median oracle':<25s} {o06s:>10.2e} {o12s:>10.2e} {o13s:>10.2e} {o14s:>10.2e} {owbs:>10.2e}")
+    print(f"{'median oracle (K=20)':<25s} {o06s:>10.2e} {o12s:>10.2e} {o13s:>10.2e} {o14s:>10.2e} {owbs:>10.2e}")
+    mb06s = median([r['omb06'] for r in rows_out])
+    mb12s = median([r['omb12'] for r in rows_out])
+    mb13s = median([r['omb13'] for r in rows_out])
+    mb14s = median([r['omb14'] for r in rows_out])
+    mbwbs = median([r['ombwb'] for r in rows_out])
+    print(f"{'median M-bounded':<25s} {mb06s:>10.2e} {mb12s:>10.2e} {mb13s:>10.2e} {mb14s:>10.2e} {mbwbs:>10.2e}")
 
     print()
-    print("Paper-relevant coarse thresholds:")
+    print("Paper-relevant coarse thresholds — best-of-K (oracle):")
     for thr_lbl, thr in [("succ @ 1%", 0.01), ("succ @ 10%", 0.10), ("succ @ 50%", 0.50)]:
         s06 = succ_at([r['o06'] for r in rows_out], thr) or 0
         s12 = succ_at([r['o12'] for r in rows_out], thr) or 0
         s13 = succ_at([r['o13'] for r in rows_out], thr) or 0
         s14 = succ_at([r['o14'] for r in rows_out], thr) or 0
         swb = succ_at([r['owb'] for r in rows_out], thr) or 0
+        print(f"{thr_lbl:<25s} {s06:>9.1f}% {s12:>9.1f}% {s13:>9.1f}% {s14:>9.1f}% {swb:>9.1f}%")
+
+    print()
+    print("Paper-relevant coarse thresholds — M-bounded (paper headline):")
+    for thr_lbl, thr in [("succ @ 1%", 0.01), ("succ @ 10%", 0.10), ("succ @ 50%", 0.50)]:
+        s06 = succ_at([r['omb06'] for r in rows_out], thr) or 0
+        s12 = succ_at([r['omb12'] for r in rows_out], thr) or 0
+        s13 = succ_at([r['omb13'] for r in rows_out], thr) or 0
+        s14 = succ_at([r['omb14'] for r in rows_out], thr) or 0
+        swb = succ_at([r['ombwb'] for r in rows_out], thr) or 0
         print(f"{thr_lbl:<25s} {s06:>9.1f}% {s12:>9.1f}% {s13:>9.1f}% {s14:>9.1f}% {swb:>9.1f}%")
 
     print()
@@ -268,12 +309,21 @@ def main():
 
     # Per-estimator (polish vs nopolish) breakdown at paper thresholds
     print()
-    print("=== Per-estimator @ 10% (paper threshold) ===")
+    print("=== Per-estimator @ 10% (oracle / K=20) ===")
     for est in ESTIMATORS:
         bucket = [r for r in rows_out if r["run"] == est]
         s06 = succ_at([r['o06'] for r in bucket], 0.10) or 0
         s14 = succ_at([r['o14'] for r in bucket], 0.10) or 0
         swb = succ_at([r['owb'] for r in bucket], 0.10) or 0
+        print(f"  {est:<22s} 06={s06:>5.1f}%  14={s14:>5.1f}%  wallaby={swb:>5.1f}%  (delta wallaby-14={swb-s14:+.1f}pp)")
+
+    print()
+    print("=== Per-estimator @ 10% (M-bounded — paper headline) ===")
+    for est in ESTIMATORS:
+        bucket = [r for r in rows_out if r["run"] == est]
+        s06 = succ_at([r['omb06'] for r in bucket], 0.10) or 0
+        s14 = succ_at([r['omb14'] for r in bucket], 0.10) or 0
+        swb = succ_at([r['ombwb'] for r in bucket], 0.10) or 0
         print(f"  {est:<22s} 06={s06:>5.1f}%  14={s14:>5.1f}%  wallaby={swb:>5.1f}%  (delta wallaby-14={swb-s14:+.1f}pp)")
 
 

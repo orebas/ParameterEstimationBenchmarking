@@ -6,14 +6,22 @@ Reads per-cell sidecars directly (result.csv, failure_reason.txt,
 wall_time_seconds.txt, <est>_metadata.json) and emits one row per cell.
 
 Wallaby variant differs from numbat's builder in:
-  * Two parallel metric families per cell:
-    - `top1_*`  — metrics computed from result.csv row 0 (the algorithm's
-                  own pick, sorted ascending by `err` column for ODEPE).
-    - `oracle_*` — metrics computed by taking min over all rows of
-                   max_rel_error on identifiable axes (truth-cheat).
-    For amigo2/shade, K=1 so top1_* and oracle_* are equal by construction.
-    For odepe_v2_polish / odepe_v2_nopolish (K=20), they differ when the
-    algorithm's err-ranking disagrees with the truth-ranking.
+  * Three parallel metric families per cell:
+    - `top1_*`     — metrics computed from result.csv row 0 (the algorithm's
+                     own pick, sorted ascending by `err` column for ODEPE).
+    - `oracle_*`   — argmin over all rows of max_rel_error on identifiable
+                     axes (truth-cheat, set-credit ceiling).
+    - `mbounded_*` — argmin over the top M rows, where M is the algebraic
+                     multiplicity from `config/systems.json`. For M=1
+                     systems this equals top-1; for M=2 systems it equals
+                     "best of row 0 and row 1". This is the metric that
+                     gives the algorithm credit for finding all algebraic
+                     branches without punishing it for returning K=20
+                     candidates as numerical safety. See the multiplicity
+                     work in results/wallaby_analysis/multiplicity/.
+    For amigo2/shade, K=1 so all three families collapse to the same value.
+    For odepe_v2_polish / odepe_v2_nopolish (K=20), top1 ≤ mbounded ≤ oracle
+    per cell.
   * Default --bench-dir and --out point at wallaby paths.
 
 Usage:
@@ -98,6 +106,22 @@ def load_huge_json(bench_dir: Path) -> dict:
     with open(bench_dir / "huge_json.json") as f:
         data = json.load(f)
     return {c["id"]: c for c in data["instances"]}
+
+
+def load_algebraic_multiplicities(bench_dir: Path) -> dict:
+    """Read `config/systems.json` to map system_name -> algebraic_multiplicity.
+
+    Multiplicity is a structural property of the ODE system (a fact of the
+    math), not a per-benchmark setting. We read from the repo-level
+    `config/systems.json` so older benchmark snapshots that were generated
+    before the field was added still get the right M values for reanalysis.
+
+    Default M=1 when the field is missing (older configs).
+    """
+    cfg_path = REPO_ROOT / "config" / "systems.json"
+    with open(cfg_path) as f:
+        data = json.load(f)
+    return {s["name"]: int(s.get("algebraic_multiplicity", 1)) for s in data["systems"]}
 
 
 def load_result_csv(p: Path):
@@ -274,15 +298,35 @@ def compute_oracle_metrics(rows_all, true_all, id_vars):
     that row's full (median, mean, max, rmse, s1, s10, s50). For K=1 (amigo2/shade)
     this is identical to compute_metrics on row 0.
     """
+    return _compute_argmin_metrics(rows_all, true_all, id_vars, k_cap=None)
+
+
+def compute_mbounded_metrics(rows_all, true_all, id_vars, M):
+    """M-bounded oracle: argmin over only the top M rows of result.csv.
+
+    M is the system's algebraic_multiplicity from config/systems.json.
+    For M=1, this equals top-1 (only row 0 is considered).
+    For M=2, this equals "best of row 0 and row 1".
+    The K=20 candidate list is the algorithm's safety cap; M is what
+    theory says the algorithm *should* return — one per algebraic branch.
+    """
+    return _compute_argmin_metrics(rows_all, true_all, id_vars, k_cap=M)
+
+
+def _compute_argmin_metrics(rows_all, true_all, id_vars, k_cap=None):
+    """Shared helper: argmin over rows[:k_cap] (None = all rows).
+
+    Same return shape as compute_metrics.
+    """
     if not rows_all:
         return (np.nan,) * 4 + (0, 0, 0)
     if not id_vars:
         return 0.0, 0.0, 0.0, 0.0, 1, 1, 1
+    pool = rows_all if k_cap is None else rows_all[:k_cap]
     best_max = float("inf")
     best_metrics = None
-    for r in rows_all:
+    for r in pool:
         m = compute_metrics(r, true_all, id_vars)
-        # m = (med, mean, max, rmse, s1, s10, s50). pick by m[2] = max
         if np.isnan(m[2]):
             continue
         if m[2] < best_max:
@@ -306,6 +350,10 @@ def main():
 
     cells = load_huge_json(bench)
     print(f"Loaded {len(cells)} cells from huge_json.json")
+
+    multiplicities = load_algebraic_multiplicities(bench)
+    print(f"Loaded algebraic multiplicities for {len(multiplicities)} systems "
+          f"({sum(1 for m in multiplicities.values() if m > 1)} with M ≥ 2)")
 
     nonid_by_sys = discover_non_identifiable_per_system(bench)
     print(f"\n=== Non-identifiable vars by system (from ODEPE SIAN/SI output) ===")
@@ -361,6 +409,12 @@ def main():
             t_med, t_mn, t_mx, t_rmse, t_s1, t_s10, t_s50 = compute_metrics(res_top1, true_all, id_vars)
             # Oracle: argmin-over-rows of max_rel_error.
             o_med, o_mn, o_mx, o_rmse, o_s1, o_s10, o_s50 = compute_oracle_metrics(res_all, true_all, id_vars)
+            # M-bounded oracle: argmin restricted to top M rows where M is the
+            # system's algebraic multiplicity (per config/systems.json).
+            M = multiplicities.get(sys_name, 1)
+            mb_med, mb_mn, mb_mx, mb_rmse, mb_s1, mb_s10, mb_s50 = compute_mbounded_metrics(
+                res_all, true_all, id_vars, M
+            )
             # Legacy / numbat-compat: keep `median_rel_error` etc. as the TOP-1 family
             # (matches what numbat builder always produced — read row 0 only — so
             # downstream run_analysis.py without dual-aware patches still works).
@@ -419,6 +473,17 @@ def main():
                     "oracle_success_at_1pct": o_s1,
                     "oracle_success_at_10pct": o_s10,
                     "oracle_success_at_50pct": o_s50,
+                    # M-bounded oracle: argmin over the top M rows (M = algebraic
+                    # multiplicity from config/systems.json). For M=1 systems this
+                    # equals top-1 by construction.
+                    "algebraic_multiplicity": M,
+                    "mbounded_median_rel_error": mb_med,
+                    "mbounded_mean_rel_error": mb_mn,
+                    "mbounded_max_rel_error": mb_mx,
+                    "mbounded_rmse": mb_rmse,
+                    "mbounded_success_at_1pct": mb_s1,
+                    "mbounded_success_at_10pct": mb_s10,
+                    "mbounded_success_at_50pct": mb_s50,
                 }
             )
 

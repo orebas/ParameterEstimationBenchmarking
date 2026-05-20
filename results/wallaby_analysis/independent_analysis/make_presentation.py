@@ -100,28 +100,44 @@ def build_presentation():
     t05_oracle = read_table("T05_polishing_effect_oracle.csv")
     t08_oracle = read_table("T08_noise_cliff_detection_oracle.csv")
 
-    figs = {}      # top-1 / single-metric figures (existing filenames)
-    figs_oracle = {}  # oracle variants (suffixed `_oracle.png`)
+    # M-bounded (algebraic multiplicity) variants.
+    t01_mb = read_table("T01_overall_method_comparison_mbounded.csv")
+    t02_mb = read_table("T02_method_by_noise_mbounded.csv")
+    t03_mb = read_table("T03_system_ranking_mbounded.csv")
+    t05_mb = read_table("T05_polishing_effect_mbounded.csv")
+    t08_mb = read_table("T08_noise_cliff_detection_mbounded.csv")
+
+    figs = {}             # top-1 / single-metric figures (existing filenames)
+    figs_oracle = {}      # oracle variants (suffixed `_oracle.png`)
+    figs_mb = {}          # m-bounded variants (suffixed `_mbounded.png`)
     listing = os.listdir(FIG_DIR)
     for i in range(1, 15):
         prefix = f"F{i:02d}_"
         for f in listing:
-            if f.startswith(prefix) and not f.endswith("_oracle.png"):
+            if f.startswith(prefix) and not f.endswith("_oracle.png") and not f.endswith("_mbounded.png"):
                 figs[f"F{i:02d}"] = img_b64(f)
                 break
         for f in listing:
             if f.startswith(prefix) and f.endswith("_oracle.png"):
                 figs_oracle[f"F{i:02d}"] = img_b64(f)
                 break
+        for f in listing:
+            if f.startswith(prefix) and f.endswith("_mbounded.png"):
+                figs_mb[f"F{i:02d}"] = img_b64(f)
+                break
     # F02a/F02b are extra heatmap variants (success @ 1% / 50%)
     for variant in ("F02a", "F02b"):
         for f in listing:
-            if f.startswith(f"{variant}_") and not f.endswith("_oracle.png"):
+            if f.startswith(f"{variant}_") and not f.endswith("_oracle.png") and not f.endswith("_mbounded.png"):
                 figs[variant] = img_b64(f)
                 break
         for f in listing:
             if f.startswith(f"{variant}_") and f.endswith("_oracle.png"):
                 figs_oracle[variant] = img_b64(f)
+                break
+        for f in listing:
+            if f.startswith(f"{variant}_") and f.endswith("_mbounded.png"):
+                figs_mb[variant] = img_b64(f)
                 break
 
     methods = ["odepe_v2_polish", "odepe_v2_nopolish", "amigo2", "odepe_shade"]
@@ -165,6 +181,18 @@ def build_presentation():
     np_succ_oracle = df[df["run"] == "odepe_v2_nopolish"]["oracle_success_at_10pct"].mean() * 100
     p_succ_oracle = df[df["run"] == "odepe_v2_polish"]["oracle_success_at_10pct"].mean() * 100
     polish_uplift_oracle = p_succ_oracle - np_succ_oracle
+
+    # M-bounded stats (paper-headline)
+    m_succ_mb = {}
+    for m in methods:
+        m_succ_mb[m] = df[df["run"] == m]["mbounded_success_at_10pct"].mean() * 100
+    ranked_methods_mb = sorted(methods, key=lambda m: -m_succ_mb[m])
+    best_method_mb = ranked_methods_mb[0]
+    best_label_mb = method_labels[best_method_mb]
+
+    np_succ_mb = df[df["run"] == "odepe_v2_nopolish"]["mbounded_success_at_10pct"].mean() * 100
+    p_succ_mb = df[df["run"] == "odepe_v2_polish"]["mbounded_success_at_10pct"].mean() * 100
+    polish_uplift_mb = p_succ_mb - np_succ_mb
     np_time = df[df["run"] == "odepe_v2_nopolish"]["time"].median()
     p_time = df[df["run"] == "odepe_v2_polish"]["time"].median()
 
@@ -181,6 +209,7 @@ def build_presentation():
     n_hurts = (t05["success_uplift_pp"] < 0).sum()
     n_neutral = (t05["success_uplift_pp"] == 0).sum()
     n_helps_oracle = (t05_oracle["success_uplift_pp"] > 0).sum()
+    n_helps_mbounded = (t05_mb["success_uplift_pp"] > 0).sum()
     n_hurts_oracle = (t05_oracle["success_uplift_pp"] < 0).sum()
 
     t01_display = t01[["method", "success_at_1pct", "success_at_10pct", "success_at_50pct",
@@ -193,6 +222,11 @@ def build_presentation():
     t01_oracle_display.columns = ["Method", "Success@1%", "Success@10%", "Success@50%",
                            "Med. Time (s)", "No Result", "Diverged"]
 
+    t01_mb_display = t01_mb[["method", "success_at_1pct", "success_at_10pct", "success_at_50pct",
+                        "median_time_s", "n_no_result", "n_diverged"]].copy()
+    t01_mb_display.columns = ["Method", "Success@1%", "Success@10%", "Success@50%",
+                           "Med. Time (s)", "No Result", "Diverged"]
+
     t02_display = t02[["method", "noise", "success_at_1pct", "success_at_10pct",
                         "success_at_50pct", "median_error", "median_time_s"]].copy()
     t02_display.columns = ["Method", "Noise", "Success@1%", "Success@10%",
@@ -201,6 +235,11 @@ def build_presentation():
     t02_oracle_display = t02_oracle[["method", "noise", "success_at_1pct", "success_at_10pct",
                         "success_at_50pct", "median_error", "median_time_s"]].copy()
     t02_oracle_display.columns = ["Method", "Noise", "Success@1%", "Success@10%",
+                           "Success@50%", "Median Error", "Med. Time (s)"]
+
+    t02_mb_display = t02_mb[["method", "noise", "success_at_1pct", "success_at_10pct",
+                        "success_at_50pct", "median_error", "median_time_s"]].copy()
+    t02_mb_display.columns = ["Method", "Noise", "Success@1%", "Success@10%",
                            "Success@50%", "Median Error", "Med. Time (s)"]
 
     t03_display = t03[["system", "domain", "n_id_params", "mean_success_at_10pct",
@@ -221,6 +260,10 @@ def build_presentation():
     t08_oracle_top = t08_oracle.nlargest(10, "max_drop_pp")[["system", "method", "max_drop_pp",
                                                 "cliff_from_noise", "cliff_to_noise"]].copy()
     t08_oracle_top.columns = ["System", "Method", "Drop (pp)", "From Noise", "To Noise"]
+
+    t08_mb_top = t08_mb.nlargest(10, "max_drop_pp")[["system", "method", "max_drop_pp",
+                                                "cliff_from_noise", "cliff_to_noise"]].copy()
+    t08_mb_top.columns = ["System", "Method", "Drop (pp)", "From Noise", "To Noise"]
 
     method_noise_tables = {}
     for m_key, m_label in method_labels.items():
@@ -273,6 +316,18 @@ def build_presentation():
         })
     polish_noise_df_oracle = pd.DataFrame(polish_by_noise_oracle)
 
+    polish_by_noise_mb = []
+    for noise, nl in zip(noise_levels, noise_labels):
+        np_s = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["mbounded_success_at_10pct"].mean()*100
+        p_s = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["mbounded_success_at_10pct"].mean()*100
+        np_t = df[(df["run"]=="odepe_v2_nopolish")&(df["noise"]==noise)]["time"].median()
+        p_t = df[(df["run"]=="odepe_v2_polish")&(df["noise"]==noise)]["time"].median()
+        polish_by_noise_mb.append({
+            "Noise": nl, "No Polish": f"{np_s:.1f}%", "Polish": f"{p_s:.1f}%",
+            "Uplift": f"+{p_s-np_s:.1f} pp", "Time Overhead": f"+{p_t-np_t:.0f}s"
+        })
+    polish_noise_df_mb = pd.DataFrame(polish_by_noise_mb)
+
     polish_hurts = t05[t05["success_uplift_pp"] < -5][["system","noise","success_uplift_pp"]].copy()
     polish_hurts.columns = ["System","Noise","Uplift (pp)"]
     polish_hurts = polish_hurts.sort_values("Uplift (pp)")
@@ -304,11 +359,15 @@ def build_presentation():
     def img_tag_oracle(fig_key, width="85%"):
         return f'<img src="data:image/png;base64,{figs_oracle[fig_key]}" style="max-width:{width}; max-height:70vh;">'
 
+    def img_tag_mb(fig_key, width="85%"):
+        return f'<img src="data:image/png;base64,{figs_mb[fig_key]}" style="max-width:{width}; max-height:70vh;">'
+
     def metric_badge(metric):
         if metric == "top1":
             return '<span style="background:#3498db; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">TOP-1</span>'
-        else:
-            return '<span style="background:#9b59b6; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">ORACLE</span>'
+        if metric == "mbounded":
+            return '<span style="background:#27ae60; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">M-BOUNDED</span>'
+        return '<span style="background:#9b59b6; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.55em; vertical-align:middle;">ORACLE</span>'
 
     def section_start():
         nonlocal slides_html
@@ -436,36 +495,44 @@ def build_presentation():
     </div>
     """, bg="#16213e")
 
-    # TWO-METRIC EXPLAINER
+    # THREE-METRIC EXPLAINER
     slide(f"""
-    <h2>Two metrics, side by side</h2>
-    <div class="columns">
+    <h2>Three metrics</h2>
+    <div class="columns" style="font-size:0.7em;">
         <div class="col">
-            <h3 style="color:#3498db;">Top-1 (paper convention)</h3>
-            <p style="font-size:0.75em;">
-                Score the <strong>row 0</strong> of each cell's <code>result.csv</code>
-                — sorted by <code>err</code> for ODEPE, single answer
-                for AMIGO2 / SHADE. This is what a user actually gets.
+            <h3 style="color:#3498db;">Top-1</h3>
+            <p>
+                The <strong>row 0</strong> of each cell's <code>result.csv</code>.
+                What a user gets by default.
             </p>
         </div>
         <div class="col">
-            <h3 style="color:#9b59b6;">Best-of-K (oracle)</h3>
-            <p style="font-size:0.75em;">
-                <strong>argmin</strong> over all rows of <code>result.csv</code>
-                on identifiable axes. For K=1 (AMIGO2, SHADE) this is
-                the same as top-1. For ODEPE (K=20) it's the set-credit
-                ceiling: what the row-0 sort could have achieved.
+            <h3 style="color:#27ae60;">M-bounded</h3>
+            <p>
+                Best of the <strong>top M rows</strong>, where
+                <code>M = algebraic_multiplicity</code> from
+                <code>config/systems.json</code>. For 19/23 systems M=1,
+                so this equals top-1. For daisy_mamil4, seir, slow_fast,
+                biohydrogenation (M=2), the algorithm gets credit for
+                finding both branches.
+            </p>
+        </div>
+        <div class="col">
+            <h3 style="color:#9b59b6;">Oracle (best-of-K)</h3>
+            <p>
+                <strong>argmin over all K=20 rows</strong> — the
+                set-credit ceiling. For K=1 methods (AMIGO2, SHADE)
+                all three are identical.
             </p>
         </div>
     </div>
     <div class="takeaway" style="margin-top:1.5em;">
-        <strong>Why both:</strong> ODEPE polish at top-1 is
-        <strong>{p_succ:.1f}%</strong>; at oracle it's
-        <strong>{p_succ_oracle:.1f}%</strong>. The <strong>{p_succ_oracle - p_succ:+.1f}pp gap</strong>
-        is rank-1 sort headroom — algebraically the truth-near candidate
-        often <em>is</em> in the K=20 set, just not at row 0.
+        <strong>ODEPE-v2 polish:</strong>
+        top-1 = <strong>{p_succ:.1f}%</strong>,
+        M-bounded = <strong>{p_succ_mb:.1f}%</strong> ({p_succ_mb - p_succ:+.1f}pp from counting both algebraic branches),
+        oracle = <strong>{p_succ_oracle:.1f}%</strong>.
     </div>
-    <p class="footnote">From here on, slides labeled {metric_badge('top1')} use top-1; slides labeled {metric_badge('oracle')} use best-of-K. Single-metric slides (failure, timing, replica spread) are not labeled.</p>
+    <p class="footnote">Slides are tagged {metric_badge('top1')} / {metric_badge('mbounded')} / {metric_badge('oracle')}. Single-metric slides (failure, timing, replica spread) are not tagged. <strong>M-bounded is the paper-headline metric.</strong></p>
     """, bg="#16213e")
 
     # OVERALL METHOD COMPARISON
@@ -485,11 +552,20 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Overall Method Comparison {metric_badge('mbounded')}</h2>
+    {df_to_html(t01_mb_display, float_fmt=".1f")}
+    <div class="takeaway">
+        <strong>Paper headline:</strong> {best_label_mb} leads in M-bounded ({m_succ_mb[best_method_mb]:.1f}%).
+        Polish gains {p_succ_mb - p_succ:+.1f}pp from top-1 to M-bounded — credit for finding both algebraic branches.
+    </div>
+    """)
+
+    vslide(f"""
     <h2>Overall Method Comparison {metric_badge('oracle')}</h2>
     {df_to_html(t01_oracle_display, float_fmt=".1f")}
     <div class="takeaway">
-        <strong>Key:</strong> {best_label_oracle} leads in best-of-K accuracy ({m_succ_oracle[best_method_oracle]:.1f}%).
-        Polish gains {p_succ_oracle - p_succ:+.1f}pp moving from top-1 to oracle.
+        <strong>Set-credit ceiling:</strong> {best_label_oracle} at {m_succ_oracle[best_method_oracle]:.1f}%.
+        M-bounded → oracle gap on polish: {p_succ_oracle - p_succ_mb:+.1f}pp (within-branch sort headroom).
     </div>
     """)
 
@@ -497,6 +573,12 @@ def build_presentation():
     <h2>Success Rate vs Noise Level {metric_badge('top1')}</h2>
     {img_tag("F01", "80%")}
     <p class="caption">All methods degrade with noise. {best_label} maintains the flattest curve.</p>
+    """)
+
+    vslide(f"""
+    <h2>Success Rate vs Noise Level {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F01", "80%")}
+    <p class="caption">M-bounded (paper-headline): ODEPE polish lifts on multiplicity-2 systems.</p>
     """)
 
     vslide(f"""
@@ -512,6 +594,12 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Method Rankings {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F14", "75%")}
+    <p class="caption">Paper-headline view of rank distribution.</p>
+    """)
+
+    vslide(f"""
     <h2>Method Rankings {metric_badge('oracle')}</h2>
     {img_tag_oracle("F14", "75%")}
     <p class="caption">Best-of-K view: ODEPE polish dominates the 1st-place share more strongly.</p>
@@ -521,6 +609,12 @@ def build_presentation():
     <h2>System-Level Heatmap (success @ 10%) {metric_badge('top1')}</h2>
     {img_tag("F02", "55%")}
     <p class="caption">Systems sorted by difficulty (mean across methods). Clear clustering visible.</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 10%) {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F02", "55%")}
+    <p class="caption">M-bounded: the 4 mult-2 systems shift up by ~10-40pp depending on cell.</p>
     """)
 
     vslide(f"""
@@ -536,6 +630,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>System-Level Heatmap (success @ 1%) {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F02a", "55%")}
+    """)
+
+    vslide(f"""
     <h2>System-Level Heatmap (success @ 1%) {metric_badge('oracle')}</h2>
     {img_tag_oracle("F02a", "55%")}
     <p class="caption">Best-of-K at the tight threshold.</p>
@@ -545,6 +644,11 @@ def build_presentation():
     <h2>System-Level Heatmap (success @ 50%) {metric_badge('top1')}</h2>
     {img_tag("F02b", "55%")}
     <p class="caption">Looser threshold: all params recovered to 50% relative error (i.e. roughly the right ballpark).</p>
+    """)
+
+    vslide(f"""
+    <h2>System-Level Heatmap (success @ 50%) {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F02b", "55%")}
     """)
 
     vslide(f"""
@@ -609,6 +713,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Method x Noise Detail {metric_badge('mbounded')}</h2>
+    {df_to_html(t02_mb_display, float_fmt=".1f", classes="compact small-text")}
+    """)
+
+    vslide(f"""
     <h2>Method x Noise Detail {metric_badge('oracle')}</h2>
     {df_to_html(t02_oracle_display, float_fmt=".1f", classes="compact small-text")}
     """)
@@ -617,6 +726,11 @@ def build_presentation():
     <h2>Noise Cliffs {metric_badge('top1')}</h2>
     {img_tag("F10", "55%")}
     <p class="caption">Maximum success-rate drop between adjacent noise levels.</p>
+    """)
+
+    vslide(f"""
+    <h2>Noise Cliffs {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F10", "55%")}
     """)
 
     vslide(f"""
@@ -634,6 +748,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Worst Noise Cliffs {metric_badge('mbounded')}</h2>
+    {df_to_html(t08_mb_top, float_fmt=".0f")}
+    """)
+
+    vslide(f"""
     <h2>Worst Noise Cliffs {metric_badge('oracle')}</h2>
     {df_to_html(t08_oracle_top, float_fmt=".0f")}
     <div class="takeaway">
@@ -647,13 +766,20 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>The Polishing Effect — the slide where the metric matters most</h2>
+    <h2>The Polishing Effect — three metric views</h2>
     <div class="columns">
         <div class="col">
             <h3 style="color:#3498db;">Top-1</h3>
             <div class="big-stat">
                 <span class="stat-val">+{polish_uplift:.1f} pp</span>
-                <span class="stat-label">Overall success@10% uplift</span>
+                <span class="stat-label">Top-1 success@10% uplift</span>
+            </div>
+        </div>
+        <div class="col">
+            <h3 style="color:#27ae60;">M-bounded</h3>
+            <div class="big-stat">
+                <span class="stat-val">+{polish_uplift_mb:.1f} pp</span>
+                <span class="stat-label">M-bounded success@10% uplift</span>
             </div>
         </div>
         <div class="col">
@@ -664,18 +790,24 @@ def build_presentation():
             </div>
         </div>
     </div>
-    <p class="footnote" style="margin-top:1.5em;">
-        Polish often <em>finds</em> the truth basin (boosts oracle) but
-        the row-0 sort doesn't always <em>surface</em> the truth-near row
-        at rank 1 (smaller top-1 uplift). The {polish_uplift_oracle - polish_uplift:+.1f}pp
-        gap is the rank-1 sort opportunity.
+    <p class="footnote" style="margin-top:1.5em; font-size:0.65em;">
+        Top-1 → M-bounded gap = cross-branch sort error (row 0 is the
+        wrong algebraic branch). M-bounded → oracle gap = within-branch
+        sort error (truth lives at row M+1 or deeper). For polish, the
+        cross-branch gap is {polish_uplift_mb - polish_uplift:+.1f}pp and the
+        within-branch gap is {polish_uplift_oracle - polish_uplift_mb:+.1f}pp.
+        Median time overhead: +{p_time - np_time:.0f}s/cell.
     </p>
-    <p class="footnote">Median time overhead: +{p_time - np_time:.0f}s/cell.</p>
     """, bg="#16213e")
 
     vslide(f"""
     <h2>Polishing: Success by Noise {metric_badge('top1')}</h2>
     {img_tag("F04", "75%")}
+    """)
+
+    vslide(f"""
+    <h2>Polishing: Success by Noise {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F04", "75%")}
     """)
 
     vslide(f"""
@@ -689,6 +821,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Polishing by Noise Level {metric_badge('mbounded')}</h2>
+    {df_to_html(polish_noise_df_mb, classes="compact")}
+    """)
+
+    vslide(f"""
     <h2>Polishing by Noise Level {metric_badge('oracle')}</h2>
     {df_to_html(polish_noise_df_oracle, classes="compact")}
     """)
@@ -697,6 +834,12 @@ def build_presentation():
     <h2>Per-System Polishing Uplift {metric_badge('top1')}</h2>
     {img_tag("F05", "55%")}
     <p class="caption">{n_helps} of {len(t05)} pairs benefit; {n_hurts} hurt; {n_neutral} neutral.</p>
+    """)
+
+    vslide(f"""
+    <h2>Per-System Polishing Uplift {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F05", "55%")}
+    <p class="caption">Under M-bounded: {n_helps_mbounded} of {len(t05_oracle)} pairs benefit.</p>
     """)
 
     vslide(f"""
@@ -720,6 +863,11 @@ def build_presentation():
     vslide(f"""
     <h2>System Difficulty Spectrum {metric_badge('top1')}</h2>
     {img_tag("F03", "60%")}
+    """)
+
+    vslide(f"""
+    <h2>System Difficulty Spectrum {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F03", "60%")}
     """)
 
     vslide(f"""
@@ -752,6 +900,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Parameter Count vs Difficulty {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F13", "75%")}
+    """)
+
+    vslide(f"""
     <h2>Parameter Count vs Difficulty {metric_badge('oracle')}</h2>
     {img_tag_oracle("F13", "75%")}
     """)
@@ -771,6 +924,11 @@ def build_presentation():
     vslide(f"""
     <h2>Domain Analysis {metric_badge('top1')}</h2>
     {img_tag("F06", "65%")}
+    """)
+
+    vslide(f"""
+    <h2>Domain Analysis {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F06", "65%")}
     """)
 
     vslide(f"""
@@ -863,6 +1021,11 @@ def build_presentation():
     """)
 
     vslide(f"""
+    <h2>Speed-Accuracy Trade-off {metric_badge('mbounded')}</h2>
+    {img_tag_mb("F12", "75%")}
+    """)
+
+    vslide(f"""
     <h2>Speed-Accuracy Trade-off {metric_badge('oracle')}</h2>
     {img_tag_oracle("F12", "75%")}
     """)
@@ -923,6 +1086,28 @@ def build_presentation():
     </table>
     """, bg="#1a1a2e")
 
+    # M-bounded ranking table (paper headline)
+    ranking_rows_mb_html = ""
+    for rank_idx, m in enumerate(ranked_methods_mb):
+        strengths, weaknesses = method_traits(m)
+        ranking_rows_mb_html += (
+            f'<tr class="{rank_css[rank_idx]}"><td>{rank_idx+1}</td>'
+            f'<td>{method_labels[m]}</td><td>{m_succ_mb[m]:.1f}%</td>'
+            f'<td>{strengths}</td><td>{weaknesses}</td></tr>\n'
+        )
+
+    vslide(f"""
+    <h2>Conclusions: Method Rankings {metric_badge('mbounded')} (paper headline)</h2>
+    <table class="data-table ranking-table">
+        <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
+        {ranking_rows_mb_html}
+    </table>
+    <p class="footnote" style="margin-top:1em;">
+        Under M-bounded, {best_label_mb} leads at {m_succ_mb[best_method_mb]:.1f}% —
+        a {m_succ_mb[best_method_mb] - m_succ[best_method]:+.1f}pp gain over the top-1 leader, by giving the algorithm credit for finding both algebraic branches.
+    </p>
+    """, bg="#1a1a2e")
+
     # Oracle ranking table
     ranking_rows_oracle_html = ""
     for rank_idx, m in enumerate(ranked_methods_oracle):
@@ -940,8 +1125,8 @@ def build_presentation():
         {ranking_rows_oracle_html}
     </table>
     <p class="footnote" style="margin-top:1em;">
-        Under best-of-K, {best_label_oracle} takes the top spot at {m_succ_oracle[best_method_oracle]:.1f}% —
-        a {m_succ_oracle[best_method_oracle] - m_succ[best_method]:+.1f}pp gain over the top-1 leader.
+        Set-credit ceiling: {best_label_oracle} at {m_succ_oracle[best_method_oracle]:.1f}%.
+        The {m_succ_oracle[best_method_oracle] - m_succ_mb[best_method_mb]:+.1f}pp gap from M-bounded is within-branch sort headroom.
     </p>
     """, bg="#1a1a2e")
 
@@ -954,17 +1139,17 @@ def build_presentation():
         </div>
         <div class="takeaway-card">
             <h3>Polish Is Worth It</h3>
-            <p><strong>Top-1</strong>: +{polish_uplift:.1f}pp.
-               <strong>Oracle</strong>: +{polish_uplift_oracle:.1f}pp.
+            <p>Top-1 +{polish_uplift:.1f}pp / M-bounded +{polish_uplift_mb:.1f}pp / Oracle +{polish_uplift_oracle:.1f}pp.
                Time cost +{p_time-np_time:.0f}s/cell.</p>
         </div>
         <div class="takeaway-card">
-            <h3>Top-1 → Oracle gap</h3>
-            <p>ODEPE polish at top-1 = {p_succ:.1f}%; at oracle = {p_succ_oracle:.1f}%. The <strong>{p_succ_oracle - p_succ:+.1f}pp</strong> gap is rank-1 sort headroom.</p>
+            <h3>Multiplicity matters</h3>
+            <p>Top-1 → M-bounded gap on polish = <strong>+{p_succ_mb - p_succ:.1f}pp</strong>.
+               Credit for finding both algebraic branches when M=2.</p>
         </div>
         <div class="takeaway-card">
-            <h3>No Universal Winner</h3>
-            <p>Top-1: {best_label}. Oracle: {best_label_oracle}.</p>
+            <h3>Paper-headline best</h3>
+            <p>{best_label_mb}: <strong>{m_succ_mb[best_method_mb]:.1f}%</strong> M-bounded success@10%.</p>
         </div>
         <div class="takeaway-card">
             <h3>Full Dataset</h3>

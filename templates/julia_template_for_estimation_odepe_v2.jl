@@ -103,11 +103,6 @@ opts = EstimationOptions(
     polish_divergence_factor = {{POLISH_DIVERGENCE_FACTOR}},
     polish_stagnation_window = {{POLISH_STAGNATION_WINDOW}},
     polish_ode_maxiters = {{POLISH_ODE_MAXITERS}},
-    # Algebraic multiplicity from config/systems.json catalog. When set,
-    # ODEPE truncates result.csv to M rows (capped by branch_top_k=20).
-    # `nothing` preserves legacy K=20 behavior (no truncation beyond top_k).
-    # See M_INFERENCE_INVESTIGATION.md in PEB for the inference story.
-    algebraic_multiplicity = {{algebraic_multiplicity}},
     diagnostics = true,
 )
 
@@ -163,12 +158,8 @@ metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
     "best_count" => 0,
-    # Catalog-injected algebraic multiplicity (used by ODEPE to truncate
-    # result.csv to M rows). `algebraic_multiplicity_source = "catalog"`
-    # means PEB looked it up from config/systems.json; replace with
-    # `"si_gate"` / `"hc"` / `"user"` once ODEPE-side auto-compute lands.
-    "algebraic_multiplicity_used" => opts.algebraic_multiplicity,
-    "algebraic_multiplicity_source" => opts.algebraic_multiplicity === nothing ? "fallback_K" : "catalog",
+    "algebraic_multiplicity_used" => nothing,
+    "algebraic_multiplicity_source" => "auto",
 )
 
 t_start = time()
@@ -200,6 +191,7 @@ try
     metadata["best_max_error"] = best_max_error
     metadata["best_approximation_error"] = best_approximation_error
     metadata["best_rms_error"] = best_rms_error
+    metadata["algebraic_multiplicity_used"] = hasproperty(analysis, :algebraic_multiplicity) ? analysis.algebraic_multiplicity : nothing
 
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),

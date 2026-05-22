@@ -63,29 +63,29 @@ data_regenerated = "from scratch via src/generate_data.py — same physics + det
 estimators = ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade", "amigo2"]
 
 [completed]
-completed_utc = "2026-05-20T02:38:46Z"
+completed_utc = "2026-05-22T00:32:34Z"
 n_estimators = 4
 total_cells_expected = 4600
-total_result_landed = 4594
-total_missing = 6
-total_wall_seconds_all_estimators = 6225202.0
-total_wall_hours_all_estimators = 1729.2
-cells_with_metadata = 3444
+total_result_landed = 4597
+total_missing = 3
+total_wall_seconds_all_estimators = 6588176.0
+total_wall_hours_all_estimators = 1830.0
+cells_with_metadata = 3447
 cells_with_branch_size_gt1 = 0
 terminal_fallback_firings = 16
 polish_maxtime_exceeded_count = 0
 odepe_v2_polish_n_cells_expected = 1150
-odepe_v2_polish_n_result_landed = 1147
-odepe_v2_polish_n_missing = 3
-odepe_v2_polish_total_wall_seconds = 2715257.5294525623
-odepe_v2_polish_total_wall_hours = 754.2
-odepe_v2_polish_n_wall_recorded = 1147
+odepe_v2_polish_n_result_landed = 1149
+odepe_v2_polish_n_missing = 1
+odepe_v2_polish_total_wall_seconds = 2853353.196587324
+odepe_v2_polish_total_wall_hours = 792.6
+odepe_v2_polish_n_wall_recorded = 1149
 odepe_v2_nopolish_n_cells_expected = 1150
-odepe_v2_nopolish_n_result_landed = 1147
-odepe_v2_nopolish_n_missing = 3
-odepe_v2_nopolish_total_wall_seconds = 2191866.437192917
-odepe_v2_nopolish_total_wall_hours = 608.9
-odepe_v2_nopolish_n_wall_recorded = 1147
+odepe_v2_nopolish_n_result_landed = 1148
+odepe_v2_nopolish_n_missing = 2
+odepe_v2_nopolish_total_wall_seconds = 2416744.8004198074
+odepe_v2_nopolish_total_wall_hours = 671.3
+odepe_v2_nopolish_n_wall_recorded = 1148
 odepe_shade_n_cells_expected = 1150
 odepe_shade_n_result_landed = 1150
 odepe_shade_n_missing = 0
@@ -98,25 +98,3 @@ amigo2_n_missing = 0
 amigo2_total_wall_seconds = 799779.0252399999
 amigo2_total_wall_hours = 222.2
 amigo2_n_wall_recorded = 1150
-
-[rerun_polish_nopolish_2026-05-21]
-triggered_utc = "2026-05-21T01:58:00Z"
-reason = "ODEPE 6ffc6cb auto-detect-M + memory/runtime fixes + Groebner PR #218; rerun ODEPE polish + nopolish in-place, leave SHADE+AMIGO2 frozen"
-peb_sha = "de66c0f88"
-odepe_sha = "6ffc6cb54ff42d9afad638e6e9b43f3615f3e233"
-manifest_julia_odepe_sha256 = "b7d878a4a1c73b5656c579bc83d6841b5a1066184e77cd30f9e98dd286286280"
-project_julia_odepe_sha256 = "1a1047ae67d9a12f7eb5f3d09d5a0a8d22d3b99e8cab7b970a040638220b7d1d"
-groebner_pin_url = "https://github.com/orebas/Groebner.jl.git"
-groebner_pin_rev = "de072249b47c439278da2c2b113064593b00a0e4"
-groebner_pin_reason = "PR #218: align_up/align_down use cld/fld to fix bitmask off-by-one on non-power-of-two thread counts; biohydrogenation needs this"
-archived_from = ["filetree/_archive_pre_M_truncation/odepe_v2_polish_run", "filetree/_archive_pre_M_truncation/odepe_v2_nopolish_run"]
-rerun_estimators = ["odepe_v2_polish", "odepe_v2_nopolish"]
-out_of_scope = ["odepe_shade", "amigo2"]
-changes_vs_original_wallaby = [
-    "ODEPE: auto-detects algebraic multiplicity M during SI template build (Groebner basis in get_polynomial_system_from_sian); truncates result.csv to min(M, branch_top_k, n_clusters) rows",
-    "ODEPE: solve_with_robust switched to :forwarddiff Jacobian (e85a9f4); fixes 6 OOMs (4× crauste + 2× biohydrogenation) seen in wallaby",
-    "Groebner.jl: pinned to orebas/Groebner.jl#de072249 (PR #218) — fixes align_up bitmask bug for biohydrogenation",
-    "PEB: drops template-side algebraic_multiplicity injection; ODEPE owns M",
-    "Pkg.update: ModelingToolkit 11.26.3→11.26.4, Symbolics 7.24.0→7.24.2 (incidental)",
-]
-data_unchanged = "filetree/data_noisy/ + huge_json.json + config/ untouched — deterministic md5 seeds + frozen synthetic data; only the estimator code differs"

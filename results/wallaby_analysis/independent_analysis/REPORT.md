@@ -1,7 +1,7 @@
 # Independent Benchmark Analysis Report
 ## benchmark_wallaby_2026-05-17
 
-**Generated:** 2026-05-20
+**Generated:** 2026-05-21
 **Data:** 4600 rows = 23 systems x 4 methods x 5 noise levels x 10 replicas
 **Noise type:** Additive
 
@@ -38,12 +38,12 @@ For ODEPE (K=20): `top1 ≤ mbounded ≤ oracle` per cell.
 This analysis evaluates four parameter estimation methods across 23 ODE systems at five noise levels (0, 1e-8, 1e-6, 1e-4, 1e-2) with 10 replicas each. Key findings:
 
 - **Top-1 best**: AMIGO2 at **76.1%** success@10%.
-- **M-bounded best**: ODEPE-v2 (polish) at **78.5%** success@10%.
-- **Oracle best**: ODEPE-v2 (polish) at **81.1%** success@10%.
-- Polishing uplift: **+13.8 pp** (top-1) / **+12.9 pp** (M-bounded) / **+11.4 pp** (oracle) over unpolished ODEPE.
-- ODEPE-v2 polish: top-1 = 75.4%, M-bounded = 78.5% (**+3.1pp** from counting both algebraic branches), oracle = 81.1%.
-- Success degrades from **87.3%** at noise=0 to **41.3%** at noise=1e-2 (top-1, across methods).
-- **6** rows produced no result; **30** rows diverged (top-1 max_rel_error > 10^4).
+- **M-bounded best**: ODEPE-v2 (polish) at **78.8%** success@10%.
+- **Oracle best**: ODEPE-v2 (polish) at **78.8%** success@10%.
+- Polishing uplift: **+13.5 pp** (top-1) / **+12.5 pp** (M-bounded) / **+12.5 pp** (oracle) over unpolished ODEPE.
+- ODEPE-v2 polish: top-1 = 75.3%, M-bounded = 78.8% (**+3.5pp** from counting both algebraic branches), oracle = 78.8%.
+- Success degrades from **87.2%** at noise=0 to **41.3%** at noise=1e-2 (top-1, across methods).
+- **3** rows produced no result; **28** rows diverged (top-1 max_rel_error > 10^4).
 
 ---
 
@@ -53,8 +53,8 @@ This analysis evaluates four parameter estimation methods across 23 ODE systems 
 
 | Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
 |--------|-----------|------------|------------|-----------------|-----------|----------|
-| ODEPE-v2 (polish) | 64.7% | 75.4% | 80.4% | 694 | 3 | 5 |
-| ODEPE-v2 (no polish) | 52.8% | 61.6% | 69.9% | 743 | 3 | 25 |
+| ODEPE-v2 (polish) | 64.8% | 75.3% | 80.1% | 712 | 1 | 5 |
+| ODEPE-v2 (no polish) | 53.0% | 61.8% | 70.5% | 762 | 2 | 23 |
 | AMIGO2 | 67.2% | 76.1% | 80.8% | 633 | 0 | 0 |
 | SHADE+LM | 62.3% | 69.8% | 74.0% | 372 | 0 | 0 |
 
@@ -76,8 +76,8 @@ both branches as long as either one is near truth.
 
 | Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
 |--------|-----------|------------|------------|-----------------|-----------|----------|
-| ODEPE-v2 (polish) | 67.5% | 78.5% | 83.2% | 694 | 3 | 5 |
-| ODEPE-v2 (no polish) | 56.1% | 65.7% | 74.3% | 743 | 3 | 25 |
+| ODEPE-v2 (polish) | 67.7% | 78.8% | 83.3% | 712 | 1 | 5 |
+| ODEPE-v2 (no polish) | 56.7% | 66.3% | 75.2% | 762 | 2 | 23 |
 | AMIGO2 | 67.2% | 76.1% | 80.8% | 633 | 0 | 0 |
 | SHADE+LM | 62.3% | 69.8% | 74.0% | 372 | 0 | 0 |
 
@@ -97,8 +97,8 @@ SHADE (K=1) it equals the top-1 row.
 
 | Method | Success@1% | Success@10% | Success@50% | Median Time (s) | No Result | Diverged |
 |--------|-----------|------------|------------|-----------------|-----------|----------|
-| ODEPE-v2 (polish) | 68.9% | 81.1% | 85.7% | 694 | 3 | 5 |
-| ODEPE-v2 (no polish) | 57.7% | 69.7% | 79.0% | 743 | 3 | 25 |
+| ODEPE-v2 (polish) | 67.7% | 78.8% | 83.3% | 712 | 1 | 5 |
+| ODEPE-v2 (no polish) | 56.7% | 66.3% | 75.2% | 762 | 2 | 23 |
 | AMIGO2 | 67.2% | 76.1% | 80.8% | 633 | 0 | 0 |
 | SHADE+LM | 62.3% | 69.8% | 74.0% | 372 | 0 | 0 |
 
@@ -131,9 +131,9 @@ Top-1, M-bounded, and oracle heatmaps:
 ## 4. Polishing Effect
 
 The metric choice matters here. Under top-1, polish helps
-**+13.8pp**. Under M-bounded, polish helps
-**+12.9pp**. Under oracle, polish helps
-**+11.4pp**. The interpretation:
+**+13.5pp**. Under M-bounded, polish helps
+**+12.5pp**. Under oracle, polish helps
+**+12.5pp**. The interpretation:
 
 - Top-1 → M-bounded gap is **rank-1 sort within the K=20 list,
   *across* algebraic branches** — small for polish (row 0 is usually
@@ -155,9 +155,9 @@ The metric choice matters here. Under top-1, polish helps
 
 ![Polishing Heatmap — Oracle](figures/F05_polishing_heatmap_oracle.png)
 
-- Of 115 (system, noise) pairs (top-1): polishing **helped** in 44, **hurt** in 7, **neutral** in 64.
-- Under M-bounded: polishing **helped** in 42.
-- Under oracle: polishing **helped** in 42.
+- Of 115 (system, noise) pairs (top-1): polishing **helped** in 43, **hurt** in 6, **neutral** in 66.
+- Under M-bounded: polishing **helped** in 41.
+- Under oracle: polishing **helped** in 41.
 
 ---
 
@@ -216,25 +216,25 @@ The metric choice matters here. Under top-1, polish helps
 
 ### Method Rankings (Top-1, what users see by default)
 1. **AMIGO2** -- 76.1% success@10%, median 633s
-2. **ODEPE-v2 (polish)** -- 75.4% success@10%, median 694s
+2. **ODEPE-v2 (polish)** -- 75.3% success@10%, median 712s
 3. **SHADE+LM** -- 69.8% success@10%, median 372s
-4. **ODEPE-v2 (no polish)** -- 61.6% success@10%, median 743s
+4. **ODEPE-v2 (no polish)** -- 61.8% success@10%, median 762s
 
 ### Method Rankings (M-bounded, paper-headline)
-1. **ODEPE-v2 (polish)** -- 78.5% success@10%, median 694s
+1. **ODEPE-v2 (polish)** -- 78.8% success@10%, median 712s
 2. **AMIGO2** -- 76.1% success@10%, median 633s
 3. **SHADE+LM** -- 69.8% success@10%, median 372s
-4. **ODEPE-v2 (no polish)** -- 65.7% success@10%, median 743s
+4. **ODEPE-v2 (no polish)** -- 66.3% success@10%, median 762s
 
 ### Method Rankings (Oracle, set-credit ceiling)
-1. **ODEPE-v2 (polish)** -- 81.1% success@10%, median 694s
+1. **ODEPE-v2 (polish)** -- 78.8% success@10%, median 712s
 2. **AMIGO2** -- 76.1% success@10%, median 633s
 3. **SHADE+LM** -- 69.8% success@10%, median 372s
-4. **ODEPE-v2 (no polish)** -- 69.7% success@10%, median 743s
+4. **ODEPE-v2 (no polish)** -- 66.3% success@10%, median 762s
 
 ### Key Takeaways
 - **Noise is the primary difficulty driver** — top-1 success drops by ~46pp from noise=0 to noise=1e-2.
-- **Polishing helps** under all three metrics: top-1 +13.8pp, M-bounded +12.9pp, oracle +11.4pp.
-- **The top-1 → M-bounded gap on ODEPE polish** is +3.1pp at @10%. That's how much paper-headline success comes from giving the algorithm credit for finding all M algebraic branches instead of just row 0.
-- **The M-bounded → oracle gap on ODEPE polish** is +2.6pp at @10%. Within-branch sort headroom — smaller than the cross-branch gap.
-- **Best paper-headline method**: ODEPE-v2 (polish) at 78.5%.
+- **Polishing helps** under all three metrics: top-1 +13.5pp, M-bounded +12.5pp, oracle +12.5pp.
+- **The top-1 → M-bounded gap on ODEPE polish** is +3.5pp at @10%. That's how much paper-headline success comes from giving the algorithm credit for finding all M algebraic branches instead of just row 0.
+- **The M-bounded → oracle gap on ODEPE polish** is +0.0pp at @10%. Within-branch sort headroom — smaller than the cross-branch gap.
+- **Best paper-headline method**: ODEPE-v2 (polish) at 78.8%.

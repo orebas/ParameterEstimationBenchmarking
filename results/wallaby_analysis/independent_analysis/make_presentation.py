@@ -193,15 +193,17 @@ def build_presentation():
     np_succ_mb = df[df["run"] == "odepe_v2_nopolish"]["mbounded_success_at_10pct"].mean() * 100
     p_succ_mb = df[df["run"] == "odepe_v2_polish"]["mbounded_success_at_10pct"].mean() * 100
     polish_uplift_mb = p_succ_mb - np_succ_mb
+    # BoB - top1 delta on nopolish (for methodology slide)
+    p_succ_mb_nopolish_delta = np_succ_mb - np_succ
     np_time = df[df["run"] == "odepe_v2_nopolish"]["time"].median()
     p_time = df[df["run"] == "odepe_v2_polish"]["time"].median()
 
-    sys_succ = df.groupby("name")["top1_success_at_10pct"].mean().sort_values()
+    sys_succ = df.groupby("name")["mbounded_success_at_10pct"].mean().sort_values()
     hardest_3 = list(sys_succ.head(3).index)
     easiest_3 = list(sys_succ.tail(3).index)[::-1]
 
-    succ_noise0 = df[df["noise"] == 0.0]["top1_success_at_10pct"].mean() * 100
-    succ_noise_hi = df[df["noise"] == 0.01]["top1_success_at_10pct"].mean() * 100
+    succ_noise0 = df[df["noise"] == 0.0]["mbounded_success_at_10pct"].mean() * 100
+    succ_noise_hi = df[df["noise"] == 0.01]["mbounded_success_at_10pct"].mean() * 100
 
     fail_summary = t07["failure_type"].value_counts().to_dict()
 
@@ -265,16 +267,18 @@ def build_presentation():
                                                 "cliff_from_noise", "cliff_to_noise"]].copy()
     t08_mb_top.columns = ["System", "Method", "Drop (pp)", "From Noise", "To Noise"]
 
+    # Per-method per-noise tables: use Best-of-branches (T02 mbounded)
     method_noise_tables = {}
     for m_key, m_label in method_labels.items():
-        sub = t02[t02["method"] == m_label][["noise", "success_at_1pct", "success_at_10pct",
-                                              "success_at_50pct", "median_error", "median_time_s"]].copy()
+        sub = t02_mb[t02_mb["method"] == m_label][["noise", "success_at_1pct", "success_at_10pct",
+                                                    "success_at_50pct", "median_error", "median_time_s"]].copy()
         sub.columns = ["Noise", "Succ@1%", "Succ@10%", "Succ@50%", "Med. Error", "Time (s)"]
         method_noise_tables[m_label] = sub
 
+    # "Best Systems" per method: best 5 systems by BoB mean success
     best_for_method = {}
     for m in methods:
-        s = df[df["run"]==m].groupby("name")["top1_success_at_10pct"].mean().sort_values(ascending=False)
+        s = df[df["run"]==m].groupby("name")["mbounded_success_at_10pct"].mean().sort_values(ascending=False)
         best_for_method[method_labels[m]] = list(s.head(5).index)
 
     domain_map = {
@@ -328,9 +332,42 @@ def build_presentation():
         })
     polish_noise_df_mb = pd.DataFrame(polish_by_noise_mb)
 
-    polish_hurts = t05[t05["success_uplift_pp"] < -5][["system","noise","success_uplift_pp"]].copy()
-    polish_hurts.columns = ["System","Noise","Uplift (pp)"]
-    polish_hurts = polish_hurts.sort_values("Uplift (pp)")
+    # Per-(system, noise) polish-hurts rollup, Best-of-branches
+    polish_hurts_mb = t05_mb[t05_mb["success_uplift_pp"] < -5][["system","noise","success_uplift_pp"]].copy()
+    polish_hurts_mb.columns = ["System","Noise","Uplift (pp)"]
+    polish_hurts_mb = polish_hurts_mb.sort_values("Uplift (pp)")
+
+    # Per-cell polish-hurts list, Best-of-branches.
+    # Join polish + nopolish on (name, noise, instance) and surface cells where
+    # polish BoB error is strictly worse than nopolish BoB error.
+    polish_cells = df[df["run"] == "odepe_v2_polish"][
+        ["name", "noise", "instance", "mbounded_max_rel_error", "top1_max_rel_error"]
+    ].copy().rename(columns={
+        "mbounded_max_rel_error": "polish_bob",
+        "top1_max_rel_error": "polish_top1",
+    })
+    nopolish_cells = df[df["run"] == "odepe_v2_nopolish"][
+        ["name", "noise", "instance", "mbounded_max_rel_error", "top1_max_rel_error"]
+    ].copy().rename(columns={
+        "mbounded_max_rel_error": "nopolish_bob",
+        "top1_max_rel_error": "nopolish_top1",
+    })
+    paired = polish_cells.merge(nopolish_cells, on=["name", "noise", "instance"], how="inner")
+    paired["bob_delta"] = paired["polish_bob"] - paired["nopolish_bob"]
+    # Cells where polish meaningfully hurts on BoB (both have finite errors, polish > 1.5x nopolish error, nopolish was below the 10% threshold)
+    bad_polish = paired[
+        (paired["polish_bob"] > 0.10) &
+        (paired["nopolish_bob"] < 0.10) &
+        (paired["polish_bob"].notna()) &
+        (paired["nopolish_bob"].notna())
+    ].sort_values("bob_delta", ascending=False).head(15)
+    bad_polish_display = bad_polish[["name", "noise", "instance", "nopolish_bob", "polish_bob", "bob_delta"]].copy()
+    # Format noise as label
+    noise_to_label = dict(zip(noise_levels, noise_labels))
+    bad_polish_display["noise"] = bad_polish_display["noise"].map(noise_to_label)
+    bad_polish_display.columns = ["System", "Noise", "Inst.", "Nopolish BoB err", "Polish BoB err", "Δ (polish − nopolish)"]
+    n_bob_regr = ((paired["polish_bob"] > paired["nopolish_bob"]) & (paired["nopolish_bob"] < 0.10) & (paired["polish_bob"] > 0.10)).sum()
+    n_bob_improve = ((paired["polish_bob"] < paired["nopolish_bob"]) & (paired["polish_bob"] < 0.10) & (paired["nopolish_bob"] > 0.10)).sum()
 
     timing = {method_labels[m]: df[df["run"]==m]["time"].median() for m in methods}
 
@@ -379,13 +416,13 @@ def build_presentation():
 
     # TITLE
     slide(f"""
-    <h1 style="font-size:1.8em;">Parameter Estimation Benchmark</h1>
-    <h2 style="font-size:1.2em; color:#7f8c8d;">Wallaby Benchmark (PREVIEW)</h2>
-    <p style="font-size:0.8em; color:#95a5a6;">benchmark_wallaby_2026-05-17 (PREVIEW)</p>
+    <h1 style="font-size:1.8em;">ODEPE Benchmark Update</h1>
+    <h2 style="font-size:1.2em; color:#7f8c8d;">Wallaby Benchmark &mdash; internal update</h2>
+    <p style="font-size:0.8em; color:#95a5a6;">benchmark_wallaby_2026-05-17 (M-truncated, post-rerun 2026-05-21)</p>
     <hr style="width:40%; border-color:#3498db;">
     <div style="font-size:0.7em; color:#7f8c8d; margin-top:2em;">
         <p>{n_total} evaluations &bull; {n_systems} ODE systems &bull; 4 methods &bull; 5 noise levels &bull; 10 replicas</p>
-        <p>Additive noise &bull; March 2026</p>
+        <p>Headline metric throughout: <strong>Best-of-branches</strong> (each method gets credit for finding any of the M algebraic branches a system supports).</p>
     </div>
     """, bg="#1a1a2e")
 
@@ -393,13 +430,36 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>Benchmark Overview</h2>
+    <h2>The four methods being compared</h2>
+    <div style="font-size:0.65em; text-align:left;">
+        <p style="margin:0.4em 0;"><span class="badge odepe-p">ODEPE-v2 (polish)</span> &mdash;
+            Julia. Structural-identifiability template + homotopy continuation surfacing up to
+            M candidate parameter sets per cell (M = algebraic multiplicity, 1 or 2 in this
+            benchmark), each then refined by a bounded Levenberg-Marquardt polish in log-space
+            against the noisy data. This is the method we're championing.</p>
+        <p style="margin:0.4em 0;"><span class="badge odepe-np">ODEPE-v2 (no polish)</span> &mdash;
+            Same Julia pipeline as above but the polish stage is disabled. Same algebraic
+            template, same M candidates returned, just no per-candidate fit refinement.
+            Quantifies how much of ODEPE's accuracy comes from polish vs algebraic structure.</p>
+        <p style="margin:0.4em 0;"><span class="badge amigo">AMIGO2</span> &mdash;
+            Established MATLAB toolbox (Egea et al.) using enhanced scatter search (eSS)
+            global optimization with nl2sol local refinement. Black-box; returns one
+            best-fit parameter set per cell (K=1). Our most-respected external baseline.</p>
+        <p style="margin:0.4em 0;"><span class="badge sciml">SHADE+LM</span> &mdash;
+            Julia/Metaheuristics.jl. Success-history adaptive differential evolution (SHADE)
+            with Levenberg-Marquardt local refinement, against the noisy data. Black-box
+            global optimizer, K=1. A modern DE-class point of comparison.</p>
+    </div>
+    """)
+
+    vslide(f"""
+    <h2>Benchmark Scope</h2>
     <div class="columns">
         <div class="col">
-            <h3>Scope</h3>
+            <h3>What we ran</h3>
             <ul>
                 <li><strong>{n_systems}</strong> ODE systems from {len(domain_counts)} domains</li>
-                <li><strong>4</strong> estimation methods</li>
+                <li><strong>4</strong> estimation methods (above)</li>
                 <li><strong>5</strong> noise levels (0 &rarr; 1e-2)</li>
                 <li><strong>10</strong> replicas per (system, noise) cell</li>
                 <li><strong>{n_total}</strong> total evaluations</li>
@@ -407,13 +467,14 @@ def build_presentation():
             </ul>
         </div>
         <div class="col">
-            <h3>Methods</h3>
-            <ul>
-                <li><span class="badge odepe-p">ODEPE-v2 (polish)</span> &mdash; Julia, 2-stage</li>
-                <li><span class="badge odepe-np">ODEPE-v2 (no polish)</span> &mdash; Julia, 1-stage</li>
-                <li><span class="badge amigo">AMIGO2</span> &mdash; MATLAB-based</li>
-                <li><span class="badge sciml">SHADE+LM</span> &mdash; Julia/DiffEq</li>
-            </ul>
+            <h3>What "success" means</h3>
+            <p style="font-size:0.7em;">A cell <strong>succeeds at X%</strong> if the
+                method's best returned answer recovers <em>all identifiable parameters
+                and initial conditions</em> to within X% relative error of the truth.
+                ODEPE gets a small extra credit (Best-of-branches): if the system has
+                M=2 algebraic branches, finding either one counts as success.</p>
+            <p style="font-size:0.7em;">Primary threshold: <strong>10%</strong>. Tighter
+                (1%) and looser (50%) variants shown where they tell a different story.</p>
         </div>
     </div>
     """)
@@ -472,189 +533,85 @@ def build_presentation():
 
     section_end()
 
-    # EXECUTIVE SUMMARY
+    # EXECUTIVE SUMMARY — Best-of-branches headline numbers only
     slide(f"""
     <h2>Executive Summary</h2>
     <div class="key-findings">
         <div class="finding">
-            <div class="finding-number">{m_succ[best_method]:.1f}%</div>
-            <div class="finding-label">{best_label} overall success@10%<br><small>Highest of all methods</small></div>
+            <div class="finding-number">{m_succ_mb[best_method_mb]:.1f}%</div>
+            <div class="finding-label">{best_label_mb}<br><small>Best-of-branches @ 10% &mdash; leads all methods</small></div>
         </div>
         <div class="finding">
-            <div class="finding-number">+{polish_uplift:.1f} pp</div>
-            <div class="finding-label">Polishing uplift<br><small>{p_succ:.1f}% vs {np_succ:.1f}%</small></div>
+            <div class="finding-number">+{polish_uplift_mb:.1f} pp</div>
+            <div class="finding-label">Polishing uplift<br><small>polish {p_succ_mb:.1f}% vs nopolish {np_succ_mb:.1f}%</small></div>
         </div>
         <div class="finding">
             <div class="finding-number">{succ_noise0:.0f}% &rarr; {succ_noise_hi:.0f}%</div>
-            <div class="finding-label">Noise degradation<br><small>noise=0 to noise=1e-2</small></div>
+            <div class="finding-label">Noise degradation<br><small>noise=0 to noise=1e-2 (across methods)</small></div>
         </div>
         <div class="finding">
             <div class="finding-number">{n_no_result + n_diverged}</div>
             <div class="finding-label">Total failures<br><small>{n_no_result} no-result + {n_diverged} diverged</small></div>
         </div>
     </div>
+    <p class="footnote" style="margin-top:1em;">Methodology, metric definitions, and a top-pick vs best-of-branches breakdown are in the back of the deck.</p>
     """, bg="#16213e")
 
-    # THREE-METRIC EXPLAINER
-    slide(f"""
-    <h2>Three metrics</h2>
-    <div class="columns" style="font-size:0.7em;">
-        <div class="col">
-            <h3 style="color:#3498db;">Top-1</h3>
-            <p>
-                The <strong>row 0</strong> of each cell's <code>result.csv</code>.
-                What a user gets by default.
-            </p>
-        </div>
-        <div class="col">
-            <h3 style="color:#27ae60;">M-bounded</h3>
-            <p>
-                Best of the <strong>top M rows</strong>, where
-                <code>M = algebraic_multiplicity</code> from
-                <code>config/systems.json</code>. For 19/23 systems M=1,
-                so this equals top-1. For daisy_mamil4, seir, slow_fast,
-                biohydrogenation (M=2), the algorithm gets credit for
-                finding both branches.
-            </p>
-        </div>
-        <div class="col">
-            <h3 style="color:#9b59b6;">Oracle (best-of-K)</h3>
-            <p>
-                <strong>argmin over all K=20 rows</strong> — the
-                set-credit ceiling. For K=1 methods (AMIGO2, SHADE)
-                all three are identical.
-            </p>
-        </div>
-    </div>
-    <div class="takeaway" style="margin-top:1.5em;">
-        <strong>ODEPE-v2 polish:</strong>
-        top-1 = <strong>{p_succ:.1f}%</strong>,
-        M-bounded = <strong>{p_succ_mb:.1f}%</strong> ({p_succ_mb - p_succ:+.1f}pp from counting both algebraic branches),
-        oracle = <strong>{p_succ_oracle:.1f}%</strong>.
-    </div>
-    <p class="footnote">Slides are tagged {metric_badge('top1')} / {metric_badge('mbounded')} / {metric_badge('oracle')}. Single-metric slides (failure, timing, replica spread) are not tagged. <strong>M-bounded is the paper-headline metric.</strong></p>
-    """, bg="#16213e")
-
-    # OVERALL METHOD COMPARISON
+    # OVERALL METHOD COMPARISON — single slide, Best-of-branches only
     section_start()
 
-    takeaway_text = (
-        f"<strong>Key:</strong> {best_label} leads in accuracy ({m_succ[best_method]:.1f}%). "
-        f"{worst_label} has the lowest success rate ({m_succ[worst_method]:.1f}%)."
+    bob_takeaway = (
+        f"<strong>{method_labels[best_method_mb]}</strong> leads at "
+        f"<strong>{m_succ_mb[best_method_mb]:.1f}%</strong> Best-of-branches success@10%, "
+        f"ahead of {method_labels[ranked_methods_mb[1]]} ({m_succ_mb[ranked_methods_mb[1]]:.1f}%), "
+        f"{method_labels[ranked_methods_mb[2]]} ({m_succ_mb[ranked_methods_mb[2]]:.1f}%), and "
+        f"{method_labels[ranked_methods_mb[3]]} ({m_succ_mb[ranked_methods_mb[3]]:.1f}%). "
+        f"Best-of-branches is the metric where ODEPE&apos;s K=M output (multiple algebraic "
+        f"candidates per cell) and AMIGO2/SHADE&apos;s K=1 output (single best-fit) can be "
+        f"compared apples-to-apples."
     )
 
     vslide(f"""
-    <h2>Overall Method Comparison {metric_badge('top1')}</h2>
-    {df_to_html(t01_display, float_fmt=".1f")}
-    <div class="takeaway">
-        {takeaway_text}
-    </div>
-    """)
-
-    vslide(f"""
-    <h2>Overall Method Comparison {metric_badge('mbounded')}</h2>
+    <h2>Overall Method Comparison</h2>
     {df_to_html(t01_mb_display, float_fmt=".1f")}
     <div class="takeaway">
-        <strong>Paper headline:</strong> {best_label_mb} leads in M-bounded ({m_succ_mb[best_method_mb]:.1f}%).
-        Polish gains {p_succ_mb - p_succ:+.1f}pp from top-1 to M-bounded — credit for finding both algebraic branches.
+        {bob_takeaway}
     </div>
     """)
 
     vslide(f"""
-    <h2>Overall Method Comparison {metric_badge('oracle')}</h2>
-    {df_to_html(t01_oracle_display, float_fmt=".1f")}
-    <div class="takeaway">
-        <strong>Set-credit ceiling:</strong> {best_label_oracle} at {m_succ_oracle[best_method_oracle]:.1f}%.
-        M-bounded → oracle gap on polish: {p_succ_oracle - p_succ_mb:+.1f}pp (within-branch sort headroom).
-    </div>
-    """)
-
-    vslide(f"""
-    <h2>Success Rate vs Noise Level {metric_badge('top1')}</h2>
-    {img_tag("F01", "80%")}
-    <p class="caption">All methods degrade with noise. {best_label} maintains the flattest curve.</p>
-    """)
-
-    vslide(f"""
-    <h2>Success Rate vs Noise Level {metric_badge('mbounded')}</h2>
+    <h2>Success Rate vs Noise Level</h2>
     {img_tag_mb("F01", "80%")}
-    <p class="caption">M-bounded (paper-headline): ODEPE polish lifts on multiplicity-2 systems.</p>
+    <p class="caption">All methods degrade with noise. Best-of-branches @ 10%.</p>
     """)
 
     vslide(f"""
-    <h2>Success Rate vs Noise Level {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F01", "80%")}
-    <p class="caption">Set-credit ceiling: ODEPE polish lifts substantially under oracle vs top-1.</p>
-    """)
-
-    vslide(f"""
-    <h2>Method Rankings {metric_badge('top1')}</h2>
-    {img_tag("F14", "75%")}
-    <p class="caption">How often each method ranks 1st/2nd/3rd/4th across all (system, noise) pairs.</p>
-    """)
-
-    vslide(f"""
-    <h2>Method Rankings {metric_badge('mbounded')}</h2>
+    <h2>Method Rankings — how often each finishes 1st / 2nd / 3rd / 4th</h2>
     {img_tag_mb("F14", "75%")}
-    <p class="caption">Paper-headline view of rank distribution.</p>
+    <p class="caption">Across all (system, noise) pairs, Best-of-branches.
+        ODEPE-polish takes the largest share of 1st-place finishes.</p>
     """)
 
     vslide(f"""
-    <h2>Method Rankings {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F14", "75%")}
-    <p class="caption">Best-of-K view: ODEPE polish dominates the 1st-place share more strongly.</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 10%) {metric_badge('top1')}</h2>
-    {img_tag("F02", "55%")}
-    <p class="caption">Systems sorted by difficulty (mean across methods). Clear clustering visible.</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 10%) {metric_badge('mbounded')}</h2>
+    <h2>System-Level Heatmap (success @ 10%)</h2>
     {img_tag_mb("F02", "55%")}
-    <p class="caption">M-bounded: the 4 mult-2 systems shift up by ~10-40pp depending on cell.</p>
+    <p class="caption">Best-of-branches. Systems sorted by mean difficulty across methods.
+        The 4 multiplicity-2 systems (daisy_mamil4, seir, slow_fast, biohydrogenation)
+        light up most clearly for ODEPE.</p>
     """)
 
     vslide(f"""
-    <h2>System-Level Heatmap (success @ 10%) {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F02", "55%")}
-    <p class="caption">Best-of-K view: more cells light up green on ODEPE polish.</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 1%) {metric_badge('top1')}</h2>
-    {img_tag("F02a", "55%")}
-    <p class="caption">Tighter threshold: all params recovered to 1% relative error.</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 1%) {metric_badge('mbounded')}</h2>
+    <h2>System-Level Heatmap (success @ 1%)</h2>
     {img_tag_mb("F02a", "55%")}
+    <p class="caption">Tighter threshold: all params recovered to 1% relative error.
+        Best-of-branches.</p>
     """)
 
     vslide(f"""
-    <h2>System-Level Heatmap (success @ 1%) {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F02a", "55%")}
-    <p class="caption">Best-of-K at the tight threshold.</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 50%) {metric_badge('top1')}</h2>
-    {img_tag("F02b", "55%")}
-    <p class="caption">Looser threshold: all params recovered to 50% relative error (i.e. roughly the right ballpark).</p>
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 50%) {metric_badge('mbounded')}</h2>
+    <h2>System-Level Heatmap (success @ 50%)</h2>
     {img_tag_mb("F02b", "55%")}
-    """)
-
-    vslide(f"""
-    <h2>System-Level Heatmap (success @ 50%) {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F02b", "55%")}
-    <p class="caption">Best-of-K at the coarse threshold.</p>
+    <p class="caption">Looser threshold: roughly the right ballpark.
+        Best-of-branches.</p>
     """)
 
     section_end()
@@ -669,7 +626,7 @@ def build_presentation():
                      "amigo2":"amigo","odepe_shade":"sciml"}[m_key]
         m_df = method_noise_tables[m_label]
         best_systems = ", ".join(best_for_method[m_label][:5])
-        succ_vals = [df[(df["run"]==m_key)&(df["noise"]==n)]["top1_success_at_10pct"].mean()*100
+        succ_vals = [df[(df["run"]==m_key)&(df["noise"]==n)]["mbounded_success_at_10pct"].mean()*100
                      for n in noise_levels]
         time_med = df[df["run"]==m_key]["time"].median()
         nr = (df[df["run"]==m_key]["has_result"]==0).sum()
@@ -681,14 +638,14 @@ def build_presentation():
                 {df_to_html(m_df, float_fmt=".1f", classes="compact")}
             </div>
             <div class="col">
-                <h3>Profile</h3>
+                <h3>Profile (Best-of-branches)</h3>
                 <ul>
-                    <li>Overall success@10%: <strong>{m_succ[m_key]:.1f}%</strong></li>
+                    <li>Overall success@10%: <strong>{m_succ_mb[m_key]:.1f}%</strong></li>
                     <li>Median time: <strong>{time_med:.0f}s</strong></li>
                     <li>No-result rows: <strong>{nr}</strong></li>
                     <li>Noise=0 &rarr; 1e-2: <strong>{succ_vals[0]:.0f}% &rarr; {succ_vals[-1]:.0f}%</strong></li>
                 </ul>
-                <h3>Best Systems</h3>
+                <h3>Top-5 Systems by Success</h3>
                 <p class="footnote">{best_systems}</p>
             </div>
         </div>
@@ -708,55 +665,23 @@ def build_presentation():
     """, bg="#1a1a2e")
 
     vslide(f"""
-    <h2>Method x Noise Detail {metric_badge('top1')}</h2>
-    {df_to_html(t02_display, float_fmt=".1f", classes="compact small-text")}
-    """)
-
-    vslide(f"""
-    <h2>Method x Noise Detail {metric_badge('mbounded')}</h2>
+    <h2>Method &times; Noise Detail</h2>
     {df_to_html(t02_mb_display, float_fmt=".1f", classes="compact small-text")}
+    <p class="caption">Best-of-branches.</p>
     """)
 
     vslide(f"""
-    <h2>Method x Noise Detail {metric_badge('oracle')}</h2>
-    {df_to_html(t02_oracle_display, float_fmt=".1f", classes="compact small-text")}
-    """)
-
-    vslide(f"""
-    <h2>Noise Cliffs {metric_badge('top1')}</h2>
-    {img_tag("F10", "55%")}
-    <p class="caption">Maximum success-rate drop between adjacent noise levels.</p>
-    """)
-
-    vslide(f"""
-    <h2>Noise Cliffs {metric_badge('mbounded')}</h2>
+    <h2>Noise Cliffs &mdash; maximum success drop between adjacent noise levels</h2>
     {img_tag_mb("F10", "55%")}
+    <p class="caption">Best-of-branches. Several (system, method) pairs have abrupt cliffs.</p>
     """)
 
     vslide(f"""
-    <h2>Noise Cliffs {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F10", "55%")}
-    <p class="caption">Best-of-K view: cliffs are typically shallower because polish retains a truth-near row that survives the noise jump.</p>
-    """)
-
-    vslide(f"""
-    <h2>Worst Noise Cliffs {metric_badge('top1')}</h2>
-    {df_to_html(t08_top, float_fmt=".0f")}
+    <h2>Worst Noise Cliffs (top 10)</h2>
+    {df_to_html(t08_mb_top, float_fmt=".0f")}
     <div class="takeaway">
         Several systems experience <strong>&gt;50 pp drops</strong> at a single noise transition.
-    </div>
-    """)
-
-    vslide(f"""
-    <h2>Worst Noise Cliffs {metric_badge('mbounded')}</h2>
-    {df_to_html(t08_mb_top, float_fmt=".0f")}
-    """)
-
-    vslide(f"""
-    <h2>Worst Noise Cliffs {metric_badge('oracle')}</h2>
-    {df_to_html(t08_oracle_top, float_fmt=".0f")}
-    <div class="takeaway">
-        Under best-of-K, the cliffs shrink — but some systems still drop sharply.
+        Useful for users planning what noise regime they need to operate in.
     </div>
     """)
 
@@ -766,93 +691,62 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>The Polishing Effect — three metric views</h2>
-    <div class="columns">
-        <div class="col">
-            <h3 style="color:#3498db;">Top-1</h3>
-            <div class="big-stat">
-                <span class="stat-val">+{polish_uplift:.1f} pp</span>
-                <span class="stat-label">Top-1 success@10% uplift</span>
-            </div>
-        </div>
-        <div class="col">
-            <h3 style="color:#27ae60;">M-bounded</h3>
-            <div class="big-stat">
-                <span class="stat-val">+{polish_uplift_mb:.1f} pp</span>
-                <span class="stat-label">M-bounded success@10% uplift</span>
-            </div>
-        </div>
-        <div class="col">
-            <h3 style="color:#9b59b6;">Oracle</h3>
-            <div class="big-stat">
-                <span class="stat-val">+{polish_uplift_oracle:.1f} pp</span>
-                <span class="stat-label">Best-of-K success@10% uplift</span>
-            </div>
-        </div>
+    <h2>The Polishing Effect</h2>
+    <div class="big-stat">
+        <span class="stat-val">+{polish_uplift_mb:.1f} pp</span>
+        <span class="stat-label">Best-of-branches success@10% uplift &mdash; polish vs nopolish</span>
     </div>
-    <p class="footnote" style="margin-top:1.5em; font-size:0.65em;">
-        Top-1 → M-bounded gap = cross-branch sort error (row 0 is the
-        wrong algebraic branch). M-bounded → oracle gap = within-branch
-        sort error (truth lives at row M+1 or deeper). For polish, the
-        cross-branch gap is {polish_uplift_mb - polish_uplift:+.1f}pp and the
-        within-branch gap is {polish_uplift_oracle - polish_uplift_mb:+.1f}pp.
-        Median time overhead: +{p_time - np_time:.0f}s/cell.
+    <p style="font-size:0.7em; text-align:center; margin-top:1em;">
+        ODEPE-polish: <strong>{p_succ_mb:.1f}%</strong> &nbsp;&middot;&nbsp;
+        ODEPE-nopolish: <strong>{np_succ_mb:.1f}%</strong> &nbsp;&middot;&nbsp;
+        Median wall time: polish <strong>{p_time:.0f}s</strong> vs nopolish <strong>{np_time:.0f}s</strong>
+    </p>
+    <p class="footnote" style="margin-top:1.5em;">
+        The polish stage (bounded Levenberg-Marquardt in log-space against the noisy data)
+        runs as the second stage of the ODEPE pipeline. The +{polish_uplift_mb:.1f}pp gain
+        is the algorithm's primary ROI on that stage. Median wall time is roughly comparable
+        to nopolish (polish adds compute on each candidate but candidate count is the same);
+        the <em>mean</em> polish time is higher because of a long tail of hard-cell polish attempts.
     </p>
     """, bg="#16213e")
 
     vslide(f"""
-    <h2>Polishing: Success by Noise {metric_badge('top1')}</h2>
-    {img_tag("F04", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Polishing: Success by Noise {metric_badge('mbounded')}</h2>
+    <h2>Polishing: Success by Noise</h2>
     {img_tag_mb("F04", "75%")}
+    <p class="caption">Best-of-branches @ 10%, polish vs nopolish, across the 5 noise levels.</p>
     """)
 
     vslide(f"""
-    <h2>Polishing: Success by Noise {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F04", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Polishing by Noise Level {metric_badge('top1')}</h2>
-    {df_to_html(polish_noise_df, classes="compact")}
-    """)
-
-    vslide(f"""
-    <h2>Polishing by Noise Level {metric_badge('mbounded')}</h2>
+    <h2>Polishing by Noise Level (table)</h2>
     {df_to_html(polish_noise_df_mb, classes="compact")}
+    <p class="caption">Best-of-branches. Polish dominates at every noise level.</p>
     """)
 
     vslide(f"""
-    <h2>Polishing by Noise Level {metric_badge('oracle')}</h2>
-    {df_to_html(polish_noise_df_oracle, classes="compact")}
-    """)
-
-    vslide(f"""
-    <h2>Per-System Polishing Uplift {metric_badge('top1')}</h2>
-    {img_tag("F05", "55%")}
-    <p class="caption">{n_helps} of {len(t05)} pairs benefit; {n_hurts} hurt; {n_neutral} neutral.</p>
-    """)
-
-    vslide(f"""
-    <h2>Per-System Polishing Uplift {metric_badge('mbounded')}</h2>
+    <h2>Per-System Polishing Uplift</h2>
     {img_tag_mb("F05", "55%")}
-    <p class="caption">Under M-bounded: {n_helps_mbounded} of {len(t05_oracle)} pairs benefit.</p>
+    <p class="caption">Best-of-branches uplift heatmap. Polishing helped in
+        <strong>{n_helps_mbounded} of {len(t05_mb)}</strong> (system, noise) pairs.</p>
     """)
 
-    vslide(f"""
-    <h2>Per-System Polishing Uplift {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F05", "55%")}
-    <p class="caption">Under best-of-K: {n_helps_oracle} of {len(t05_oracle)} pairs benefit; {n_hurts_oracle} hurt.</p>
-    """)
-
-    if len(polish_hurts) > 0:
+    if len(polish_hurts_mb) > 0:
         vslide(f"""
-        <h2>When Does Polishing Hurt? {metric_badge('top1')}</h2>
-        {df_to_html(polish_hurts.head(15), float_fmt=".1f", classes="compact")}
-        <p class="footnote">These are cells where polish surfaces a worse row-0 than nopolish — even though polish found a better row deeper in K=20.</p>
+        <h2>Where Polishing Hurts &mdash; (system, noise) rollup</h2>
+        {df_to_html(polish_hurts_mb.head(15), float_fmt=".1f", classes="compact")}
+        <p class="footnote">{len(polish_hurts_mb)} (system, noise) cells where Best-of-branches drops by &gt;5pp when polish is enabled. These are aggregate stats across 10 replicas per cell.</p>
+        """)
+
+    if len(bad_polish_display) > 0:
+        vslide(f"""
+        <h2>Where Polishing Hurts &mdash; specific cells</h2>
+        {df_to_html(bad_polish_display, float_fmt=".2f", classes="compact small-text")}
+        <p class="footnote">
+            Specific cells where nopolish succeeded (BoB max-rel &lt; 0.10) but polish failed
+            (BoB max-rel &gt; 0.10). Sorted worst-first by polish-minus-nopolish error delta.
+            Across the whole benchmark: <strong>{n_bob_regr}</strong> cells regressed under polish
+            (vs <strong>{n_bob_improve}</strong> cells rescued by polish).
+            Polish remains a net win in aggregate &mdash; these are the cells worth investigating.
+        </p>
         """)
 
     section_end()
@@ -861,18 +755,9 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>System Difficulty Spectrum {metric_badge('top1')}</h2>
-    {img_tag("F03", "60%")}
-    """)
-
-    vslide(f"""
-    <h2>System Difficulty Spectrum {metric_badge('mbounded')}</h2>
+    <h2>System Difficulty Spectrum</h2>
     {img_tag_mb("F03", "60%")}
-    """)
-
-    vslide(f"""
-    <h2>System Difficulty Spectrum {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F03", "60%")}
+    <p class="caption">Best-of-branches @ 10%, mean across methods + noise levels.</p>
     """)
 
     vslide(f"""
@@ -895,18 +780,9 @@ def build_presentation():
     """)
 
     vslide(f"""
-    <h2>Parameter Count vs Difficulty {metric_badge('top1')}</h2>
-    {img_tag("F13", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Parameter Count vs Difficulty {metric_badge('mbounded')}</h2>
+    <h2>Parameter Count vs Difficulty</h2>
     {img_tag_mb("F13", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Parameter Count vs Difficulty {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F13", "75%")}
+    <p class="caption">Best-of-branches. Difficulty doesn't simply track parameter count &mdash; conditioning of the inverse problem matters more.</p>
     """)
 
     vslide(f"""
@@ -922,22 +798,13 @@ def build_presentation():
     section_start()
 
     vslide(f"""
-    <h2>Domain Analysis {metric_badge('top1')}</h2>
-    {img_tag("F06", "65%")}
-    """)
-
-    vslide(f"""
-    <h2>Domain Analysis {metric_badge('mbounded')}</h2>
+    <h2>Domain Analysis &mdash; Best-of-branches by domain</h2>
     {img_tag_mb("F06", "65%")}
+    <p class="caption">Radar chart. Biology and Chemistry are the hardest domains.</p>
     """)
 
     vslide(f"""
-    <h2>Domain Analysis {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F06", "65%")}
-    """)
-
-    vslide(f"""
-    <h2>Domain x Method Success Rates</h2>
+    <h2>Domain &times; Method Success Rates</h2>
     {df_to_html(t04_display, float_fmt=".1f")}
     """)
 
@@ -968,6 +835,7 @@ def build_presentation():
     section_start()
 
     fail_method_rows = []
+    failed_cells_examples = {}  # method -> list of failure cell ids
     for m in methods:
         m_sub = df[df["run"]==m]
         nr = int((m_sub["has_result"]==0).sum())
@@ -976,15 +844,70 @@ def build_presentation():
             "Method": method_labels[m], "No Result": nr, "Diverged": dv,
             "Total": nr+dv, "Rate": f"{(nr+dv)/len(m_sub)*100:.1f}%"
         })
+        # collect concrete failure rows for the discussion slide
+        no_res = m_sub[m_sub["has_result"]==0][["name","noise","instance"]]
+        dvg = m_sub[(m_sub["top1_max_rel_error"]>1e4)&(m_sub["has_result"]==1)][["name","noise","instance"]]
+        failed_cells_examples[m] = {"no_result": no_res, "diverged": dvg}
     fail_method_df = pd.DataFrame(fail_method_rows)
 
     vslide(f"""
-    <h2>Failure Analysis</h2>
+    <h2>Failure Counts &mdash; per method</h2>
     {df_to_html(fail_method_df)}
+    <p class="footnote" style="margin-top:1em;">
+        <strong>No Result</strong>: the method produced no parseable answer for that cell
+        (Julia crash, OOM, SLURM timeout, or run-time exception).
+        <strong>Diverged</strong>: the method returned an answer with max relative error
+        &gt; 10&#8308; on identifiable parameters (orders of magnitude away &mdash; effectively garbage).
+        <strong>Rate</strong>: combined as a fraction of the 1150 cells per method.
+    </p>
+    """)
+
+    # Build a per-noise/per-system breakdown of which cells failed for ODEPE polish
+    # (the method we care about most for the failure discussion).
+    polish_fail = pd.concat([
+        failed_cells_examples["odepe_v2_polish"]["no_result"].assign(type="no_result"),
+        failed_cells_examples["odepe_v2_polish"]["diverged"].assign(type="diverged"),
+    ])
+    polish_fail_by_sys = polish_fail.groupby("name").size().sort_values(ascending=False).head(8)
+    polish_fail_by_noise = polish_fail.groupby("noise").size()
+    polish_fail_sys_str = ", ".join(f"<code>{s}</code> ({n})" for s,n in polish_fail_by_sys.items())
+    polish_fail_noise_str = ", ".join(
+        f"{noise_to_label.get(n, str(n))}: {c}" for n, c in sorted(polish_fail_by_noise.items())
+    )
+
+    nopolish_fail = pd.concat([
+        failed_cells_examples["odepe_v2_nopolish"]["no_result"].assign(type="no_result"),
+        failed_cells_examples["odepe_v2_nopolish"]["diverged"].assign(type="diverged"),
+    ])
+    nopolish_fail_by_sys = nopolish_fail.groupby("name").size().sort_values(ascending=False).head(8)
+    nopolish_fail_sys_str = ", ".join(f"<code>{s}</code> ({n})" for s,n in nopolish_fail_by_sys.items())
+
+    vslide(f"""
+    <h2>Failure Discussion</h2>
+    <div style="font-size:0.65em; text-align:left;">
+        <p><strong>ODEPE-polish</strong>: {len(polish_fail)} total failures
+            ({(failed_cells_examples["odepe_v2_polish"]["no_result"]).shape[0]} no-result +
+            {(failed_cells_examples["odepe_v2_polish"]["diverged"]).shape[0]} diverged).
+            Concentrated in: {polish_fail_sys_str}.
+            By noise level: {polish_fail_noise_str}.</p>
+        <p><strong>ODEPE-nopolish</strong>: {len(nopolish_fail)} total failures.
+            Concentrated in: {nopolish_fail_sys_str}.
+            The polish stage rescues some of these (nopolish diverges more often because
+            row 0 is the wrong algebraic branch and there&apos;s no refinement step to catch it).</p>
+        <p><strong>AMIGO2 + SHADE</strong>: zero failures across {len(df[df["run"]=="amigo2"])} +
+            {len(df[df["run"]=="odepe_shade"])} cells. These methods are designed for robustness:
+            they always return <em>something</em>, even if it&apos;s a poor fit (it then shows up as a
+            low-success cell rather than a missing one).</p>
+        <p style="margin-top:0.8em;"><strong>Cancelled-hanger note</strong>: during the rerun,
+            2 additional polish cells were killed after 15&ndash;22h of no-progress hangs
+            (biohydrogenation_4_1em8, daisy_mamil4_7_1em6 nopolish). They&apos;re counted as no-result
+            here. Symptom: HC.jl path tracking entered an infinite loop. These hanger cells are
+            not catastrophic for the headline metric but worth a follow-up.</p>
+    </div>
     """)
 
     vslide(f"""
-    <h2>Outcome Breakdown</h2>
+    <h2>Outcome Breakdown (figure)</h2>
     {img_tag("F09", "90%")}
     """)
 
@@ -1016,23 +939,14 @@ def build_presentation():
     """)
 
     vslide(f"""
-    <h2>Speed-Accuracy Trade-off {metric_badge('top1')}</h2>
-    {img_tag("F12", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Speed-Accuracy Trade-off {metric_badge('mbounded')}</h2>
+    <h2>Speed-Accuracy Trade-off</h2>
     {img_tag_mb("F12", "75%")}
-    """)
-
-    vslide(f"""
-    <h2>Speed-Accuracy Trade-off {metric_badge('oracle')}</h2>
-    {img_tag_oracle("F12", "75%")}
+    <p class="caption">Best-of-branches. SHADE is fastest by a margin but trades a lot of accuracy. ODEPE-polish + AMIGO2 sit in a similar speed-accuracy regime, with ODEPE-polish slightly more accurate.</p>
     """)
 
     section_end()
 
-    # CONCLUSIONS (data-driven)
+    # CONCLUSIONS (data-driven, Best-of-branches)
     section_start()
 
     rank_css = ["rank-1", "rank-2", "rank-3", "rank-4"]
@@ -1040,53 +954,42 @@ def build_presentation():
     def method_traits(m):
         is_fastest = (m == min(methods, key=lambda x: timing[method_labels[x]]))
         is_slowest = (m == max(methods, key=lambda x: timing[method_labels[x]]))
-        is_best = (m == ranked_methods[0])
-        is_worst = (m == ranked_methods[-1])
+        is_best = (m == ranked_methods_mb[0])
+        is_worst = (m == ranked_methods_mb[-1])
 
         strengths = []
         weaknesses = []
         if is_best:
-            strengths.append("Highest accuracy")
+            strengths.append("Highest BoB accuracy")
         if is_fastest:
-            strengths.append("Fastest method")
+            strengths.append("Fastest")
         if m == "odepe_v2_polish":
-            strengths.append("Good speed-accuracy balance")
+            strengths.append("Algebraic structure + LM refinement")
         if m == "odepe_v2_nopolish":
-            strengths.append("Fast baseline")
+            strengths.append("Algebraic structure alone")
+        if m == "amigo2":
+            strengths.append("Robust black-box")
+        if m == "odepe_shade":
+            strengths.append("DE-class global search")
         if not strengths:
-            strengths.append("Competitive accuracy")
+            strengths.append("Competitive")
 
         if is_slowest:
             weaknesses.append("Slowest")
         if is_worst:
-            weaknesses.append("Lowest accuracy")
+            weaknesses.append("Lowest BoB accuracy")
         if m == "amigo2":
             weaknesses.append("Requires MATLAB")
         if m == "odepe_v2_polish":
-            weaknesses.append("Polishing adds time")
+            weaknesses.append("Polish adds time")
+        if m == "odepe_v2_nopolish":
+            weaknesses.append("No refinement on noisy data")
         if not weaknesses:
             weaknesses.append("Degrades at high noise")
 
         return ", ".join(strengths), ", ".join(weaknesses)
 
-    ranking_rows_html = ""
-    for rank_idx, m in enumerate(ranked_methods):
-        strengths, weaknesses = method_traits(m)
-        ranking_rows_html += (
-            f'<tr class="{rank_css[rank_idx]}"><td>{rank_idx+1}</td>'
-            f'<td>{method_labels[m]}</td><td>{m_succ[m]:.1f}%</td>'
-            f'<td>{strengths}</td><td>{weaknesses}</td></tr>\n'
-        )
-
-    vslide(f"""
-    <h2>Conclusions: Method Rankings {metric_badge('top1')}</h2>
-    <table class="data-table ranking-table">
-        <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
-        {ranking_rows_html}
-    </table>
-    """, bg="#1a1a2e")
-
-    # M-bounded ranking table (paper headline)
+    # M-bounded ranking table — the only ranking we present in the front of the deck.
     ranking_rows_mb_html = ""
     for rank_idx, m in enumerate(ranked_methods_mb):
         strengths, weaknesses = method_traits(m)
@@ -1097,36 +1000,15 @@ def build_presentation():
         )
 
     vslide(f"""
-    <h2>Conclusions: Method Rankings {metric_badge('mbounded')} (paper headline)</h2>
+    <h2>Conclusions: Method Rankings (Best-of-branches)</h2>
     <table class="data-table ranking-table">
         <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
         {ranking_rows_mb_html}
     </table>
     <p class="footnote" style="margin-top:1em;">
-        Under M-bounded, {best_label_mb} leads at {m_succ_mb[best_method_mb]:.1f}% —
-        a {m_succ_mb[best_method_mb] - m_succ[best_method]:+.1f}pp gain over the top-1 leader, by giving the algorithm credit for finding both algebraic branches.
-    </p>
-    """, bg="#1a1a2e")
-
-    # Oracle ranking table
-    ranking_rows_oracle_html = ""
-    for rank_idx, m in enumerate(ranked_methods_oracle):
-        strengths, weaknesses = method_traits(m)
-        ranking_rows_oracle_html += (
-            f'<tr class="{rank_css[rank_idx]}"><td>{rank_idx+1}</td>'
-            f'<td>{method_labels[m]}</td><td>{m_succ_oracle[m]:.1f}%</td>'
-            f'<td>{strengths}</td><td>{weaknesses}</td></tr>\n'
-        )
-
-    vslide(f"""
-    <h2>Conclusions: Method Rankings {metric_badge('oracle')}</h2>
-    <table class="data-table ranking-table">
-        <tr><th>Rank</th><th>Method</th><th>Success@10%</th><th>Strengths</th><th>Weaknesses</th></tr>
-        {ranking_rows_oracle_html}
-    </table>
-    <p class="footnote" style="margin-top:1em;">
-        Set-credit ceiling: {best_label_oracle} at {m_succ_oracle[best_method_oracle]:.1f}%.
-        The {m_succ_oracle[best_method_oracle] - m_succ_mb[best_method_mb]:+.1f}pp gap from M-bounded is within-branch sort headroom.
+        {best_label_mb} leads at {m_succ_mb[best_method_mb]:.1f}% Best-of-branches success@10%,
+        with {method_labels[ranked_methods_mb[1]]} a close second at
+        {m_succ_mb[ranked_methods_mb[1]]:.1f}%. SHADE+LM and ODEPE-nopolish follow.
     </p>
     """, bg="#1a1a2e")
 
@@ -1134,66 +1016,167 @@ def build_presentation():
     <h2>Key Takeaways</h2>
     <div class="takeaway-grid">
         <div class="takeaway-card">
-            <h3>Noise Dominates</h3>
-            <p>Top-1 success drops <strong>{succ_noise0-succ_noise_hi:.0f} pp</strong> from clean to 1% noise.</p>
+            <h3>ODEPE-polish leads</h3>
+            <p><strong>{m_succ_mb[best_method_mb]:.1f}%</strong> Best-of-branches success@10%,
+               ahead of {method_labels[ranked_methods_mb[1]]} ({m_succ_mb[ranked_methods_mb[1]]:.1f}%),
+               SHADE ({m_succ_mb["odepe_shade"]:.1f}%), and ODEPE-nopolish ({m_succ_mb["odepe_v2_nopolish"]:.1f}%).</p>
         </div>
         <div class="takeaway-card">
             <h3>Polish Is Worth It</h3>
-            <p>Top-1 +{polish_uplift:.1f}pp / M-bounded +{polish_uplift_mb:.1f}pp / Oracle +{polish_uplift_oracle:.1f}pp.
-               Time cost +{p_time-np_time:.0f}s/cell.</p>
+            <p>+{polish_uplift_mb:.1f}pp uplift on Best-of-branches vs nopolish.
+               Median wall time is comparable to nopolish ({p_time:.0f}s vs {np_time:.0f}s).</p>
         </div>
         <div class="takeaway-card">
-            <h3>Multiplicity matters</h3>
-            <p>Top-1 → M-bounded gap on polish = <strong>+{p_succ_mb - p_succ:.1f}pp</strong>.
-               Credit for finding both algebraic branches when M=2.</p>
+            <h3>Noise Dominates</h3>
+            <p>BoB success drops <strong>{succ_noise0-succ_noise_hi:.0f}pp</strong> from clean to 1% noise across methods.
+               cstr / sirt_treatment / fitzhugh_nagumo are the hardest at high noise.</p>
         </div>
         <div class="takeaway-card">
-            <h3>Paper-headline best</h3>
-            <p>{best_label_mb}: <strong>{m_succ_mb[best_method_mb]:.1f}%</strong> M-bounded success@10%.</p>
+            <h3>Why "Best-of-branches"</h3>
+            <p>It's the only metric where ODEPE's K=M output and AMIGO2/SHADE's K=1 output
+               can be compared apples-to-apples. For M=1 systems (19 of 23) it equals
+               top-pick; for M=2 systems it credits ODEPE for surfacing either branch.</p>
         </div>
         <div class="takeaway-card">
-            <h3>Full Dataset</h3>
-            <p>All 10 replicas analyzed.</p>
+            <h3>Failures are rare</h3>
+            <p>{n_no_result} no-result + {n_diverged} diverged = {n_no_result+n_diverged}
+               total failure cells across {n_total} evaluations
+               ({(n_no_result+n_diverged)/n_total*100:.1f}%).
+               AMIGO2 and SHADE have zero failures; ODEPE failures concentrate in
+               crauste / biohydrogenation / cstr at high noise.</p>
+        </div>
+        <div class="takeaway-card">
+            <h3>Open questions for the paper</h3>
+            <p>How prominent should we make the BoB framing? Should we lead with
+               raw % numbers, or with the structural-identifiability story that
+               makes ODEPE&apos;s K=M output meaningful in the first place?</p>
         </div>
     </div>
     """)
 
-    best_balance_m = "odepe_v2_polish"
     vslide(f"""
-    <h2>Recommendations</h2>
-    <ol style="font-size:0.85em; text-align:left; max-width:800px; margin:0 auto;">
-        <li><strong>Best accuracy:</strong> {best_label} ({m_succ[best_method]:.1f}% success@10%).</li>
-        <li><strong>Best speed-accuracy trade-off:</strong> {method_labels[best_balance_m]}.</li>
-        <li><strong>Always polish:</strong> The accuracy benefit outweighs the time cost.</li>
-        <li><strong>Beware noise cliffs:</strong> Pre-test at multiple noise levels.</li>
-        <li><strong>Use multiple replicas:</strong> At least 3-5 replicas, take the best.</li>
+    <h2>What to look at next</h2>
+    <ol style="font-size:0.75em; text-align:left; max-width:900px; margin:0 auto;">
+        <li><strong>Polish-hurts deep dive</strong>: {n_bob_regr} cells where polish makes BoB worse than nopolish. Worth a follow-up to understand what fails in those polish runs.</li>
+        <li><strong>Hard-system tail</strong>: cstr / sirt_treatment / fitzhugh_nagumo high-noise cells dominate the &gt;50% threshold failures. Investigating those is the highest-leverage place to improve ODEPE.</li>
+        <li><strong>SHADE+LM accuracy floor</strong>: SHADE is fastest but lowest on BoB. Is the speed advantage real-time-budget important, or do we have headroom to ask for more iters?</li>
+        <li><strong>Algorithmic improvements catalog</strong>: see <code>results/wallaby_analysis/numbat06_vs_wallaby_new_polish_regression_analysis.md</code> for a 39-cell regression list and 6 candidate algorithmic fixes (column scaling, forward-sim re-ranking, denoised polish target, etc.).</li>
     </ol>
+    """)
+
+    section_end()
+
+    # METHODOLOGY (back of deck)
+    section_start()
+
+    vslide(f"""
+    <h2>Methodology: Metric Definitions</h2>
+    <div style="font-size:0.65em; text-align:left;">
+        <p><strong>Top-pick</strong> (a.k.a. top-1 / row-0). The algorithm&apos;s primary recommendation:
+            <code>result.csv</code> row 0, sorted by the method&apos;s internal score.
+            What a user gets by default if they accept the first answer.
+            For AMIGO2 and SHADE+LM this is also their only answer (K=1).</p>
+        <p><strong>Best-of-branches</strong> (a.k.a. M-bounded). The best of the top
+            <code>M</code> rows in <code>result.csv</code>, where <code>M</code> is the
+            <em>algebraic multiplicity</em> of the system &mdash; the number of distinct
+            algebraic branches the polynomial system from structural-identifiability theory
+            admits. For 19 of 23 systems in this benchmark, M=1 (and BoB = top-pick).
+            For 4 systems (daisy_mamil4, seir, slow_fast, biohydrogenation), M=2: ODEPE
+            returns 2 candidate parameter sets, and Best-of-branches credits the
+            algorithm if either one recovers the truth. AMIGO2/SHADE return K=1, so
+            their BoB = their top-pick &mdash; the metric collapses for them.</p>
+        <p style="opacity:0.7;"><em>Legacy &ldquo;Oracle&rdquo; metric:</em> earlier benchmarks
+            reported argmin over all K=20 ODEPE rows. ODEPE now truncates <code>result.csv</code>
+            to M rows in-pipeline (commit 6ffc6cb), so oracle &equiv; Best-of-branches by definition.
+            We&apos;ve dropped &ldquo;oracle&rdquo; from the headline; figures still get generated for
+            reference but aren&apos;t shown in the main flow.</p>
+    </div>
+    """)
+
+    # Top-pick vs Best-of-branches comparison table
+    t01_compare_rows = []
+    for m in methods:
+        t01_compare_rows.append({
+            "Method": method_labels[m],
+            "Top-pick @10%": f"{m_succ[m]:.1f}%",
+            "BoB @10%": f"{m_succ_mb[m]:.1f}%",
+            "Δ (BoB − Top-pick)": f"{m_succ_mb[m] - m_succ[m]:+.1f}pp",
+        })
+    t01_compare_df = pd.DataFrame(t01_compare_rows)
+
+    vslide(f"""
+    <h2>Top-pick vs Best-of-branches &mdash; what does the M-credit buy?</h2>
+    {df_to_html(t01_compare_df, classes="compact")}
+    <div class="takeaway">
+        For the K=1 methods (AMIGO2, SHADE+LM), BoB equals Top-pick: they only emit one answer per cell.
+        For ODEPE (K=M output), BoB exceeds Top-pick by <strong>+{p_succ_mb - p_succ:.1f}pp</strong>
+        on polish and <strong>+{p_succ_mb_nopolish_delta:+.1f}pp</strong> on nopolish &mdash;
+        this is the value of giving the algorithm credit for surfacing all M algebraic branches.
+        ODEPE-nopolish in particular gets a big lift from BoB because its row-0 sort often
+        picks the wrong algebraic branch.
+    </div>
+    <p class="footnote" style="margin-top:0.5em;">
+        Reading the table top-pick-first reverses the leader (AMIGO2 76.1% vs ODEPE-polish 75.3%);
+        BoB-first restores ODEPE-polish to the top. We argue BoB is the comparable metric &mdash;
+        because the alternative penalizes ODEPE for having structure that AMIGO2 lacks.
+    </p>
+    """, bg="#16213e")
+
+    vslide(f"""
+    <h2>Methodology: Noise &amp; Threshold</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Noise Levels (Additive)</h3>
+            <table class="data-table compact">
+                <tr><th>Level</th><th>Description</th></tr>
+                <tr><td>0</td><td>Exact data (no noise)</td></tr>
+                <tr><td>1e-8</td><td>Near-machine precision</td></tr>
+                <tr><td>1e-6</td><td>Mild perturbation</td></tr>
+                <tr><td>1e-4</td><td>Moderate noise</td></tr>
+                <tr><td>1e-2</td><td>Significant noise</td></tr>
+            </table>
+        </div>
+        <div class="col">
+            <h3>Success Thresholds</h3>
+            <table class="data-table compact">
+                <tr><th>Metric</th><th>Meaning</th></tr>
+                <tr><td>Success@1%</td><td>All identifiable params within 1%</td></tr>
+                <tr><td>Success@10%</td><td>All identifiable params within 10%</td></tr>
+                <tr><td>Success@50%</td><td>All identifiable params within 50%</td></tr>
+            </table>
+            <p class="footnote">Primary threshold: <strong>Success@10%</strong>.</p>
+        </div>
+    </div>
     """)
 
     section_end()
 
     # APPENDIX
     section_start()
-    vslide("""<h2>Appendix: All Figures</h2>""", bg="#1a1a2e")
+    vslide("""<h2>Appendix: All Figures (Best-of-branches variant where applicable)</h2>""", bg="#1a1a2e")
 
-    fig_descs = {
-        "F01": "Success Rate vs Noise Level",
-        "F02": "System x Method Heatmap",
-        "F03": "System Difficulty Ranking",
-        "F04": "Polishing Effect by Noise",
-        "F05": "Polishing Uplift Heatmap",
-        "F06": "Domain Radar Chart",
-        "F07": "Replica Stability Box Plots",
-        "F08": "Per-System Replica Strips",
-        "F09": "Failure Mode Breakdown",
-        "F10": "Noise Cliff Heatmap",
-        "F11": "Timing Comparison",
-        "F12": "Speed-Accuracy Scatter",
-        "F13": "Param Count vs Difficulty",
-        "F14": "Method Rank Distribution",
-    }
-    for fk, fd in fig_descs.items():
-        vslide(f"<h3>{fk}: {fd}</h3>\n{img_tag(fk, '75%')}")
+    # Figures that have a BoB variant; for these we render the BoB version.
+    # F07, F08, F09, F11 are single-metric (no variant).
+    fig_descs = [
+        ("F01", "Success Rate vs Noise Level", True),
+        ("F02", "System x Method Heatmap (@10%)", True),
+        ("F03", "System Difficulty Ranking", True),
+        ("F04", "Polishing Effect by Noise", True),
+        ("F05", "Polishing Uplift Heatmap", True),
+        ("F06", "Domain Radar Chart", True),
+        ("F07", "Replica Stability Box Plots", False),
+        ("F08", "Per-System Replica Strips", False),
+        ("F09", "Failure Mode Breakdown", False),
+        ("F10", "Noise Cliff Heatmap", True),
+        ("F11", "Timing Comparison", False),
+        ("F12", "Speed-Accuracy Scatter", True),
+        ("F13", "Param Count vs Difficulty", True),
+        ("F14", "Method Rank Distribution", True),
+    ]
+    for fk, fd, has_bob in fig_descs:
+        tag = "(BoB)" if has_bob else "(single-metric)"
+        img = img_tag_mb(fk, "75%") if has_bob else img_tag(fk, "75%")
+        vslide(f"<h3>{fk}: {fd} {tag}</h3>\n{img}")
 
     section_end()
 

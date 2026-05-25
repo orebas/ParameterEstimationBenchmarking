@@ -1,0 +1,80 @@
+{
+  "_meta": {
+    "schema_version": 1,
+    "created_from_odepe_sha": "d27ed1ecca44107711acf811c239e89480f94d65",
+    "notes": "Branch-aware metadata sidecar. Used only by post-hoc analysis scripts (results/_shared/branch_classifier.py), NEVER passed to the estimator. The estimator never reads this file. Truth-aware orbit info is for paper-side scoring only. Schema described in results/_shared/branch_classifier.py."
+  },
+
+  "latent_subpopulation_branch": {
+    "algebraic_multiplicity": 6,
+    "physical_multiplicity_positive_bounds": 6,
+    "branch_orbit": {
+      "type": "label_permutation",
+      "permuted_groups": [
+        ["a1", "a2", "a3"],
+        ["b1", "b2", "b3"],
+        ["I1", "I2", "I3"]
+      ],
+      "fixed": ["S", "R"]
+    },
+    "notes": "Constructed branch-stress system. Three latent subpopulations with distinct rates observed only through their sum. SI marks the subpopulation states + rates as locally identifiable; algebraic multiplicity = 3! = 6 from the label-permutation symmetry."
+  },
+
+  "latent_subpopulation_observed_control": {
+    "algebraic_multiplicity": 1,
+    "physical_multiplicity_positive_bounds": 1,
+    "branch_orbit": null,
+    "notes": "Control case for latent_subpopulation_branch. Same ODE; subpopulations observed separately so the label symmetry is broken. M=1 by construction."
+  },
+
+  "receptor_subtype_binding_branch": {
+    "algebraic_multiplicity": 2,
+    "physical_multiplicity_positive_bounds": 2,
+    "branch_orbit": {
+      "type": "involution",
+      "swap_pairs": [
+        ["R1tot", "R2tot"],
+        ["kon1", "kon2"],
+        ["koff1", "koff2"],
+        ["Ca", "Cb"]
+      ],
+      "fixed": ["L"]
+    },
+    "notes": "Constructed branch-stress system. Two-receptor-subtype binding; only total bound signal observed. M=2 from the subtype-label swap symmetry."
+  },
+
+  "receptor_subtype_binding_observed_control": {
+    "algebraic_multiplicity": 1,
+    "physical_multiplicity_positive_bounds": 1,
+    "branch_orbit": null,
+    "notes": "Control case for receptor_subtype_binding_branch. Separately observed Ca and Cb removes the label ambiguity."
+  },
+
+  "daisy_mamil4": {
+    "algebraic_multiplicity": 2,
+    "physical_multiplicity_positive_bounds": 2,
+    "branch_orbit": null,
+    "notes": "Wallaby M=2 system. Empirical row-1/row-0 transformation observed in repro/multiplicity_complete_2026_05_19/branch_transformations.txt: pair-product invariances {k13*k14, k31*k41, x3*x4} all hold across the two branches (scale-pair transformation, not a clean label permutation). Branch analysis uses cluster-distinctness fallback."
+  },
+
+  "seir": {
+    "algebraic_multiplicity": 2,
+    "physical_multiplicity_positive_bounds": 2,
+    "branch_orbit": null,
+    "notes": "Wallaby M=2 system. Empirical observation: S*nu is invariant across the two branches; b is unchanged; E, S, a, nu transform in a coupled non-permutation way. Cluster-distinctness fallback used."
+  },
+
+  "slow_fast": {
+    "algebraic_multiplicity": 2,
+    "physical_multiplicity_positive_bounds": 1,
+    "branch_orbit": null,
+    "notes": "Wallaby M=2 system. Empirical observation: k1*k2 and k2*xB invariant across branches; xA flips sign in the alternate branch (negative xA) so the second algebraic branch is OUT OF BOUNDS under wallaby's positivity domain. Physical M = 1; algebraic M = 2. Cluster-distinctness fallback used."
+  },
+
+  "biohydrogenation": {
+    "algebraic_multiplicity": 2,
+    "physical_multiplicity_positive_bounds": 1,
+    "branch_orbit": null,
+    "notes": "Wallaby M=2 system. Empirical observation: at low noise the two algebraic branches converge numerically (Row1/Row0 ratios all ~1.0); the second branch's physical realization may be out-of-bounds. Physical M = 1; algebraic M = 2 retained. Cluster-distinctness fallback used."
+  }
+}

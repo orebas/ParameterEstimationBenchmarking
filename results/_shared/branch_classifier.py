@@ -398,6 +398,15 @@ def compute_branch_metrics(
     hit_any = any(e is not None and e <= success_threshold for e in errors)
 
     # distinct_branch_hits + branch_coverage_fraction
+    # We cap distinct_branch_hits at physical_multiplicity_positive_bounds so the
+    # metric reflects ALGEBRAIC branch coverage (paper-meaningful) rather than
+    # raw geometric cluster count. Without the cap, systems with
+    # physical_M < algebraic_M (e.g., biohydrogenation, slow_fast under wallaby's
+    # positivity bounds) can report distinct > physical_M when ODEPE returns
+    # numerically-separable but algebraically-duplicate candidates.
+    expected_M = metadata.algebraic_multiplicity
+    expected_M_phys = metadata.physical_multiplicity_positive_bounds
+
     if metadata.branch_orbit is not None:
         # Orbit-based: count unique orbit indices among successful candidates
         successful_branches = {
@@ -405,7 +414,7 @@ def compute_branch_metrics(
             for i, e in enumerate(errors)
             if e is not None and e <= success_threshold
         }
-        distinct = len(successful_branches)
+        raw_distinct = len(successful_branches)
     else:
         # Cluster-distinctness fallback: count distinct clusters that contain a
         # successful candidate
@@ -415,10 +424,10 @@ def compute_branch_metrics(
             for i, e in enumerate(errors)
             if e is not None and e <= success_threshold
         }
-        distinct = len(successful_cluster_ids)
+        raw_distinct = len(successful_cluster_ids)
 
-    expected_M = metadata.algebraic_multiplicity
-    expected_M_phys = metadata.physical_multiplicity_positive_bounds
+    # Cap at physical M so coverage doesn't exceed 100%.
+    distinct = min(raw_distinct, expected_M_phys) if expected_M_phys > 0 else raw_distinct
     coverage = distinct / expected_M_phys if expected_M_phys > 0 else 0.0
 
     # duplicate_branch_fraction: fraction of candidates that share an

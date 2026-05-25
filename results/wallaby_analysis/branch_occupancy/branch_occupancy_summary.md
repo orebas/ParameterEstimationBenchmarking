@@ -21,12 +21,12 @@ For wallaby M=2 systems we use cluster-distinctness (orbit=null in the sidecar) 
 | seir | ODEPE-v2 (no polish) | 50 | 58.0% | 0.7800 | 0.0% | 39.0% | 2.00 |
 | seir | AMIGO2 | 50 | 60.0% | 0.6000 | 0.0% | 30.0% | 1.00 |
 | seir | SHADE+LM | 50 | 56.0% | 0.5600 | 0.0% | 28.0% | 1.00 |
-| slow_fast | ODEPE-v2 (polish) | 50 | 90.0% | 0.9800 | 0.0% | 98.0% | 2.00 |
+| slow_fast | ODEPE-v2 (polish) | 50 | 90.0% | 0.9000 | 0.0% | 90.0% | 2.00 |
 | slow_fast | ODEPE-v2 (no polish) | 50 | 94.0% | 0.9400 | 0.0% | 94.0% | 2.00 |
 | slow_fast | AMIGO2 | 50 | 92.0% | 0.9200 | 0.0% | 92.0% | 1.00 |
 | slow_fast | SHADE+LM | 50 | 80.0% | 0.8000 | 0.0% | 80.0% | 1.00 |
-| biohydrogenation | ODEPE-v2 (polish) | 50 | 56.0% | 1.1000 | 1.0% | 110.0% | 1.96 |
-| biohydrogenation | ODEPE-v2 (no polish) | 50 | 42.0% | 0.7400 | 0.0% | 74.0% | 2.00 |
+| biohydrogenation | ODEPE-v2 (polish) | 50 | 56.0% | 0.5600 | 1.0% | 56.0% | 1.96 |
+| biohydrogenation | ODEPE-v2 (no polish) | 50 | 42.0% | 0.4200 | 0.0% | 42.0% | 2.00 |
 | biohydrogenation | AMIGO2 | 50 | 0.0% | 0.0000 | 0.0% | 0.0% | 1.00 |
 | biohydrogenation | SHADE+LM | 50 | 8.0% | 0.0800 | 0.0% | 8.0% | 1.00 |
 
@@ -93,15 +93,15 @@ _Wallaby M=2 system. Empirical observation: k1*k2 and k2*xB invariant across bra
 
 | Noise | Method | n | hit-any | mean distinct | mean duplicate | mean coverage |
 |---|---|---:|---:|---:|---:|---:|
-| 0 | ODEPE-v2 (polish) | 10 | 100.0% | 1.10 | 0.0% | 110.0% |
+| 0 | ODEPE-v2 (polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 0 | ODEPE-v2 (no polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 0 | AMIGO2 | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 0 | SHADE+LM | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
-| 1em8 | ODEPE-v2 (polish) | 10 | 100.0% | 1.10 | 0.0% | 110.0% |
+| 1em8 | ODEPE-v2 (polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em8 | ODEPE-v2 (no polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em8 | AMIGO2 | 10 | 90.0% | 0.90 | 0.0% | 90.0% |
 | 1em8 | SHADE+LM | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
-| 1em6 | ODEPE-v2 (polish) | 10 | 100.0% | 1.10 | 0.0% | 110.0% |
+| 1em6 | ODEPE-v2 (polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em6 | ODEPE-v2 (no polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em6 | AMIGO2 | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em6 | SHADE+LM | 10 | 90.0% | 0.90 | 0.0% | 90.0% |
@@ -109,7 +109,7 @@ _Wallaby M=2 system. Empirical observation: k1*k2 and k2*xB invariant across bra
 | 1em4 | ODEPE-v2 (no polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 1em4 | AMIGO2 | 10 | 90.0% | 0.90 | 0.0% | 90.0% |
 | 1em4 | SHADE+LM | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
-| 1em2 | ODEPE-v2 (polish) | 10 | 80.0% | 0.90 | 0.0% | 90.0% |
+| 1em2 | ODEPE-v2 (polish) | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
 | 1em2 | ODEPE-v2 (no polish) | 10 | 70.0% | 0.70 | 0.0% | 70.0% |
 | 1em2 | AMIGO2 | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
 | 1em2 | SHADE+LM | 10 | 70.0% | 0.70 | 0.0% | 70.0% |
@@ -120,19 +120,19 @@ _Wallaby M=2 system. Empirical observation: at low noise the two algebraic branc
 
 | Noise | Method | n | hit-any | mean distinct | mean duplicate | mean coverage |
 |---|---|---:|---:|---:|---:|---:|
-| 0 | ODEPE-v2 (polish) | 10 | 100.0% | 2.00 | 0.0% | 200.0% |
-| 0 | ODEPE-v2 (no polish) | 10 | 100.0% | 2.00 | 0.0% | 200.0% |
+| 0 | ODEPE-v2 (polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
+| 0 | ODEPE-v2 (no polish) | 10 | 100.0% | 1.00 | 0.0% | 100.0% |
 | 0 | AMIGO2 | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
 | 0 | SHADE+LM | 10 | 20.0% | 0.20 | 0.0% | 20.0% |
-| 1em8 | ODEPE-v2 (polish) | 10 | 90.0% | 1.70 | 5.6% | 170.0% |
-| 1em8 | ODEPE-v2 (no polish) | 10 | 70.0% | 1.10 | 0.0% | 110.0% |
+| 1em8 | ODEPE-v2 (polish) | 10 | 90.0% | 0.90 | 5.6% | 90.0% |
+| 1em8 | ODEPE-v2 (no polish) | 10 | 70.0% | 0.70 | 0.0% | 70.0% |
 | 1em8 | AMIGO2 | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
 | 1em8 | SHADE+LM | 10 | 20.0% | 0.20 | 0.0% | 20.0% |
-| 1em6 | ODEPE-v2 (polish) | 10 | 80.0% | 1.60 | 0.0% | 160.0% |
-| 1em6 | ODEPE-v2 (no polish) | 10 | 40.0% | 0.60 | 0.0% | 60.0% |
+| 1em6 | ODEPE-v2 (polish) | 10 | 80.0% | 0.80 | 0.0% | 80.0% |
+| 1em6 | ODEPE-v2 (no polish) | 10 | 40.0% | 0.40 | 0.0% | 40.0% |
 | 1em6 | AMIGO2 | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
 | 1em6 | SHADE+LM | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
-| 1em4 | ODEPE-v2 (polish) | 10 | 10.0% | 0.20 | 0.0% | 20.0% |
+| 1em4 | ODEPE-v2 (polish) | 10 | 10.0% | 0.10 | 0.0% | 10.0% |
 | 1em4 | ODEPE-v2 (no polish) | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
 | 1em4 | AMIGO2 | 10 | 0.0% | 0.00 | 0.0% | 0.0% |
 | 1em4 | SHADE+LM | 10 | 0.0% | 0.00 | 0.0% | 0.0% |

@@ -68,3 +68,28 @@ hcloud server list                             # -> empty
 (same cost). Defaults: normal `[system,arm]` (63), hard `[system,noise]` (25), receptor
 `[arm,noise]` (15) = 103 boxes / 3240 cells. To halve the hard tier's wall, add `arm`:
 `["system","arm","noise"]` → 75 boxes.
+
+## DigitalOcean (second provider)
+`fleet.py --provider do` uses `doctl` instead of `hcloud`; everything else (image, run-on-box,
+rsync, collect, resume) is identical — the image is provider-blind. Tier `box_type` maps to a
+RAM-matched DO size: `ccx33→g-8vcpu-32gb`, `ccx43→g-16vcpu-64gb` (`DO_SIZES` in fleet.py).
+DO also gates new accounts (~1 droplet until a billing cycle of history); the $200/60-day credit
+can fund the run once the limit lifts.
+
+One-time setup (run in YOUR terminal — token stays private, never in chat):
+```bash
+doctl auth init                                            # paste DO API token
+doctl compute ssh-key import odepe --public-key-file ~/.ssh/id_ed25519.pub
+doctl compute ssh-key list                                 # note the FingerPrint
+```
+Run (1-box grind on the free credit; --do-ssh-key = that fingerprint):
+```bash
+./fleet.py --provider do --do-ssh-key <fingerprint> --do-region nyc1 \
+           --tiers normal --run-id dotest --max-boxes 1
+./collect.py --run-id dotest
+```
+Cleanup (DO has no reap.sh yet — by tag):
+```bash
+doctl compute droplet list   --tag-name odepefleet --format Name,PublicIPv4,Status
+doctl compute droplet delete --tag-name odepefleet --force
+```

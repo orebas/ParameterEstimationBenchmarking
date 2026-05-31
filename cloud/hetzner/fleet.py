@@ -41,6 +41,13 @@ SSH_OPTS = ["-i", SSH_KEY_FILE, "-o", "StrictHostKeyChecking=no",
             "-o", "ServerAliveInterval=30", "-o", "ServerAliveCountMax=10"]
 DONE_TIMEOUT_S = 12 * 3600                         # generous hung-box bound (NOT a cell timeout)
 
+# ── provider (set in main): "hetzner" | "do" ────────────────────────────────
+PROVIDER = "hetzner"
+DO_REGION = "nyc1"
+DO_SSH_KEY = ""          # DigitalOcean ssh-key id/fingerprint (`doctl compute ssh-key list`)
+DO_SIZES = {"ccx33": "g-8vcpu-32gb", "ccx43": "g-16vcpu-64gb"}   # RAM-matched to the Hetzner tiers
+DO_RATES = {"ccx33": 0.357, "ccx43": 0.714}        # approx USD/hr (general-purpose); verify on account
+
 
 def log(msg):
     print(f"[fleet {time.strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -100,6 +107,21 @@ def stage_shard(shard, base_config, base_systems, num_tests, run_id):
 
 # ── box lifecycle ────────────────────────────────────────────────────────────
 def provision(name, box_type, location, run_id):
+    if PROVIDER == "do":
+        size = DO_SIZES.get(box_type, box_type)
+        r = run(["doctl", "compute", "droplet", "create", name,
+                 "--region", DO_REGION, "--size", size, "--image", "ubuntu-24-04-x64",
+                 "--ssh-keys", DO_SSH_KEY,
+                 "--user-data-file", str(HERE / "cloud-init-docker.yaml"),
+                 "--tag-names", f"odepefleet,run-{run_id}".replace(".", "-"),
+                 "--wait", "--output", "json"])
+        if r.returncode != 0:
+            raise RuntimeError(f"DO provision failed: {r.stderr.strip()[:300]}")
+        d = json.loads(r.stdout)[0]
+        for net in d.get("networks", {}).get("v4", []):
+            if net.get("type") == "public":
+                return net["ip_address"]
+        raise RuntimeError("DO: no public IPv4 on droplet")
     r = run(["hcloud", "server", "create", "--name", name, "--type", box_type,
              "--image", "ubuntu-24.04", "--location", location,
              "--ssh-key", SSH_KEY_NAME,
@@ -124,7 +146,10 @@ def wait_for(ip, test_cmd, what, timeout_s, interval):
 
 
 def destroy(name):
-    run(["hcloud", "server", "delete", name])
+    if PROVIDER == "do":
+        run(["doctl", "compute", "droplet", "delete", name, "--force"])
+    else:
+        run(["hcloud", "server", "delete", name])
 
 
 def run_shard(shard, run_id, base_config, base_systems, num_tests, location):
@@ -195,6 +220,10 @@ def main():
     ap.add_argument("--run-id", default="run")
     ap.add_argument("--max-boxes", type=int, default=4)
     ap.add_argument("--location", default="fsn1")
+    ap.add_argument("--provider", default="hetzner", choices=["hetzner", "do"])
+    ap.add_argument("--do-region", default="nyc1")
+    ap.add_argument("--do-ssh-key", default="",
+                    help="DigitalOcean ssh-key id/fingerprint (doctl compute ssh-key list)")
     ap.add_argument("--config", default=str(PEB / "config" / "config_quoll_broad.json"))
     ap.add_argument("--systems", default=str(PEB / "config" / "systems_quoll_broad.json"))
     ap.add_argument("--tiers-file", default=str(HERE / "tiers.json"))
@@ -205,9 +234,14 @@ def main():
     ap.add_argument("--max-shards-per-tier", type=int, default=0)
     args = ap.parse_args()
 
+    global PROVIDER, DO_REGION, DO_SSH_KEY
+    PROVIDER, DO_REGION, DO_SSH_KEY = args.provider, args.do_region, args.do_ssh_key
+    if PROVIDER == "do" and not DO_SSH_KEY and not args.dry_run:
+        sys.exit("--do-ssh-key required for --provider do (from: doctl compute ssh-key list)")
+
     tiers_cfg_all = json.loads(Path(args.tiers_file).read_text())
     tiers_cfg = tiers_cfg_all["tiers"]
-    rates = tiers_cfg_all["_rates_usd_per_hr"]
+    rates = DO_RATES if PROVIDER == "do" else tiers_cfg_all["_rates_usd_per_hr"]
     base_config = json.loads(Path(args.config).read_text())
     base_systems = json.loads(Path(args.systems).read_text())
     noises_all = list(base_config["NOISE_LEVEL"].keys())

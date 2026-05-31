@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-Merge a fleet run's per-box results into one result.csv + a recovery/timing summary.
-fleet.py rsyncs each shard's filetree to results/<run-id>/<label>/benchmark_*/; this
-concatenates their result.csv (deterministic cell_seed -> disjoint, mergeable rows) and
-reads fleet's _summary.json for the slowest-shard critical path (the min-wall headline).
+Merge a fleet run's per-box results + build a recovery/timing summary.
+
+fleet.py rsyncs each shard's filetree to results/<run-id>/<label>/benchmark_*/.
+PEB's collect leaves result.csv's `result`/`has_result` columns empty (it doesn't
+re-extract the estimate), so the trustworthy recovery signal is each cell's
+odepe_metadata.json `besterror` (the same metric the quoll analysis used). This
+concatenates result.csv for provenance AND writes recovery.csv from the metadata.
 
 Usage:
   ./collect.py --run-id main-2026-06-05
@@ -22,11 +25,9 @@ def main():
     ap.add_argument("--recover-threshold", type=float, default=1e-3)
     a = ap.parse_args()
     base = RESULTS / a.run_id
-    csvs = sorted(base.glob("*/benchmark_*/result.csv"))
-    if not csvs:
-        print(f"no result.csv under {base}/*/benchmark_*/ — nothing collected yet.")
-        return
 
+    # 1. merge per-box result.csv (provenance; map id->system name).
+    csvs = sorted(base.glob("*/benchmark_*/result.csv"))
     header, rows = None, []
     for f in csvs:
         r = list(csv.reader(open(f)))
@@ -35,33 +36,55 @@ def main():
         if header is None:
             header = r[0]
         rows.extend(r[1:])
-    out = base / "result_merged.csv"
-    with open(out, "w", newline="") as fh:
-        w = csv.writer(fh)
-        w.writerow(header)
-        w.writerows(rows)
-    print(f"merged {len(csvs)} per-box result.csv -> {out}  ({len(rows)} data rows)")
+    id2name = {}
+    if header:
+        cols = {c.lower(): i for i, c in enumerate(header)}
+        out = base / "result_merged.csv"
+        with open(out, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(header)
+            w.writerows(rows)
+        print(f"merged {len(csvs)} per-box result.csv -> {out}  ({len(rows)} rows)")
+        if "id" in cols and "name" in cols:
+            for row in rows:
+                try:
+                    id2name[row[cols["id"]]] = row[cols["name"]]
+                except IndexError:
+                    pass
 
-    # best-effort recovery summary (schema-agnostic: find name + error columns)
-    cols = {c.lower(): i for i, c in enumerate(header)}
-    name_i = next((cols[k] for k in ("name", "system", "model") if k in cols), None)
-    err_i = next((cols[k] for k in ("besterror", "best_error", "error", "err") if k in cols), None)
-    if name_i is not None and err_i is not None:
+    # 2. recovery from per-cell odepe_metadata.json (besterror = recovery quality).
+    rec = []  # (cell_id, system, besterror, status)
+    for mf in base.glob("*/benchmark_*/filetree/*/*/odepe_metadata.json"):
+        cell_id = mf.parent.name
+        try:
+            m = json.loads(mf.read_text())
+        except Exception:
+            continue
+        system = id2name.get(cell_id) or cell_id.rsplit("_", 2)[0]
+        rec.append((cell_id, system, m.get("besterror"), m.get("status", "?")))
+    if not rec:
+        print("(no odepe_metadata.json yet — nothing to summarize)")
+    else:
+        recf = base / "recovery.csv"
+        with open(recf, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["cell_id", "system", "besterror", "status"])
+            w.writerows(rec)
         best = defaultdict(lambda: float("inf"))
-        for row in rows:
+        for _, system, be, _st in rec:
             try:
-                best[row[name_i]] = min(best[row[name_i]], float(row[err_i]))
-            except (ValueError, IndexError):
+                best[system] = min(best[system], float(be))
+            except (TypeError, ValueError):
                 pass
         nrec = sum(1 for e in best.values() if e < a.recover_threshold)
-        print(f"\n=== best error per system ({nrec}/{len(best)} recovered "
-              f"< {a.recover_threshold:g}) ===")
-        for name in sorted(best):
-            e = best[name]
-            print(f"  {'OK ' if e < a.recover_threshold else '***'} {name:44s} {e:.3e}")
-    else:
-        print("(could not auto-detect name/error columns; merged CSV is still complete)")
+        print(f"\n=== recovery: best error per system "
+              f"({nrec}/{len(best)} < {a.recover_threshold:g}), {len(rec)} cells ===")
+        for system in sorted(best):
+            e = best[system]
+            print(f"  {'OK ' if e < a.recover_threshold else '***'} {system:44s} {e:.3e}")
+        print(f"  -> {recf}")
 
+    # 3. timing / cost from fleet's _summary.json.
     summ = base / "_summary.json"
     if summ.exists():
         s = json.loads(summ.read_text())
@@ -69,8 +92,9 @@ def main():
             slow = max(s, key=lambda r: r.get("minutes", 0))
             cost = sum(r.get("minutes", 0) / 60 *
                        {"ccx33": 0.1186, "ccx43": 0.2372}.get(r.get("box_type"), 0) for r in s)
-            print(f"\n=== timing / cost ===\n  shards={len(s)}  total box-min={sum(r.get('minutes',0) for r in s):.0f}"
-                  f"  ~${cost:.2f}\n  critical path (slowest shard) = {slow.get('minutes',0):.0f}min "
+            print(f"\n=== timing / cost ===\n  shards={len(s)}  "
+                  f"box-min={sum(r.get('minutes', 0) for r in s):.0f}  ~${cost:.2f}\n"
+                  f"  critical path (slowest shard) = {slow.get('minutes', 0):.0f}min "
                   f"({slow.get('label')})")
 
 

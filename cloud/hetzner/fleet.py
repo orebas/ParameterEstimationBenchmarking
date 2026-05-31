@@ -80,6 +80,11 @@ def cells(shard, num_tests):
     return len(shard["systems"]) * len(shard["arms"]) * len(shard["noises"]) * num_tests
 
 
+def already_done(label, run_id):
+    """A shard is done if its result.csv was rsync'd home — lets a restart resume."""
+    return any((RESULTS / run_id / label).glob("benchmark_*/result.csv"))
+
+
 def stage_shard(shard, base_config, base_systems, num_tests, run_id):
     d = STAGING / run_id / shard["label"]
     d.mkdir(parents=True, exist_ok=True)
@@ -222,6 +227,13 @@ def main():
         return
 
     RESULTS.mkdir(parents=True, exist_ok=True)
+    pending = [s for s in shards if not already_done(s["label"], args.run_id)]
+    if len(pending) < len(shards):
+        log(f"resume: {len(shards) - len(pending)} shards already collected, {len(pending)} to go")
+    shards = pending
+    if not shards:
+        log("nothing to do — all shards already collected.")
+        return
     log(f"launching {len(shards)} shards, pool={args.max_boxes} boxes, run-id={args.run_id}")
     results = []
     with ThreadPoolExecutor(max_workers=args.max_boxes) as ex:

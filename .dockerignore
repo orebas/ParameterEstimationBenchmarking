@@ -1,0 +1,30 @@
+# Keep the Docker build context small + reproducible. The Dockerfile only COPYs
+# src/ templates/ config/ docker/ + the two julia_odepe pins + requirements.txt;
+# the SIAN/SI/ODEPE trees are CLONED in-build (not shipped from the host).
+
+# VCS + caches
+.git
+**/.git
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Benchmark run outputs (GBs) and result archives
+benchmark_*/
+results/
+**/filetree/
+**/slurm_out/
+*.sif
+*.tar
+*.tar.gz
+
+# Host-built Julia envs + dev-tree symlinks — do NOT ship; cloned + instantiated fresh.
+environments/julia_sciml/
+environments/ODEParameterEstimation
+environments/ODEParameterEstimation.*
+environments/SIAN-Julia
+environments/SIAN-Julia.*
+environments/StructuralIdentifiability.jl
+environments/StructuralIdentifiability.jl.*
+environments/*.old/
+# (environments/julia_odepe/ is kept — it holds the committed Project.toml + Manifest.toml)

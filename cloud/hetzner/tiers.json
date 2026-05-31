@@ -1,0 +1,44 @@
+{
+  "_comment": "Heterogeneous fleet tier config. Each box runs run-benchmark.sh with a REDUCED systems.json (its systems) + REDUCED config.json (its noises). shard_by lists the dims split across boxes; un-split dims run all-on-one-box. cells/box = |systems|*|arms|*|noises|*NUM_TESTS. Box vCPU: ccx33=8, ccx43=16. Edit box counts via shard_by granularity.",
+  "_rates_usd_per_hr": {"ccx33": 0.1186, "ccx43": 0.2372},
+  "tiers": {
+    "normal": {
+      "box_type": "ccx33",
+      "shard_by": ["system", "arm"],
+      "concurrency": 5,
+      "threads": 2,
+      "heavy": "",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade"],
+      "systems": [
+        "aircraft_pitch", "bicycle_model", "boost_converter", "brusselator",
+        "daisy_mamil3", "dc_motor", "fitzhugh_nagumo", "flexible_arm",
+        "forced_lotka_volterra", "harmonic_oscillator", "hiv", "lotka_volterra",
+        "mass_spring_damper", "quadrotor", "repressilator", "seir",
+        "slow_fast", "sirt_treatment", "vanderpol",
+        "latent_subpopulation_observed_control",
+        "receptor_subtype_binding_observed_control"
+      ]
+    },
+    "hard": {
+      "box_type": "ccx43",
+      "shard_by": ["system", "noise"],
+      "concurrency": 4,
+      "threads": 4,
+      "heavy": "biohydrogenation,latent_subpopulation_branch",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade"],
+      "systems": [
+        "biohydrogenation", "crauste", "cstr", "daisy_mamil4",
+        "latent_subpopulation_branch"
+      ]
+    },
+    "receptor": {
+      "box_type": "ccx43",
+      "shard_by": ["arm", "noise"],
+      "concurrency": 2,
+      "threads": 8,
+      "heavy": "",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade"],
+      "systems": ["receptor_subtype_binding_branch"]
+    }
+  }
+}

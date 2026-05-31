@@ -1,0 +1,10 @@
+#cloud-config
+# Minimal bootstrap for an odepe-bench fleet/test box: install Docker so the box
+# can `docker run ghcr.io/orebas/odepe-bench`. (Image is pulled on first run, or
+# pre-baked into a snapshot for the real fleet.)
+package_update: true
+packages:
+  - docker.io
+runcmd:
+  - [systemctl, enable, --now, docker]
+  - [touch, /tmp/cloud-init-done]

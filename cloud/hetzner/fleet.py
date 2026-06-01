@@ -47,6 +47,7 @@ DO_REGION = "nyc1"
 DO_SSH_KEY = ""          # DigitalOcean ssh-key id/fingerprint (`doctl compute ssh-key list`)
 DO_SIZES = {"ccx33": "s-4vcpu-8gb", "ccx43": "s-4vcpu-8gb"}   # new-account ceiling (no larger sizes yet)
 DO_RATES = {"ccx33": 0.0714, "ccx43": 0.0714}      # s-4vcpu-8gb USD/hr
+LOCAL_MEM_CAP = "22g"    # docker --memory cap for --provider local (cgroup-kills a cell, never the WSL2 VM)
 
 
 def log(msg):
@@ -158,6 +159,8 @@ def run_shard(shard, run_id, base_config, base_systems, num_tests, location):
         log(f"⤳ skip {label} (already collected)")
         return {"label": label, "tier": shard["tier"], "ok": True, "minutes": 0.0,
                 "box_type": shard["box_type"], "cells": cells(shard, num_tests), "skipped": True}
+    if PROVIDER == "local":
+        return run_shard_local(shard, run_id, base_config, base_systems, num_tests)
     name = f"odepe-{run_id}-{label}".lower().replace("_", "-").replace(".", "-")[:63]
     t0 = time.time()
     ip = None
@@ -200,6 +203,41 @@ def run_shard(shard, run_id, base_config, base_systems, num_tests, location):
             destroy(name)
 
 
+def run_shard_local(shard, run_id, base_config, base_systems, num_tests):
+    """Run a shard in a local docker container, memory-capped to spare the WSL2 VM. No cloud."""
+    label = shard["label"]
+    t0 = time.time()
+    try:
+        d = stage_shard(shard, base_config, base_systems, num_tests, run_id)
+        work = STAGING / run_id / f"_localwork_{label}"
+        work.mkdir(parents=True, exist_ok=True)
+        arms = ",".join(shard["arms"])
+        log(f"+ local docker {label} ({cells(shard, num_tests)} cells, conc={shard['concurrency']}, mem<={LOCAL_MEM_CAP})")
+        run(["docker", "run", "--rm", f"--memory={LOCAL_MEM_CAP}",
+             "-v", f"{d}:/shard:ro",
+             "-v", f"{PEB}/docker/run-benchmark.sh:/opt/peb/docker/run-benchmark.sh:ro",
+             "-v", f"{work}:/work",
+             IMAGE, "run", "--name", run_id,
+             "--config", "/shard/config.json", "--systems", "/shard/systems.json",
+             "--arms", arms, "--concurrency", str(shard["concurrency"]),
+             "--threads", str(shard["threads"]), "--exclude-systems", "",
+             "--heavy-systems", shard["heavy"], "--odepe-ref", "quoll-v1"], timeout=None)
+        dest = RESULTS / run_id / label
+        dest.mkdir(parents=True, exist_ok=True)
+        for bench in work.glob("benchmark_*"):
+            run(["cp", "-a", str(bench), str(dest) + "/"])
+        run(["rm", "-rf", str(work)])
+        ok = any(dest.glob("benchmark_*/result.csv"))
+        dt = (time.time() - t0) / 60
+        log(f"{'✓' if ok else '✗'} DONE(local) {label} in {dt:.1f}min ok={ok}")
+        return {"label": label, "tier": shard["tier"], "ok": ok, "minutes": dt,
+                "box_type": "local", "cells": cells(shard, num_tests)}
+    except Exception as e:
+        log(f"✗ FAIL(local) {label}: {e}")
+        return {"label": label, "tier": shard["tier"], "ok": False, "error": str(e),
+                "box_type": "local", "minutes": (time.time() - t0) / 60, "cells": cells(shard, num_tests)}
+
+
 # ── plan / cost reporting ────────────────────────────────────────────────────
 def print_plan(shards, num_tests, rates):
     log(f"PLAN: {len(shards)} shards / boxes")
@@ -224,7 +262,7 @@ def main():
     ap.add_argument("--run-id", default="run")
     ap.add_argument("--max-boxes", type=int, default=4)
     ap.add_argument("--location", default="fsn1")
-    ap.add_argument("--provider", default="hetzner", choices=["hetzner", "do"])
+    ap.add_argument("--provider", default="hetzner", choices=["hetzner", "do", "local"])
     ap.add_argument("--do-region", default="nyc1")
     ap.add_argument("--do-ssh-key", default="",
                     help="DigitalOcean ssh-key id/fingerprint (doctl compute ssh-key list)")
@@ -232,6 +270,7 @@ def main():
     ap.add_argument("--threads", type=int, default=0, help="override per-cell threads (0=tier default)")
     ap.add_argument("--shard-slice", default="", help="i/n: only shards where index%%n==i (split workers)")
     ap.add_argument("--reverse", action="store_true", help="process shards back-to-front (converge w/ a forward worker)")
+    ap.add_argument("--middle-out", action="store_true", help="process shards center-outward (3rd worker fills the gap)")
     ap.add_argument("--config", default=str(PEB / "config" / "config_quoll_broad.json"))
     ap.add_argument("--systems", default=str(PEB / "config" / "systems_quoll_broad.json"))
     ap.add_argument("--tiers-file", default=str(HERE / "tiers.json"))
@@ -249,7 +288,7 @@ def main():
 
     tiers_cfg_all = json.loads(Path(args.tiers_file).read_text())
     tiers_cfg = tiers_cfg_all["tiers"]
-    rates = DO_RATES if PROVIDER == "do" else tiers_cfg_all["_rates_usd_per_hr"]
+    rates = {} if PROVIDER == "local" else (DO_RATES if PROVIDER == "do" else tiers_cfg_all["_rates_usd_per_hr"])
     base_config = json.loads(Path(args.config).read_text())
     base_systems = json.loads(Path(args.systems).read_text())
     noises_all = list(base_config["NOISE_LEVEL"].keys())
@@ -270,6 +309,9 @@ def main():
         shards = [s for k, s in enumerate(shards) if k % n == i]
     if args.reverse:
         shards = list(reversed(shards))
+    if args.middle_out:
+        c = (len(shards) - 1) / 2
+        shards = [s for _, s in sorted(enumerate(shards), key=lambda kv: abs(kv[0] - c))]
     print_plan(shards, num_tests, rates)
 
     if args.dry_run:

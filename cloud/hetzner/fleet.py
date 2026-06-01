@@ -45,8 +45,8 @@ DONE_TIMEOUT_S = 12 * 3600                         # generous hung-box bound (NO
 PROVIDER = "hetzner"
 DO_REGION = "nyc1"
 DO_SSH_KEY = ""          # DigitalOcean ssh-key id/fingerprint (`doctl compute ssh-key list`)
-DO_SIZES = {"ccx33": "s-4vcpu-8gb", "ccx43": "s-4vcpu-8gb"}   # new-account ceiling (no larger sizes yet)
-DO_RATES = {"ccx33": 0.0714, "ccx43": 0.0714}      # s-4vcpu-8gb USD/hr
+DO_SIZES = {"ccx33": "s-8vcpu-32gb-amd", "ccx43": "s-8vcpu-32gb-amd"}   # 8c/32G == ccx33 tier (conc 5)
+DO_RATES = {"ccx33": 0.25, "ccx43": 0.25}          # s-8vcpu-32gb-amd USD/hr
 LOCAL_MEM_CAP = "22g"    # docker --memory cap for --provider local (cgroup-kills a cell, never the WSL2 VM)
 
 

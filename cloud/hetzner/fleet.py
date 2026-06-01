@@ -110,19 +110,23 @@ def stage_shard(shard, base_config, base_systems, num_tests, run_id):
 def provision(name, box_type, location, run_id):
     if PROVIDER == "do":
         size = DO_SIZES.get(box_type, box_type)
-        r = run(["doctl", "compute", "droplet", "create", name,
-                 "--region", DO_REGION, "--size", size, "--image", "ubuntu-24-04-x64",
-                 "--ssh-keys", DO_SSH_KEY,
-                 "--user-data-file", str(HERE / "cloud-init-docker.yaml"),
-                 "--tag-names", f"odepefleet,run-{run_id}".replace(".", "-"),
-                 "--wait", "--output", "json"])
-        if r.returncode != 0:
-            raise RuntimeError(f"DO provision failed: {r.stderr.strip()[:300]}")
-        d = json.loads(r.stdout)[0]
-        for net in d.get("networks", {}).get("v4", []):
-            if net.get("type") == "public":
-                return net["ip_address"]
-        raise RuntimeError("DO: no public IPv4 on droplet")
+        last = ""
+        for _ in range(6):                  # box-cycling can momentarily hit the droplet cap; retry
+            r = run(["doctl", "compute", "droplet", "create", name,
+                     "--region", DO_REGION, "--size", size, "--image", "ubuntu-24-04-x64",
+                     "--ssh-keys", DO_SSH_KEY,
+                     "--user-data-file", str(HERE / "cloud-init-docker.yaml"),
+                     "--tag-names", f"odepefleet,run-{run_id}".replace(".", "-"),
+                     "--wait", "--output", "json"])
+            if r.returncode == 0:
+                d = json.loads(r.stdout)[0]
+                for net in d.get("networks", {}).get("v4", []):
+                    if net.get("type") == "public":
+                        return net["ip_address"]
+                raise RuntimeError("DO: no public IPv4 on droplet")
+            last = (r.stderr.strip() or r.stdout.strip())[:200]
+            time.sleep(30)                  # wait for in-flight deletions to free a slot, then retry
+        raise RuntimeError(f"DO provision failed after 6 tries: {last}")
     r = run(["hcloud", "server", "create", "--name", name, "--type", box_type,
              "--image", "ubuntu-24.04", "--location", location,
              "--ssh-key", SSH_KEY_NAME,

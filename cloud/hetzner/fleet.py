@@ -62,11 +62,13 @@ def run(cmd, **kw):
 def compute_shards(tiers_cfg, tier_names, noises_all, overrides):
     noises = overrides.get("noises") or noises_all
     cap = overrides.get("max_shards_per_tier")
+    exclude = set(overrides.get("exclude") or [])
     shards = []
     for tier in tier_names:
         t = tiers_cfg[tier]
         keys = t["shard_by"]
-        dimvals = {"system": t["systems"], "arm": t["arms"], "noise": noises}
+        sys_names = [s for s in t["systems"] if s not in exclude]
+        dimvals = {"system": sys_names, "arm": t["arms"], "noise": noises}
         combos = list(itertools.product(*[dimvals[k] for k in keys]))
         if cap:
             combos = combos[:cap]
@@ -289,6 +291,7 @@ def main():
     ap.add_argument("--num-tests", type=int, default=0, help="override NUM_TESTS (0=config default)")
     ap.add_argument("--noises", default="", help="comma list of noise mnemonics (default: all)")
     ap.add_argument("--max-shards-per-tier", type=int, default=0)
+    ap.add_argument("--exclude", default="", help="comma list of systems to drop (e.g. too-slow ones)")
     args = ap.parse_args()
 
     global PROVIDER, DO_REGION, DO_SSH_KEY
@@ -307,6 +310,7 @@ def main():
     overrides = {
         "noises": [n.strip() for n in args.noises.split(",") if n.strip()] or None,
         "max_shards_per_tier": args.max_shards_per_tier or None,
+        "exclude": [s.strip() for s in args.exclude.split(",") if s.strip()] or None,
     }
     shards = compute_shards(tiers_cfg, tier_names, noises_all, overrides)
     for s in shards:

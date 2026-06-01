@@ -45,8 +45,8 @@ DONE_TIMEOUT_S = 12 * 3600                         # generous hung-box bound (NO
 PROVIDER = "hetzner"
 DO_REGION = "nyc1"
 DO_SSH_KEY = ""          # DigitalOcean ssh-key id/fingerprint (`doctl compute ssh-key list`)
-DO_SIZES = {"ccx33": "g-8vcpu-32gb", "ccx43": "g-16vcpu-64gb"}   # RAM-matched to the Hetzner tiers
-DO_RATES = {"ccx33": 0.357, "ccx43": 0.714}        # approx USD/hr (general-purpose); verify on account
+DO_SIZES = {"ccx33": "s-4vcpu-8gb", "ccx43": "s-4vcpu-8gb"}   # new-account ceiling (no larger sizes yet)
+DO_RATES = {"ccx33": 0.0714, "ccx43": 0.0714}      # s-4vcpu-8gb USD/hr
 
 
 def log(msg):
@@ -154,6 +154,10 @@ def destroy(name):
 
 def run_shard(shard, run_id, base_config, base_systems, num_tests, location):
     label = shard["label"]
+    if already_done(label, run_id):          # another worker (e.g. the other cloud) finished it
+        log(f"⤳ skip {label} (already collected)")
+        return {"label": label, "tier": shard["tier"], "ok": True, "minutes": 0.0,
+                "box_type": shard["box_type"], "cells": cells(shard, num_tests), "skipped": True}
     name = f"odepe-{run_id}-{label}".lower().replace("_", "-").replace(".", "-")[:63]
     t0 = time.time()
     ip = None
@@ -224,6 +228,10 @@ def main():
     ap.add_argument("--do-region", default="nyc1")
     ap.add_argument("--do-ssh-key", default="",
                     help="DigitalOcean ssh-key id/fingerprint (doctl compute ssh-key list)")
+    ap.add_argument("--concurrency", type=int, default=0, help="override per-box concurrency (0=tier default)")
+    ap.add_argument("--threads", type=int, default=0, help="override per-cell threads (0=tier default)")
+    ap.add_argument("--shard-slice", default="", help="i/n: only shards where index%%n==i (split workers)")
+    ap.add_argument("--reverse", action="store_true", help="process shards back-to-front (converge w/ a forward worker)")
     ap.add_argument("--config", default=str(PEB / "config" / "config_quoll_broad.json"))
     ap.add_argument("--systems", default=str(PEB / "config" / "systems_quoll_broad.json"))
     ap.add_argument("--tiers-file", default=str(HERE / "tiers.json"))
@@ -252,6 +260,16 @@ def main():
         "max_shards_per_tier": args.max_shards_per_tier or None,
     }
     shards = compute_shards(tiers_cfg, tier_names, noises_all, overrides)
+    for s in shards:
+        if args.concurrency:
+            s["concurrency"] = args.concurrency
+        if args.threads:
+            s["threads"] = args.threads
+    if args.shard_slice:
+        i, n = (int(x) for x in args.shard_slice.split("/"))
+        shards = [s for k, s in enumerate(shards) if k % n == i]
+    if args.reverse:
+        shards = list(reversed(shards))
     print_plan(shards, num_tests, rates)
 
     if args.dry_run:

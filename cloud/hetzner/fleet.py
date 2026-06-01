@@ -111,7 +111,8 @@ def provision(name, box_type, location, run_id):
     if PROVIDER == "do":
         size = DO_SIZES.get(box_type, box_type)
         last = ""
-        for _ in range(6):                  # box-cycling can momentarily hit the droplet cap; retry
+        backoff = [30, 60, 120]             # gentle backstop; destroy() waits out the cap so this rarely fires
+        for attempt in range(len(backoff) + 1):
             r = run(["doctl", "compute", "droplet", "create", name,
                      "--region", DO_REGION, "--size", size, "--image", "ubuntu-24-04-x64",
                      "--ssh-keys", DO_SSH_KEY,
@@ -125,8 +126,9 @@ def provision(name, box_type, location, run_id):
                         return net["ip_address"]
                 raise RuntimeError("DO: no public IPv4 on droplet")
             last = (r.stderr.strip() or r.stdout.strip())[:200]
-            time.sleep(30)                  # wait for in-flight deletions to free a slot, then retry
-        raise RuntimeError(f"DO provision failed after 6 tries: {last}")
+            if attempt < len(backoff):
+                time.sleep(backoff[attempt])   # 30s, 60s, 120s — not a tight loop
+        raise RuntimeError(f"DO provision failed after {len(backoff) + 1} tries: {last}")
     r = run(["hcloud", "server", "create", "--name", name, "--type", box_type,
              "--image", "ubuntu-24.04", "--location", location,
              "--ssh-key", SSH_KEY_NAME,
@@ -153,6 +155,10 @@ def wait_for(ip, test_cmd, what, timeout_s, interval):
 def destroy(name):
     if PROVIDER == "do":
         run(["doctl", "compute", "droplet", "delete", name, "--force"])
+        # Wait out the deletion before this worker frees up, so the cap slot is actually released
+        # before the next provision. This is what prevents repeatedly attempting to exceed the
+        # droplet limit — i.e. keeps us a well-behaved API citizen, not a retry-storming one.
+        time.sleep(45)
     else:
         run(["hcloud", "server", "delete", name])
 

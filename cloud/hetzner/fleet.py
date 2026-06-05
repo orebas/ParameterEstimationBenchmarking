@@ -39,7 +39,7 @@ IMAGE = "ghcr.io/orebas/odepe-bench:latest"
 SSH_OPTS = ["-i", SSH_KEY_FILE, "-o", "StrictHostKeyChecking=no",
             "-o", "UserKnownHostsFile=/dev/null", "-o", "ConnectTimeout=15",
             "-o", "ServerAliveInterval=30", "-o", "ServerAliveCountMax=10"]
-DONE_TIMEOUT_S = 12 * 3600                         # generous hung-box bound (NOT a cell timeout)
+DONE_TIMEOUT_S = 7 * 24 * 3600                     # 7d: slow systems (latent/crauste, receptor 6402-path) run to completion; 12h was guillotining them — catches only a truly hung box
 
 # ── provider (set in main): "hetzner" | "do" ────────────────────────────────
 PROVIDER = "hetzner"
@@ -173,7 +173,11 @@ def run_shard(shard, run_id, base_config, base_systems, num_tests, location):
                 "box_type": shard["box_type"], "cells": cells(shard, num_tests), "skipped": True}
     if PROVIDER == "local":
         return run_shard_local(shard, run_id, base_config, base_systems, num_tests)
-    name = f"odepe-{run_id}-{label}".lower().replace("_", "-").replace(".", "-")[:63]
+    raw = f"odepe-{run_id}-{label}".lower().replace("_", "-").replace(".", "-")
+    # DO rejects droplet names >63 chars or ending in '-'; naive truncation also COLLIDES
+    # (it drops the distinguishing arm — two bioh shards → identical name). Add a short
+    # stable suffix when truncating so names stay both unique and valid. (2026-06-02)
+    name = raw.rstrip("-") if len(raw) <= 63 else raw[:54].rstrip("-") + "-" + format(abs(hash(label)) % 0xFFFFFF, "06x")
     t0 = time.time()
     ip = None
     try:

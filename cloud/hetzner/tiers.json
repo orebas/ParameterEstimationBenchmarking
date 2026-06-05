@@ -39,6 +39,46 @@
       "heavy": "",
       "arms": ["odepe_v2_polish", "odepe_v2_nopolish", "odepe_shade"],
       "systems": ["receptor_subtype_binding_branch"]
+    },
+    "crauste_hi": {
+      "_comment": "TEMP 2026-06-02: cloud-assist for crauste high-noise pending (1e-4/1e-2, polish+nopolish) = the 32 zero-overlap, no-hang cells. Use with --noises 1em4,1em2. REMOVE after the broad run merges.",
+      "box_type": "ccx33",
+      "shard_by": ["noise", "arm"],
+      "concurrency": 5,
+      "threads": 2,
+      "heavy": "",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish"],
+      "systems": ["crauste"]
+    },
+    "latbioh_hi": {
+      "_comment": "TEMP 2026-06-02: cloud-assist for latent+bioh HIGH-noise pending (1e-4/1e-2, polish+nopolish) = 63 completable no-hang cells (the S3/sign-flip hangs are strictly low-noise). Use with --noises 1em4,1em2. REMOVE after merge.",
+      "box_type": "ccx33",
+      "shard_by": ["system", "noise", "arm"],
+      "concurrency": 5,
+      "threads": 2,
+      "heavy": "",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish"],
+      "systems": ["latent_subpopulation_branch", "biohydrogenation"]
+    },
+    "thread_test": {
+      "_comment": "TEMP 2026-06-03: JULIA_NUM_THREADS=7 gating test — does the latent low-noise 219-candidate re-solve actually parallelize? conc 1 = one cell owns the whole 8-core box. Watch the cell's CPU% (>~300% = it threads). REMOVE after.",
+      "box_type": "ccx33",
+      "shard_by": ["noise", "arm"],
+      "concurrency": 1,
+      "threads": 7,
+      "heavy": "",
+      "arms": ["odepe_v2_polish"],
+      "systems": ["latent_subpopulation_branch"]
+    },
+    "slow_thr": {
+      "_comment": "TEMP 2026-06-03: high-threads grind for the slow latent/bioh LOW-noise re-solves, IF the thread test shows threads help. conc 1 threads 7 = 1 cell owns the box (fast per-cell). Use with --noises 1em8,1em6. REMOVE after.",
+      "box_type": "ccx33",
+      "shard_by": ["system", "noise", "arm"],
+      "concurrency": 1,
+      "threads": 7,
+      "heavy": "",
+      "arms": ["odepe_v2_polish", "odepe_v2_nopolish"],
+      "systems": ["latent_subpopulation_branch", "biohydrogenation"]
     }
   }
 }

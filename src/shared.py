@@ -7,7 +7,8 @@ AVAILABLE_SOFTWARE = ['pe', 'odepe', 'sciml', 'amigo2',
                       'odepe_kernel_se', 'odepe_kernel_rq',
                       'odepe_kernel_se_plus_rq', 'odepe_kernel_se_times_rq',
                       'odepe_multipoint',
-                      'odepe_v2_polish', 'odepe_v2_nopolish', 'odepe_shade']  # 'iqm'
+                      'odepe_v2_polish', 'odepe_v2_nopolish',
+                      'odepe_v2_aaa_nopolish', 'odepe_shade']  # 'iqm'
 
 END_OF_LOG = "===END==="
 
@@ -46,6 +47,7 @@ JULIA_ENVIRONMENTS = {
     "odepe_multipoint"        : "Symbol(:environments, /, :julia_odepe)",
     "odepe_v2_polish"         : "Symbol(:environments, /, :julia_odepe)",
     "odepe_v2_nopolish"       : "Symbol(:environments, /, :julia_odepe)",
+    "odepe_v2_aaa_nopolish"   : "Symbol(:environments, /, :julia_odepe)",
     "odepe_shade"             : "Symbol(:environments, /, :julia_odepe)",
 }
 

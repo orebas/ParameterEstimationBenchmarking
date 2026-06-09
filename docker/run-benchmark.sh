@@ -23,8 +23,10 @@ ARMS="odepe_v2_polish,odepe_v2_nopolish,odepe_shade"
 ODEPE_REF=""; CONCURRENCY=""; INDICES="all"; THREADS=2
 EXCLUDE_SYSTEMS="receptor_subtype_binding_branch"
 HEAVY_SYSTEMS="biohydrogenation,latent_subpopulation_branch,latent_subpopulation_observed_control"
-PER_CELL_GB=6; HEAVY_GB=10; ALLOW_RESOLVE=0
+PER_CELL_GB=6; HEAVY_GB=10; ALLOW_RESOLVE=0; PRIOR=""
 SINGLE_CELL=0; S_DIR=""; S_RUN=""; S_ARM=""; S_IDX=""
+WARM_JULIA=0; WARM_JULIA_BATCH=4
+SYNC_INTERVAL_S="${SYNC_INTERVAL_S:-300}"; SYNC_PID=""
 
 while [ $# -gt 0 ]; do case "$1" in
   --name) NAME="$2"; shift 2;;
@@ -38,6 +40,9 @@ while [ $# -gt 0 ]; do case "$1" in
   --indices) INDICES="$2"; shift 2;;
   --exclude-systems) EXCLUDE_SYSTEMS="$2"; shift 2;;
   --heavy-systems) HEAVY_SYSTEMS="$2"; shift 2;;
+  --prior) PRIOR="$2"; shift 2;;
+  --warm-julia) WARM_JULIA=1; shift;;
+  --warm-julia-batch) WARM_JULIA_BATCH="$2"; shift 2;;
   --allow-resolve) ALLOW_RESOLVE=1; shift;;
   --single-cell) SINGLE_CELL=1; shift;;
   --dir) S_DIR="$2"; shift 2;;
@@ -65,7 +70,29 @@ fi
 HEAVY_CONC=$(( MEM_GB / HEAVY_GB )); [ "$HEAVY_CONC" -lt 1 ] && HEAVY_CONC=1; [ "$HEAVY_CONC" -gt 2 ] && HEAVY_CONC=2
 
 BENCH="benchmark_${NAME}_${DATE}"
-echo "=== run-benchmark: $BENCH | arms=$ARMS | concurrency=$CONCURRENCY (heavy $HEAVY_CONC) | threads/cell=$THREADS | mem=${MEM_GB}G ==="
+echo "=== run-benchmark: $BENCH | arms=$ARMS | concurrency=$CONCURRENCY (heavy $HEAVY_CONC) | threads/cell=$THREADS | warm_julia=$WARM_JULIA batch=$WARM_JULIA_BATCH | mem=${MEM_GB}G ==="
+
+sync_to_work() {
+  [ -n "${BENCH:-}" ] && [ -d "$PEB_ROOT/$BENCH" ] || return 0
+  mkdir -p "$WORK"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --ignore-errors "$PEB_ROOT/$BENCH/" "$WORK/$BENCH/" >/tmp/peb-work-sync.log 2>&1 || true
+  else
+    mkdir -p "$WORK/$BENCH"
+    cp -a "$PEB_ROOT/$BENCH/." "$WORK/$BENCH/" >/tmp/peb-work-sync.log 2>&1 || true
+  fi
+}
+
+cleanup_sync() {
+  local rc=$?
+  if [ -n "$SYNC_PID" ]; then
+    kill "$SYNC_PID" >/dev/null 2>&1 || true
+    wait "$SYNC_PID" >/dev/null 2>&1 || true
+  fi
+  sync_to_work
+  return "$rc"
+}
+trap cleanup_sync EXIT
 
 # ── inject ODEPE + warm the precompile cache SERIALLY (before any pool) ──────
 INJ=(); [ -n "$ODEPE_REF" ] && INJ+=(--ref "$ODEPE_REF"); [ "$ALLOW_RESOLVE" = "1" ] && INJ+=(--allow-resolve)
@@ -98,6 +125,44 @@ for arm in "${ARM_ARR[@]}"; do
   python3 src/generate_scripts.py "$BENCH" -s "$arm" -r "${arm}_run"
 done
 
+if [ "$WARM_JULIA" = "1" ]; then
+  # Some public images may still have templates that call exit(1) after a
+  # caught analysis failure. A persistent Julia worker must keep serving later
+  # cells, so generated scripts are patched to honor ODEPE_WARM_JULIA_NO_EXIT.
+  python3 - "$BENCH" "${ARM_ARR[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+bench = Path(sys.argv[1])
+for arm in sys.argv[2:]:
+    for path in (bench / "filetree" / f"{arm}_run").glob("*/script.jl"):
+        text = path.read_text()
+        old = "if analysis_failed\n    exit(1)\nend\n"
+        new = """if analysis_failed
+    if get(ENV, "ODEPE_WARM_JULIA_NO_EXIT", "0") != "1"
+        exit(1)
+    end
+end
+"""
+        if old in text:
+            path.write_text(text.replace(old, new))
+PY
+fi
+
+if [ -n "$PRIOR" ] && [ -d "$PRIOR/$BENCH/filetree" ]; then
+  echo "=== resume: copying prior cell outputs from $PRIOR/$BENCH ==="
+  mkdir -p "$BENCH/filetree"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a "$PRIOR/$BENCH/filetree/" "$BENCH/filetree/"
+  else
+    cp -a "$PRIOR/$BENCH/filetree/." "$BENCH/filetree/"
+  fi
+fi
+
+sync_to_work
+( while true; do sleep "$SYNC_INTERVAL_S"; sync_to_work; done ) &
+SYNC_PID=$!
+
 # ── partition indices into light / heavy lanes (heavy = memory-hungry systems) ─
 LIGHT_FILE=$(mktemp); HEAVY_FILE=$(mktemp)
 LIGHT_FILE="$LIGHT_FILE" HEAVY_FILE="$HEAVY_FILE" python3 - "$BENCH" "$HEAVY_SYSTEMS" "$INDICES" <<'PY'
@@ -125,9 +190,48 @@ PY
 run_lane() {  # $1=arm  $2=indexfile  $3=concurrency
   local arm="$1" idxfile="$2" conc="$3"
   [ -s "$idxfile" ] || return 0
-  JULIA_NUM_THREADS="$THREADS" MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
-    xargs -a "$idxfile" -P "$conc" -I{} \
-      python3 src/estimate.py "$BENCH" "${arm}_run" "$arm" {}
+  local todo
+  todo=$(mktemp)
+  python3 - "$BENCH" "$arm" "$idxfile" > "$todo" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+bench, arm, idxfile = sys.argv[1:]
+instances = json.load(open(f"{bench}/huge_json.json"))["instances"]
+id_by_index = {str(x["index"]): x["id"] for x in instances}
+total = skipped = 0
+for raw in open(idxfile):
+    idx = raw.strip()
+    if not idx:
+        continue
+    total += 1
+    cell_id = id_by_index.get(idx)
+    if cell_id is None:
+        print(idx)
+        continue
+    result = Path(bench) / "filetree" / f"{arm}_run" / cell_id / "result.csv"
+    if result.exists():
+        skipped += 1
+        continue
+    print(idx)
+print(f"  resume filter {arm}: skipped {skipped}/{total} completed cells", file=sys.stderr)
+PY
+  if [ ! -s "$todo" ]; then
+    rm -f "$todo"
+    return 0
+  fi
+  if [ "$WARM_JULIA" = "1" ]; then
+    JULIA_NUM_THREADS="$THREADS" MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ODEPE_WARM_JULIA_NO_EXIT=1 \
+      xargs -a "$todo" -P "$conc" -n "$WARM_JULIA_BATCH" \
+        julia --startup-file=no --project="$PEB_ROOT/environments/julia_odepe" src/warm_julia_worker.jl "$BENCH" "${arm}_run" "$arm"
+  else
+    JULIA_NUM_THREADS="$THREADS" MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+      xargs -a "$todo" -P "$conc" -I{} \
+        python3 src/estimate.py "$BENCH" "${arm}_run" "$arm" {}
+  fi
+  rm -f "$todo"
+  sync_to_work
 }
 for arm in "${ARM_ARR[@]}"; do
   echo "--- $arm: light lane (-P $CONCURRENCY) ---"; run_lane "$arm" "$LIGHT_FILE" "$CONCURRENCY"
@@ -141,4 +245,5 @@ python3 src/collect_results.py "$BENCH" "$RUNS"
 # Persist outputs to the mounted volume (the pipeline ran in /opt/peb).
 mkdir -p "$WORK"
 cp -a "$PEB_ROOT/$BENCH" "$WORK/" 2>/dev/null || rsync -a "$PEB_ROOT/$BENCH/" "$WORK/$BENCH/"
+sync_to_work
 echo "=== done -> $WORK/$BENCH (result.csv, result.json + per-cell outputs) ==="

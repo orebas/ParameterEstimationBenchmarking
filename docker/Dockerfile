@@ -42,6 +42,8 @@ ARG SIAN_REPO=https://github.com/alexeyovchinnikov/SIAN-Julia.git
 ARG SIAN_COMMIT=d17262c5869eceb7fde431d82df9852262717b46
 ARG SI_REPO=https://github.com/SciML/StructuralIdentifiability.jl.git
 ARG SI_COMMIT=4b1c4093d864e40e536e29ce1a0e63dfe464d458
+ARG GROEBNER_REPO=https://github.com/orebas/Groebner.jl.git
+ARG GROEBNER_REF=fix-generic-alignment
 WORKDIR /opt/peb
 
 # SIAN + SI forks (compat-stripped so MTK resolves to v11) at their pinned commits.
@@ -52,6 +54,10 @@ RUN git clone "$SIAN_REPO" environments/SIAN-Julia \
  && git clone "$SI_REPO" environments/StructuralIdentifiability.jl \
  && git -C environments/StructuralIdentifiability.jl checkout --quiet "$SI_COMMIT" \
  && python3 /tmp/strip_compat.py environments/StructuralIdentifiability.jl/Project.toml
+
+# Groebner PR #218 fixes non-power-of-two alignment in learn-and-apply batching.
+RUN git clone "$GROEBNER_REPO" environments/Groebner \
+ && git -C environments/Groebner checkout --quiet "$GROEBNER_REF"
 
 # ODEPE at a build-time ref = the precompile target. At RUN, inject-odepe.sh swaps
 # /opt/odepe to the desired ref and re-warms incrementally. Default = quoll-v1, the

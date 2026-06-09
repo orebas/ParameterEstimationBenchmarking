@@ -1,0 +1,951 @@
+{
+  "systems": [
+    {
+      "name": "aircraft_pitch",
+      "ode_system": {
+        "theta": "q",
+        "alpha": "(0.05*q - 0.002*Z_alpha*alpha) / 0.1",
+        "q": "(-M_alpha*alpha - M_delta_e*sin(2.0*t) - 0.2*M_q*q) / 0.05"
+      },
+      "measurements": {
+        "y1": "0.05*q"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "theta",
+        "q",
+        "alpha"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "M_alpha",
+        "M_q",
+        "M_delta_e",
+        "Z_alpha"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "bicycle_model",
+      "ode_system": {
+        "vy": "((160000.0*Cf*(0.05*sin(0.5*t) + (-0.12*r - 0.5*vy) / 20.0) + (8000.0)*Cr*(0.13999999999999999*r - 0.5*vy)) / (3000.0*m_veh) - 2.0*r) / 0.5",
+        "r": "(192000.0*Cf*(0.05*sin(0.5*t) + (-0.12*r - 0.5*vy) / 20.0) - (11200.0)*Cr*(0.13999999999999999*r - 0.5*vy)) / 250.0"
+      },
+      "measurements": {
+        "y1": "0.1*r",
+        "y2": "0.5*vy"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "vy",
+        "r"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "Cf",
+        "Cr",
+        "m_veh"
+      ],
+      "time_interval": [
+        0.0,
+        20.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "biohydrogenation",
+      "ode_system": {
+        "x5": "((-0.3*k7*x5) / (2.0*k8 + 0.5*x6 + 0.5*x5) + (8.0*k5*x4) / (4.0*k6 + 8.0*x4)) / 0.5",
+        "x7": "(0.2*(10.0*k10 - 0.5*x6)*k9*x6) / (5.0*k10)",
+        "x4": "(-8.0*k5*x4) / (8.0*(4.0*k6 + 8.0*x4))",
+        "x6": "((-0.2*(10.0*k10 - 0.5*x6)*k9*x6) / (10.0*k10) + (0.3*k7*x5) / (2.0*k8 + 0.5*x6 + 0.5*x5)) / 0.5"
+      },
+      "measurements": {
+        "y1": "8.0*x4",
+        "y2": "0.5*x5",
+        "y3": "0.5*x6"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x4",
+        "x5",
+        "x6",
+        "x7"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "k5",
+        "k6",
+        "k7",
+        "k8",
+        "k9",
+        "k10"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "biohydrogenation_m1",
+      "branched_name": "biohydrogenation_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add x6 observable to remove biohydrogenation sign/compensation branch"
+    },
+    {
+      "name": "boost_converter",
+      "ode_system": {
+        "vC": "((-48.0*vC) / (20.0*R_load) + 2.0*(0.5 - 0.1*sin(5.0*t))*iL) / (1.92*C_cap)",
+        "iL": "(12.0 - 48.0*(0.5 - 0.1*sin(5.0*t))*vC) / (0.08*L)"
+      },
+      "measurements": {
+        "y1": "48.0*vC",
+        "y2": "2.0*iL"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "iL",
+        "vC"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "L",
+        "C_cap",
+        "R_load"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "brusselator",
+      "ode_system": {
+        "Yc": "6.0*b*X - 16.0*a*Yc*(X^2)",
+        "X": "0.5 - 0.5*X - 3.0*b*X + 16.0*a*Yc*(X^2)"
+      },
+      "measurements": {
+        "y1": "2.0*X",
+        "y2": "2.0*Yc"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "X",
+        "Yc"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "a",
+        "b"
+      ],
+      "time_interval": [
+        0.0,
+        20.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "crauste",
+      "ode_system": {
+        "M": "0.05*delta_LM*L",
+        "P": "(-0.11*mu_P - 3.6e-6*mu_PE*E - 0.00036*mu_PL*L + 0.6*rho_P*P)*P",
+        "Npop": "(-24270.0*mu_N*Npop - 582.4799999999999*delta_NE*P*Npop) / 16180.0",
+        "L": "(11.799999999999999*delta_EL*E - 10.0*(0.05*delta_LM + 7.2e-7*mu_LE*E + 0.00015000000000000001*mu_LL*L)*L) / 10.0",
+        "E": "(582.4799999999999*delta_NE*P*Npop + 10.0*(-1.18*delta_EL - 0.000432*mu_EE*E + 2.56*rho_E*P)*E) / 10.0"
+      },
+      "measurements": {
+        "y3": "10.0*M + 10.0*L",
+        "y1": "16180.0*Npop",
+        "y4": "2.0*P",
+        "y2": "10.0*E"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "Npop",
+        "E",
+        "L",
+        "M",
+        "P"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4"
+      ],
+      "parameter_variables": [
+        "mu_N",
+        "mu_EE",
+        "mu_LE",
+        "mu_LL",
+        "mu_P",
+        "mu_PE",
+        "mu_PL",
+        "delta_NE",
+        "delta_EL",
+        "delta_LM",
+        "rho_E",
+        "rho_P"
+      ],
+      "time_interval": [
+        0.0,
+        16.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "cstr",
+      "ode_system": {
+        "C": "(1.0 - C) / (2.0*tau) - 1.999863916554819*r_eff*C",
+        "Temp": "(Tin - Temp) / (2.0*tau) + 0.0285694845222117*dH_rhoCP*r_eff*C - 2.0*UA_VrhoCP*Temp + 0.8571428571428571*UA_VrhoCP + 0.05714285714285714*UA_VrhoCP*sin(0.5*t)",
+        "r_eff": "12.5*r_eff/(Temp^2)*((Tin - Temp) / (2.0*tau) + 0.0285694845222117*dH_rhoCP*r_eff*C - 2.0*UA_VrhoCP*Temp + 0.8571428571428571*UA_VrhoCP + 0.05714285714285714*UA_VrhoCP*sin(0.5*t))"
+      },
+      "measurements": {
+        "y1": "700.0*Temp"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "C",
+        "Temp",
+        "r_eff"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "tau",
+        "Tin",
+        "dH_rhoCP",
+        "UA_VrhoCP"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "daisy_mamil3",
+      "ode_system": {
+        "x1": "(0.5*(-1.666*a01 - a21 - 1.334*a31)*x1 + 0.334*a12*x2 + 0.9990000000000001*a13*x3) / 0.5",
+        "x2": "-0.334*a12*x2 + 0.5*a21*x1",
+        "x3": "(-0.9990000000000001*a13*x3 + 0.667*a31*x1) / 1.5"
+      },
+      "measurements": {
+        "y1": "0.5*x1",
+        "y2": "x2"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "a12",
+        "a13",
+        "a21",
+        "a31",
+        "a01"
+      ],
+      "time_interval": [
+        0.0,
+        20.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "daisy_mamil4",
+      "ode_system": {
+        "x1": "(-0.1*k01*x1 + 0.4*k12*x2 + 0.8999999999999999*k13*x3 + 1.6*k14*x4 - 0.5*k21*x1 - 0.6000000000000001*k31*x1 - 0.7000000000000001*k41*x1) / 0.4",
+        "x4": "(-1.6*k14*x4 + 0.7000000000000001*k41*x1) / 1.6",
+        "x2": "(-0.4*k12*x2 + 0.5*k21*x1) / 0.8",
+        "x3": "(-0.8999999999999999*k13*x3 + 0.6000000000000001*k31*x1) / 1.2"
+      },
+      "measurements": {
+        "y1": "0.4*x1",
+        "y2": "0.8*x2",
+        "y3": "1.2*x3 + 1.6*x4",
+        "y4": "1.2*x3"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x1",
+        "x2",
+        "x3",
+        "x4"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4"
+      ],
+      "parameter_variables": [
+        "k01",
+        "k12",
+        "k13",
+        "k14",
+        "k21",
+        "k31",
+        "k41"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "daisy_mamil4_m1",
+      "branched_name": "daisy_mamil4_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add one channel-specific observable to break x3/x4 channel swap"
+    },
+    {
+      "name": "dc_motor",
+      "ode_system": {
+        "omega_m": "(0.2*Kt*i - 0.1*omega_m) / (0.02*Jm)",
+        "i": "(12.0 - 0.1*omega_m - 2.0*i + 2.0*sin(5.0*t)) / 0.5"
+      },
+      "measurements": {
+        "y1": "omega_m"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "omega_m",
+        "i"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "Kt",
+        "Jm"
+      ],
+      "time_interval": [
+        0.0,
+        5.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "fitzhugh_nagumo",
+      "ode_system": {
+        "Vm": "(-3.0)*g*(0.5*R - 2.0*Vm + (2.6666666666666665)*(Vm^3))",
+        "R": "(-0.4*a - 2.0*Vm + 0.2*b*R) / (3.0*g)"
+      },
+      "measurements": {
+        "y1": "-2.0*Vm"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "Vm",
+        "R"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "g",
+        "a",
+        "b"
+      ],
+      "time_interval": [
+        0.0,
+        1.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "flexible_arm",
+      "ode_system": {
+        "theta_t": "omega_t",
+        "omega_m": "(0.5 - 0.1*bm*omega_m - 20.0*k*(-0.5*theta_t + 0.5*theta_m)) / (0.1*Jm)",
+        "omega_t": "(-0.05*bt*omega_t - 20.0*k*(0.5*theta_t - 0.5*theta_m)) / (0.05*Jt)",
+        "theta_m": "omega_m"
+      },
+      "measurements": {
+        "y1": "0.5*theta_m",
+        "y2": "0.5*theta_t"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "theta_m",
+        "omega_m",
+        "theta_t",
+        "omega_t"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "Jm",
+        "Jt",
+        "bm",
+        "bt",
+        "k"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "forced_lotka_volterra",
+      "ode_system": {
+        "x": "(-0.3*sin(2.0*t) + 6.0*alpha*x - 8.0*beta*x*yv) / 2.0",
+        "yv": "(-12.0*gamma*yv + 4.0*delta*x*yv) / 2.0"
+      },
+      "measurements": {
+        "y1": "2.0*x",
+        "y2": "2.0*yv"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x",
+        "yv"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "alpha",
+        "beta",
+        "delta",
+        "gamma"
+      ],
+      "time_interval": [
+        0.0,
+        5.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "harmonic_oscillator",
+      "ode_system": {
+        "x1": "-a*x2",
+        "x2": "x1 / b"
+      },
+      "measurements": {
+        "y1": "2.0*x1",
+        "y2": "x2"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x1",
+        "x2"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "a",
+        "b"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "hiv",
+      "ode_system": {
+        "vv": "(200.0*k*yv - 0.012*uu*vv) / 0.002",
+        "w": "(-0.008*b*w - 0.08000000000000002*c*q*w*yv + 0.4*c*w*z*yv) / 2.0",
+        "x": "(2.0*lm - 40.0*d*x - 0.00016*beta*x*vv) / 2000.0",
+        "z": "-0.2*h*z + 0.08000000000000002*c*q*w*yv",
+        "yv": "(-2.0*a*yv + 0.00016*beta*x*vv) / 2.0"
+      },
+      "measurements": {
+        "y3": "2000.0*x",
+        "y1": "2.0*w",
+        "y4": "0.002*vv + 2.0*yv",
+        "y2": "z"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x",
+        "yv",
+        "vv",
+        "w",
+        "z"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4"
+      ],
+      "parameter_variables": [
+        "lm",
+        "d",
+        "beta",
+        "a",
+        "k",
+        "uu",
+        "c",
+        "q",
+        "b",
+        "h"
+      ],
+      "time_interval": [
+        0.0,
+        25.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "lotka_volterra",
+      "ode_system": {
+        "w": "-0.6*k3*w + 4.0*k2*w*r",
+        "r": "2.0*k1*r - 2.0*k2*w*r"
+      },
+      "measurements": {
+        "y1": "4.0*r"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "r",
+        "w"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "k1",
+        "k2",
+        "k3"
+      ],
+      "time_interval": [
+        0.0,
+        20.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "mass_spring_damper",
+      "ode_system": {
+        "vel": "(1.0 - 0.5*c*vel - 8.0*k*x) / m",
+        "x": "0.5*vel"
+      },
+      "measurements": {
+        "y1": "x"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x",
+        "vel"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "m",
+        "c",
+        "k"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "quadrotor",
+      "ode_system": {
+        "w": "(2.0*sin(t) - 0.2*d*w) / (2.0*m)",
+        "z": "0.1*w"
+      },
+      "measurements": {
+        "y1": "10.0*z"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "z",
+        "w"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "m",
+        "d"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "repressilator",
+      "ode_system": {
+        "m3": "-m3 + (4.0*beta) / (0.5*(1 + 8.0*n*p2))",
+        "m2": "-m2 + (4.0*beta) / (0.5*(1 + 16.0*n*p1))",
+        "p3": "-2.0*alpha*(p3 - 0.08333333333333333*m3)",
+        "p2": "-2.0*alpha*(-0.25*m2 + p2)",
+        "m1": "-m1 + (4.0*beta) / (0.5*(1 + 24.0*n*p3))",
+        "p1": "-2.0*alpha*(-0.125*m1 + p1)"
+      },
+      "measurements": {
+        "y3": "6.0*p3",
+        "y1": "4.0*p1",
+        "y2": "2.0*p2"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "m1",
+        "m2",
+        "m3",
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "beta",
+        "n",
+        "alpha"
+      ],
+      "time_interval": [
+        0.0,
+        15.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "seir",
+      "ode_system": {
+        "S": "(-15840.0*b*In*S) / (3960000.0*Npop)",
+        "Npop": "0",
+        "E": "((15840.0*b*In*S) / (2000.0*Npop) - 6.0*nu*E) / 20.0",
+        "In": "(-4.0*a*In + 6.0*nu*E) / 10.0"
+      },
+      "measurements": {
+        "y1": "10.0*In",
+        "y2": "2000.0*Npop",
+        "y3": "20.0*E"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "S",
+        "E",
+        "In",
+        "Npop"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "a",
+        "b",
+        "nu"
+      ],
+      "time_interval": [
+        0.0,
+        30.0
+      ],
+      "source_name": "seir_m1",
+      "branched_name": "seir_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add exposed-compartment observable to break SEIR hyperbola branch"
+    },
+    {
+      "name": "slow_fast",
+      "ode_system": {
+        "eA": "0",
+        "xC": "0.666*k2*xB",
+        "eC": "0",
+        "xB": "(0.166*k1*xA - 0.666*k2*xB) / 0.666",
+        "eB": "0",
+        "xA": "-0.5*k1*xA"
+      },
+      "measurements": {
+        "y1": "xC",
+        "y2": "0.44222400000000006*xA*eA + 0.9990000000000001*eB*xB + 1.666*xC*eC",
+        "y3": "1.332*eA",
+        "y4": "1.666*eC",
+        "y5": "0.9990000000000001*eB"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "xA",
+        "xB",
+        "xC",
+        "eA",
+        "eC",
+        "eB"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4",
+        "y5"
+      ],
+      "parameter_variables": [
+        "k1",
+        "k2"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "slow_fast_m1",
+      "branched_name": "slow_fast_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add eB observable to remove slow-fast swap/rescaling branch"
+    },
+    {
+      "name": "sirt_treatment",
+      "ode_system": {
+        "S": "-0.08*b*S*In/Npop - 0.032*d*b*S*Tr/Npop",
+        "Npop": "0",
+        "Tr": "6.0*g*In - 0.2*nu*Tr",
+        "In": "1.52*b*S*In/Npop + 0.608*d*b*S*Tr/Npop - (0.2*a + 0.6*g)*In"
+      },
+      "measurements": {
+        "y1": "10.0*Tr",
+        "y2": "2000.0*Npop",
+        "y3": "10.0*In"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "In",
+        "Npop",
+        "S",
+        "Tr"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "a",
+        "b",
+        "d",
+        "g",
+        "nu"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "vanderpol",
+      "ode_system": {
+        "x1": "0.5*a*x2",
+        "x2": "-4.0*x1 + 2.0*b*x2 - 32.0*b*x2*(x1^2)"
+      },
+      "measurements": {
+        "y1": "4.0*x1",
+        "y2": "x2"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x1",
+        "x2"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2"
+      ],
+      "parameter_variables": [
+        "a",
+        "b"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "latent_subpopulation",
+      "ode_system": {
+        "S": "-b1*S*I1 - b2*S*I2 - b3*S*I3",
+        "I1": "b1*S*I1 - a1*I1",
+        "I2": "b2*S*I2 - a2*I2",
+        "I3": "b3*S*I3 - a3*I3",
+        "R": "a1*I1 + a2*I2 + a3*I3"
+      },
+      "measurements": {
+        "y1": "S",
+        "y2": "I1",
+        "y3": "I2",
+        "y4": "I3",
+        "y5": "R"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "S",
+        "I1",
+        "I2",
+        "I3",
+        "R"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4",
+        "y5"
+      ],
+      "parameter_variables": [
+        "a1",
+        "a2",
+        "a3",
+        "b1",
+        "b2",
+        "b3"
+      ],
+      "time_interval": [
+        0.0,
+        12.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "receptor_binding",
+      "ode_system": {
+        "L": "-kon1*L*(R1tot - Ca) + koff1*Ca - kon2*L*(R2tot - Cb) + koff2*Cb",
+        "Ca": "kon1*L*(R1tot - Ca) - koff1*Ca",
+        "Cb": "kon2*L*(R2tot - Cb) - koff2*Cb"
+      },
+      "measurements": {
+        "y1": "L",
+        "y2": "Ca",
+        "y3": "Cb"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "L",
+        "Ca",
+        "Cb"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "R1tot",
+        "R2tot",
+        "kon1",
+        "kon2",
+        "koff1",
+        "koff2"
+      ],
+      "time_interval": [
+        0.0,
+        8.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    }
+  ]
+}

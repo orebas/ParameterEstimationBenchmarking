@@ -1,0 +1,255 @@
+{
+  "systems": [
+    {
+      "name": "biohydrogenation",
+      "ode_system": {
+        "x5": "((-0.3*k7*x5) / (2.0*k8 + 0.5*x6 + 0.5*x5) + (8.0*k5*x4) / (4.0*k6 + 8.0*x4)) / 0.5",
+        "x7": "(0.2*(10.0*k10 - 0.5*x6)*k9*x6) / (5.0*k10)",
+        "x4": "(-8.0*k5*x4) / (8.0*(4.0*k6 + 8.0*x4))",
+        "x6": "((-0.2*(10.0*k10 - 0.5*x6)*k9*x6) / (10.0*k10) + (0.3*k7*x5) / (2.0*k8 + 0.5*x6 + 0.5*x5)) / 0.5"
+      },
+      "measurements": {
+        "y1": "8.0*x4",
+        "y2": "0.5*x5",
+        "y3": "0.5*x6"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x4",
+        "x5",
+        "x6",
+        "x7"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "k5",
+        "k6",
+        "k7",
+        "k8",
+        "k9",
+        "k10"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "biohydrogenation_m1",
+      "branched_name": "biohydrogenation_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add x6 observable to remove biohydrogenation sign/compensation branch"
+    },
+    {
+      "name": "daisy_mamil4",
+      "ode_system": {
+        "x1": "(-0.1*k01*x1 + 0.4*k12*x2 + 0.8999999999999999*k13*x3 + 1.6*k14*x4 - 0.5*k21*x1 - 0.6000000000000001*k31*x1 - 0.7000000000000001*k41*x1) / 0.4",
+        "x4": "(-1.6*k14*x4 + 0.7000000000000001*k41*x1) / 1.6",
+        "x2": "(-0.4*k12*x2 + 0.5*k21*x1) / 0.8",
+        "x3": "(-0.8999999999999999*k13*x3 + 0.6000000000000001*k31*x1) / 1.2"
+      },
+      "measurements": {
+        "y1": "0.4*x1",
+        "y2": "0.8*x2",
+        "y3": "1.2*x3 + 1.6*x4",
+        "y4": "1.2*x3"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "x1",
+        "x2",
+        "x3",
+        "x4"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4"
+      ],
+      "parameter_variables": [
+        "k01",
+        "k12",
+        "k13",
+        "k14",
+        "k21",
+        "k31",
+        "k41"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "daisy_mamil4_m1",
+      "branched_name": "daisy_mamil4_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add one channel-specific observable to break x3/x4 channel swap"
+    },
+    {
+      "name": "lotka_volterra",
+      "ode_system": {
+        "w": "-0.6*k3*w + 4.0*k2*w*r",
+        "r": "2.0*k1*r - 2.0*k2*w*r"
+      },
+      "measurements": {
+        "y1": "4.0*r"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "r",
+        "w"
+      ],
+      "measurement_variables": [
+        "y1"
+      ],
+      "parameter_variables": [
+        "k1",
+        "k2",
+        "k3"
+      ],
+      "time_interval": [
+        0.0,
+        20.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    },
+    {
+      "name": "seir",
+      "ode_system": {
+        "S": "(-15840.0*b*In*S) / (3960000.0*Npop)",
+        "Npop": "0",
+        "E": "((15840.0*b*In*S) / (2000.0*Npop) - 6.0*nu*E) / 20.0",
+        "In": "(-4.0*a*In + 6.0*nu*E) / 10.0"
+      },
+      "measurements": {
+        "y1": "10.0*In",
+        "y2": "2000.0*Npop",
+        "y3": "20.0*E"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "S",
+        "E",
+        "In",
+        "Npop"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "a",
+        "b",
+        "nu"
+      ],
+      "time_interval": [
+        0.0,
+        30.0
+      ],
+      "source_name": "seir_m1",
+      "branched_name": "seir_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add exposed-compartment observable to break SEIR hyperbola branch"
+    },
+    {
+      "name": "slow_fast",
+      "ode_system": {
+        "eA": "0",
+        "xC": "0.666*k2*xB",
+        "eC": "0",
+        "xB": "(0.166*k1*xA - 0.666*k2*xB) / 0.666",
+        "eB": "0",
+        "xA": "-0.5*k1*xA"
+      },
+      "measurements": {
+        "y1": "xC",
+        "y2": "0.44222400000000006*xA*eA + 0.9990000000000001*eB*xB + 1.666*xC*eC",
+        "y3": "1.332*eA",
+        "y4": "1.666*eC",
+        "y5": "0.9990000000000001*eB"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "xA",
+        "xB",
+        "xC",
+        "eA",
+        "eC",
+        "eB"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3",
+        "y4",
+        "y5"
+      ],
+      "parameter_variables": [
+        "k1",
+        "k2"
+      ],
+      "time_interval": [
+        0.0,
+        10.0
+      ],
+      "source_name": "slow_fast_m1",
+      "branched_name": "slow_fast_branched",
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "add eB observable to remove slow-fast swap/rescaling branch"
+    },
+    {
+      "name": "receptor_binding",
+      "ode_system": {
+        "L": "-kon1*L*(R1tot - Ca) + koff1*Ca - kon2*L*(R2tot - Cb) + koff2*Cb",
+        "Ca": "kon1*L*(R1tot - Ca) - koff1*Ca",
+        "Cb": "kon2*L*(R2tot - Cb) - koff2*Cb"
+      },
+      "measurements": {
+        "y1": "L",
+        "y2": "Ca",
+        "y3": "Cb"
+      },
+      "non_identifiable": [],
+      "state_variables": [
+        "L",
+        "Ca",
+        "Cb"
+      ],
+      "measurement_variables": [
+        "y1",
+        "y2",
+        "y3"
+      ],
+      "parameter_variables": [
+        "R1tot",
+        "R2tot",
+        "kon1",
+        "kon2",
+        "koff1",
+        "koff2"
+      ],
+      "time_interval": [
+        0.0,
+        8.0
+      ],
+      "m1_policy": "bounded_physical",
+      "algebraic_multiplicity": 1,
+      "physical_multiplicity_positive_bounds": 1,
+      "modification_reason": "unchanged algebraic M=1 system"
+    }
+  ]
+}

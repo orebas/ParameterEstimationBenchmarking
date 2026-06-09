@@ -69,6 +69,8 @@ pep = ParameterEstimationProblem(
 #     AAAD and S2AAAMLE for the crauste-class problems. Noise-gating via
 #     `auto_filter_interpolators=true` (also a package default) drops
 #     S2AAAMLE/AAAD/AAADOld at high noise automatically.
+#     Subexperiment-only variants can force a single interpolator through
+#     {{ODEPE_FORCE_INTERPOLATOR}} while leaving the main polish/no-polish arms unchanged.
 #   * Polish via PolishLSOBoundedLog (post-2026-05 bake-off winner; bounded LSO LM in
 #     per-variable log space). The {{ODEPE_POLISH}} Mustache toggle controls whether
 #     polish runs at all (this is the only difference between odepe_v2_polish and
@@ -79,6 +81,11 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
+    branch_completion = {{ODEPE_BRANCH_COMPLETION}},
+    {{#ODEPE_FORCE_INTERPOLATOR}}
+    interpolator = {{ODEPE_FORCE_INTERPOLATOR}},
+    interpolators = InterpolatorMethod[],
+    {{/ODEPE_FORCE_INTERPOLATOR}}
     # Shooting: 20 warp points clustered near t=0 (numbat: was 12 in bilby; bumped for
     # better statistical power in the synthesize_aggregate_candidates median/trimmed-mean pool).
     shooting_points = 20,
@@ -164,10 +171,16 @@ t_start = time()
 analysis_failed = false
 
 try
-    raw_results, analysis, _ = analyze_parameter_estimation_problem(
-        pep,
-        opts,
-    )
+    (estimation_value, timing_breakdown) = ODEParameterEstimation.with_estimation_timing() do
+        analyze_parameter_estimation_problem(
+            pep,
+            opts,
+        )
+    end
+    raw_results, analysis, _ = estimation_value
+    if !isnothing(timing_breakdown)
+        metadata["timing"] = ODEParameterEstimation.timing_breakdown_to_dict(timing_breakdown)
+    end
 
     (solutions_vector,
         besterror,
@@ -271,5 +284,7 @@ println("Total time: ", time() - t_start)
 println("===END===")
 
 if analysis_failed
-    exit(1)
+    if get(ENV, "ODEPE_WARM_JULIA_NO_EXIT", "0") != "1"
+        exit(1)
+    end
 end

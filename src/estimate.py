@@ -24,8 +24,8 @@ from termcolor import colored
 from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, END_OF_LOG, STDOUT_FILENAME, STDERR_FILENAME
 
 def get_cmd(args, instance):
-    if args.software in ['pe','odepe','sciml','odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq','odepe_multipoint','odepe_v2_polish','odepe_v2_nopolish','odepe_shade']:
-        return shlex.split('julia ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.jl"))
+    if args.software in ['pe','odepe','sciml','odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq','odepe_multipoint','odepe_v2_polish','odepe_v2_nopolish','odepe_v2_aaa_nopolish','odepe_shade']:
+        return shlex.split('julia --startup-file=no ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.jl"))
     elif args.software in ['amigo2', 'iqm']:
         return shlex.split('matlab -singleCompThread -nodisplay -nosplash -nodesktop -licmode onlinelicensing -r "run ' + str(args.dir.resolve().absolute() / args.config['FILETREE'] / args.run / instance['id'] / f"script.m") + '; exit"')
     else:

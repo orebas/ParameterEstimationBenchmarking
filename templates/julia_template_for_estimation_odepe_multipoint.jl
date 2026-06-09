@@ -71,6 +71,7 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
+    branch_completion = {{ODEPE_BRANCH_COMPLETION}},
     # 7 interpolators: mix of GP, spectral, and rational
     interpolators = [
         InterpolatorAGPRobust,        # AGP-Robust-SE

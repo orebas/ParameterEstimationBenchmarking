@@ -75,18 +75,35 @@ watch -n 30 'curl -s http://$COORD_IP:8080/status | python3 -m json.tool'
 When `/status` `remaining`==0: pull `/srv/results` from the coordinator box, run analysis, then
 `hcloud server delete` the workers + coordinator (or `reap.sh`).
 
-## Cloud provisioning (TODO — validate live, 1 box first)
-The existing `fleet.py provision()/push_overlay()/destroy()` are reused unchanged. The remaining
-wiring (to do live against one real box, then scale):
-1. `run-on-box.sh`: add a worker-mode branch that passes `--worker-mode --coordinator $COORD
-   --engines $ENGINES --results-rsync $SINK` into the `docker run $IMAGE run ...` invocation
-   (the container already has Julia + the julia_odepe env; worker.py runs inside it after generate).
-2. A thin `worker_fleet.py` (reuses fleet.py helpers): provision N identical worker boxes →
-   push overlay → launch run-on-box.sh worker-mode → monitor coordinator `/status` → destroy.
-3. Box → engines: ccx33 → `8:1` (hard) or `2:4` (easy) or hybrid; ccx43 → `8:1,2:4`.
-4. `--odepe-ref main` so the container checks out err_only.
+## Cloud findings (validated 2026-06-12 — 1-box test)
+- **Coordinator MUST be a public box** (local is WSL2-NATed). A `ccx13`/fsn1 box ran it fine.
+  Launch it with `setsid env PYTHONUNBUFFERED=1 python3 coordinator.py ... </dev/null &` — plain
+  `ssh host "nohup ... &"` silently no-ops; `setsid </dev/null` fully detaches.
+- **Provisioning**: `cax11`/`cpx11` are intermittently capacity-out / US-only; use `ccx`-class
+  (the tiers already do) and fall back across locations on `resource_unavailable`.
+- **Results deposit (KEY)**: the `odepe-bench` container has `rsync` + `python3` but **NO ssh
+  client**. So a cloud worker CANNOT rsync-over-ssh from inside the container. Architecture:
+  - worker.py in-container runs with `--results-rsync ""` (no in-container rsync) and POSTs
+    `/done` over HTTP (python3 + outbound HTTP both work in-container).
+  - results land in the in-container bench → `sync_to_work` copies to the mounted `/work`.
+  - a **box-level** loop (outside the container, where ssh exists) rsyncs `/work` → the
+    coordinator sink, using the fleet **deploy key** (`/tmp/odepe_deploy`, authorized in the
+    coordinator's `authorized_keys`). The local worker, by contrast, rsyncs directly (it has ssh).
 
-## Validated locally (2026-06-12)
-`repro/benchmark_v2_dryrun_2026_06_12/` — coordinator + 1 worker (8:1,2:2 engines) drained a
-6-cell benchmark: warm engines start at both thread counts, claim/run/done/drain work, polish+
-nopolish emit pool.csv/jls, aaa emits none, AAAD used at 1em4. (See dryrun.log.)
+## Worker-box build (next — design settled, ~250 lines)
+1. NEW `cloud/hetzner/run-worker-box.sh` (mirror run-on-box.sh's mounts): `docker run <mounts>
+   $IMAGE run --worker-mode --coordinator $COORD --engines $ENGINES --results-rsync "" --arms
+   $ARMS --config /shard/config.json --systems /shard/systems.json --odepe-ref main` **plus** a
+   background `while rsync -az /work/.../filetree/ <deploykey> root@$COORD:/srv/results/; sleep 120; done`.
+2. NEW `cloud/hetzner/worker_fleet.py` (reuse `fleet.stage_overlay/push_overlay/provision/destroy`):
+   provision N `ccx33`/`ccx43` boxes → push overlay → scp deploy key to `/root/.ssh/id_ed25519` +
+   full config/systems + run-worker-box.sh → launch it → monitor `/status` → destroy on drain.
+3. Box → engines: ccx33 (8 vcpu) → `8:1` or `2:4`; ccx43 (16) → `8:1,2:4`.
+
+## Validated 2026-06-12
+- **Local** (`repro/benchmark_v2_dryrun_2026_06_12/`): coordinator + 1 worker (8:1,2:2) drained a
+  6-cell benchmark; warm engines at both thread counts (~18x reuse), claim/run/done/drain, polish+
+  nopolish emit pool.csv/jls (aaa none), AAAD at 1em4.
+- **1-box cloud test**: coordinator on a public `ccx13`; the local worker claimed over HTTP, ran,
+  and **rsync-deposited all 6 cells (result.csv + 4 pool.jls) to the cloud box `/srv/results`**;
+  queue drained 6/6. Deploy-key auth proven. (Coordinator box torn down after.)

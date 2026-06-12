@@ -28,6 +28,9 @@ DEFAULT_CONFIG_VALUES = {
     "ODEPE_POLISH": "true",
     "ODEPE_BRANCH_COMPLETION": "true",
     "ODEPE_FORCE_INTERPOLATOR": "",
+    # Empty ⇒ the {{#ODEPE_DUMP_POOL}} section is skipped (chevron: "" is falsy, any
+    # non-empty string is truthy). Enabled for polish/nopolish via SOFTWARE_OVERRIDES.
+    "ODEPE_DUMP_POOL": "",
     "POLISH_MAXTIME": 1200.0,
     "POLISH_DIVERGENCE_FACTOR": 10.0,
     "POLISH_STAGNATION_WINDOW": 50,
@@ -88,8 +91,8 @@ FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm',
 # multiple distinct runs from a single template — e.g. odepe_v2 polish/nopolish
 # from one file by toggling {{ODEPE_POLISH}}.
 SOFTWARE_OVERRIDES = {
-    "odepe_v2_polish":   {"ODEPE_POLISH": "true"},
-    "odepe_v2_nopolish": {"ODEPE_POLISH": "false"},
+    "odepe_v2_polish":   {"ODEPE_POLISH": "true",  "ODEPE_DUMP_POOL": "1"},
+    "odepe_v2_nopolish": {"ODEPE_POLISH": "false", "ODEPE_DUMP_POOL": "1"},
     "odepe_v2_aaa_nopolish": {
         "ODEPE_POLISH": "false",
         "ODEPE_FORCE_INTERPOLATOR": "InterpolatorAAAD",

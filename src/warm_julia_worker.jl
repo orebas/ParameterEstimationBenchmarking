@@ -44,7 +44,9 @@ function run_cell(bench::AbstractString, run::AbstractString, index::Int, instan
     script_path = joinpath(cell_dir, "script.jl")
     stdout_path = joinpath(cell_dir, STDOUT_FILENAME)
     stderr_path = joinpath(cell_dir, STDERR_FILENAME)
+    failure_path = joinpath(cell_dir, FAILURE_REASON_FILENAME)
     mkpath(cell_dir)
+    rm(failure_path; force = true)
 
     status = 0
     open(stdout_path, "w") do out
@@ -80,6 +82,57 @@ function run_cell(bench::AbstractString, run::AbstractString, index::Int, instan
     return status
 end
 
+# ── Persistent server mode (for the shared-work-queue worker) ───────────────────
+# Launch: julia --startup-file=no src/warm_julia_worker.jl --server <bench>
+# Then feed one cell per stdin line:  "<run>\t<software>\t<index>"  (software is
+# informational — the rendered script.jl is self-contained). After each cell the
+# server prints "CELL_DONE\t<index>\t<status>" to its OWN stdout and flushes (the
+# cell's own stdout/stderr are redirected to files inside run_cell, so the control
+# channel stays clean). "QUIT" or EOF exits. Julia stays warm across all cells, so
+# the heavy ODEPE compile is paid once per engine, not per cell.
+function server_main()
+    if length(ARGS) < 2
+        println(stderr, "Usage: julia ... warm_julia_worker.jl --server <bench>")
+        exit(2)
+    end
+    bench = abspath(ARGS[2])
+    config = JSON.parsefile(joinpath(bench, "config", "config.json"))
+    instances = JSON.parsefile(joinpath(bench, "huge_json.json"))["instances"]
+    n_inst = length(instances)
+    println("### WARM JULIA SERVER READY pid=", getpid(), " threads=", Threads.nthreads(), " bench=", bench)
+    flush(stdout)
+    while !eof(stdin)
+        line = readline(stdin)
+        s = strip(line)
+        isempty(s) && continue
+        s == "QUIT" && break
+        parts = split(s, '\t')
+        if length(parts) < 3
+            println("CELL_ERR\tbad_request\t", s); flush(stdout); continue
+        end
+        run = String(parts[1])
+        idx = tryparse(Int, strip(String(parts[3])))
+        if idx === nothing || idx < 0 || idx > n_inst - 1
+            println("CELL_ERR\tbad_index\t", s); flush(stdout); continue
+        end
+        status = 3
+        try
+            status = run_cell(bench, run, idx, instances, config)
+        catch caught
+            # Loader-level error (run_cell itself threw before/around the include);
+            # record it so the cell is not silently lost.
+            status = 2
+            try
+                cd = joinpath(bench, config["FILETREE"], run, instances[idx + 1]["id"])
+                write_failure(cd, caught)
+            catch
+            end
+        end
+        println("CELL_DONE\t", idx, "\t", status)
+        flush(stdout)
+    end
+end
+
 function main()
     if length(ARGS) < 4
         println(stderr, "Usage: julia --startup-file=no src/warm_julia_worker.jl <bench> <run> <software> <index...>")
@@ -110,5 +163,9 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    main()
+    if length(ARGS) >= 1 && ARGS[1] == "--server"
+        server_main()
+    else
+        main()
+    end
 end

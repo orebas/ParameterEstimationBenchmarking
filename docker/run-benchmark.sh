@@ -27,6 +27,8 @@ PER_CELL_GB=6; HEAVY_GB=10; ALLOW_RESOLVE=0; PRIOR=""
 SINGLE_CELL=0; S_DIR=""; S_RUN=""; S_ARM=""; S_IDX=""
 WARM_JULIA=0; WARM_JULIA_BATCH=4
 SYNC_INTERVAL_S="${SYNC_INTERVAL_S:-300}"; SYNC_PID=""
+# Shared dynamic work-queue worker mode (replaces the static light/heavy lanes):
+WORKER_MODE=0; COORDINATOR=""; ENGINES="2:1"; WORKER_NAME=""; AMIGO2_SLOTS=0; RESULTS_RSYNC=""
 
 while [ $# -gt 0 ]; do case "$1" in
   --name) NAME="$2"; shift 2;;
@@ -44,6 +46,12 @@ while [ $# -gt 0 ]; do case "$1" in
   --warm-julia) WARM_JULIA=1; shift;;
   --warm-julia-batch) WARM_JULIA_BATCH="$2"; shift 2;;
   --allow-resolve) ALLOW_RESOLVE=1; shift;;
+  --worker-mode) WORKER_MODE=1; shift;;
+  --coordinator) COORDINATOR="$2"; shift 2;;
+  --engines) ENGINES="$2"; shift 2;;
+  --worker-name) WORKER_NAME="$2"; shift 2;;
+  --amigo2-slots) AMIGO2_SLOTS="$2"; shift 2;;
+  --results-rsync) RESULTS_RSYNC="$2"; shift 2;;
   --single-cell) SINGLE_CELL=1; shift;;
   --dir) S_DIR="$2"; shift 2;;
   --run) S_RUN="$2"; shift 2;;
@@ -162,6 +170,25 @@ fi
 sync_to_work
 ( while true; do sleep "$SYNC_INTERVAL_S"; sync_to_work; done ) &
 SYNC_PID=$!
+
+# ── worker mode: pull cells from the coordinator instead of the static lanes ──
+# The filetree for $ARMS is already generated above (deterministic on every box);
+# worker.py claims (arm,index) cells, runs them warm, rsyncs each finished cell to
+# the results sink, and exits when the whole queue drains. No collect step (the
+# coordinator owns status; analysis reads the rsync'd cells).
+if [ "$WORKER_MODE" = "1" ]; then
+  [ -n "$COORDINATOR" ] || { echo "worker mode needs --coordinator URL" >&2; exit 2; }
+  WNAME="${WORKER_NAME:-$(hostname)}"
+  echo "=== worker mode: coordinator=$COORDINATOR engines=$ENGINES name=$WNAME amigo2_slots=$AMIGO2_SLOTS ==="
+  python3 src/worker.py --coordinator "$COORDINATOR" --bench "$PEB_ROOT/$BENCH" \
+    --worker "$WNAME" --engines "$ENGINES" --amigo2-slots "$AMIGO2_SLOTS" \
+    --julia-project "$PEB_ROOT/environments/julia_odepe" --peb-root "$PEB_ROOT" \
+    --results-rsync "$RESULTS_RSYNC" --log-dir "$WORK"
+  [ -n "$SYNC_PID" ] && kill "$SYNC_PID" 2>/dev/null
+  sync_to_work
+  echo "=== worker drained, exiting ==="
+  exit 0
+fi
 
 # ── partition indices into light / heavy lanes (heavy = memory-hungry systems) ─
 LIGHT_FILE=$(mktemp); HEAVY_FILE=$(mktemp)

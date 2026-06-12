@@ -71,6 +71,8 @@ pep = ParameterEstimationProblem(
 #     S2AAAMLE/AAAD/AAADOld at high noise automatically.
 #     Subexperiment-only variants can force a single interpolator through
 #     {{ODEPE_FORCE_INTERPOLATOR}} while leaving the main polish/no-polish arms unchanged.
+#     Forcing an interpolator ALSO sets `auto_filter_interpolators=false` (see below) so the
+#     forced method survives at high noise — the aaa-only arm must use AAAD at every σ̂.
 #   * Polish via PolishLSOBoundedLog (post-2026-05 bake-off winner; bounded LSO LM in
 #     per-variable log space). The {{ODEPE_POLISH}} Mustache toggle controls whether
 #     polish runs at all (this is the only difference between odepe_v2_polish and
@@ -85,6 +87,9 @@ opts = EstimationOptions(
     {{#ODEPE_FORCE_INTERPOLATOR}}
     interpolator = {{ODEPE_FORCE_INTERPOLATOR}},
     interpolators = InterpolatorMethod[],
+    # Forcing ONE interpolator ⇒ disable noise-gated filtering, else the forced method
+    # (e.g. AAAD) is silently dropped above σ̂≈1e-5 and the arm falls back to AAADGPR.
+    auto_filter_interpolators = false,
     {{/ODEPE_FORCE_INTERPOLATOR}}
     # Shooting: 20 warp points clustered near t=0 (numbat: was 12 in bilby; bumped for
     # better statistical power in the synthesize_aggregate_candidates median/trimmed-mean pool).
@@ -178,6 +183,20 @@ try
         )
     end
     raw_results, analysis, _ = estimation_value
+    {{#ODEPE_DUMP_POOL}}
+    # Full candidate-pool dump (err + provenance) for the offline ranking study — polish/nopolish
+    # arms only. raw_results[1] is the full pre-truncation pool (analysis_utils.jl). Wrapped so a
+    # dump failure is non-fatal to the cell; invokelatest because dump_pool is just-included.
+    try
+        # Base.include(@__MODULE__, ...) not bare include(): the warm worker runs each
+        # cell inside a hand-built Module that has no module-local `include` binding.
+        Base.include(@__MODULE__, raw"{{harness_root}}/src/dump_pool.jl")
+        Base.invokelatest(dump_pool, raw_results, pep, opts;
+            csv_path = joinpath(@__DIR__, "pool.csv"), jls_path = joinpath(@__DIR__, "pool.jls"))
+    catch _dump_err
+        @warn "dump_pool failed (non-fatal)" exception = (_dump_err, catch_backtrace())
+    end
+    {{/ODEPE_DUMP_POOL}}
     if !isnothing(timing_breakdown)
         metadata["timing"] = ODEParameterEstimation.timing_breakdown_to_dict(timing_breakdown)
     end

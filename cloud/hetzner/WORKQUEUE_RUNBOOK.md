@@ -39,18 +39,23 @@ python3 src/init_benchmark.py --name final_v2 --date 2026-06-12 \
 This writes `benchmark_final_v2_2026-06-12/huge_json.json` (1250 instances) + MANIFEST.toml.
 
 ### 3. Coordinator box (public)
+ccx11/cpx11 are often capacity-out / US-only — use **ccx13** (dedicated, 80 GB disk,
+ample sink for ~15-20 GB of results). Authorize the deploy key (workers rsync results here).
 ```
-hcloud server create --name odepe-coord --type cpx11 --image ubuntu-24.04 \
+hcloud server create --name odepe-coord --type ccx13 --location fsn1 --image ubuntu-24.04 \
   --ssh-key <key> --user-data-from-file cloud/hetzner/cloud-init-docker.yaml
 COORD_IP=<ip>
-# copy coordinator.py + huge_json.json + tiers_m1.json to the box; then:
-HARD=$(python3 -c "import json;t=json.load(open('cloud/hetzner/tiers_m1.json'));import itertools;
-print(','.join(sorted(set(s for v in t['tiers'].values() for s in v['systems'] if v['box_type']=='ccx43'))))")
-python3 src/coordinator.py --huge-json huge_json.json \
+# copy coordinator.py + huge_json.json + tiers_m1.json; authorize the deploy key:
+cat /path/odepe_deploy.pub | ssh root@$COORD_IP 'mkdir -p /root/.ssh /srv/results && cat >> /root/.ssh/authorized_keys'
+HARD=biohydrogenation,crauste,cstr,daisy_mamil4,hiv,repressilator,seir,sirt_treatment,slow_fast
+# Launch DETACHED + auto-restart (multi-hour run; SQLite resumes on restart). setsid
+# </dev/null is REQUIRED — plain `ssh "nohup ... &"` silently no-ops.
+ssh root@$COORD_IP "setsid bash -c 'while true; do env PYTHONUNBUFFERED=1 python3 /root/coordinator.py \
+  --huge-json /root/huge_json.json \
   --arms odepe_v2_polish,odepe_v2_nopolish,odepe_v2_aaa_nopolish,odepe_shade,amigo2 \
-  --hard-systems "$HARD" --local-only-arms amigo2 --port 8080 \
-  --db queue.db --cells-csv cells.csv
-# results sink: mkdir -p /srv/results  (workers rsync here)
+  --hard-systems $HARD --local-only-arms amigo2 --port 8080 --db /root/queue.db \
+  --cells-csv /root/cells.csv >>/root/coord.log 2>&1; sleep 2; done' </dev/null &"
+```
 ```
 Coordinator URL = `http://$COORD_IP:8080`.  Sink = `root@$COORD_IP:/srv/results`.
 

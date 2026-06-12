@@ -68,7 +68,9 @@ def build_manifest(conn, cfg):
         lo = 1 if arm in local_only_arms else 0
         for inst in instances:
             system, rep, noise = parse_cell_id(inst)
-            cores = cfg.hard_cores if system in hard else cfg.easy_cores
+            # amigo2 (local-only, single-threaded MATLAB) never needs hard cores —
+            # giving it hard_cores makes it unclaimable by the low-free-cores MATLAB slot.
+            cores = cfg.easy_cores if (lo or system not in hard) else cfg.hard_cores
             rows.append((arm, run, arm, int(inst["index"]), inst["id"],
                          system, noise, cores, lo, "PENDING", None, 0.0,
                          None, None, None, 0))

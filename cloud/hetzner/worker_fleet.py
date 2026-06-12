@@ -64,10 +64,16 @@ def setup_box(name, args, run_id):
         return {"name": name, "ip": ip, "ok": False, "error": str(e)}
 
 
-def queue_remaining(coordinator):
+def queue_remaining(coordinator, arms=None):
+    """Remaining cells THIS fleet can run. With `arms`, count only those arms so
+    cloud boxes are destroyed when the cloud (ODEPE) arms drain — not when the
+    local-only amigo2 arm finishes hours later."""
     try:
         with urllib.request.urlopen(f"{coordinator}/status", timeout=15) as r:
-            return json.loads(r.read()).get("remaining", 1)
+            d = json.loads(r.read())
+        if not arms:
+            return d.get("remaining", 1)
+        return sum(a["total"] - a["done"] for a in d.get("per_arm", []) if a["arm"] in arms)
     except Exception:
         return 1  # transient error -> assume work remains
 
@@ -102,7 +108,10 @@ def main():
     fleet.stage_overlay(args.run_id)
     fleet.log(f"staged overlay (run {args.run_id})")
 
-    names = [f"odepe-wq-{args.name}-{i}".replace("_", "-") for i in range(args.n)]
+    # Name boxes by run_id (unique per fleet) so worker-names don't collide across
+    # fleets/providers — colliding names would conflate heartbeats in the coordinator
+    # and break dead-worker re-queue.
+    names = [f"odepe-wq-{args.run_id}-{i}".replace("_", "-") for i in range(args.n)]
     with ThreadPoolExecutor(max_workers=max(1, args.n)) as ex:
         boxes = list(ex.map(lambda nm: setup_box(nm, args, args.run_id), names))
     up = [b for b in boxes if b["ok"]]
@@ -110,12 +119,13 @@ def main():
     if not up:
         sys.exit(1)
 
+    my_arms = set(a.strip() for a in args.arms.split(",") if a.strip())
     try:
-        while queue_remaining(args.coordinator) > 0:
+        while queue_remaining(args.coordinator, my_arms) > 0:
             time.sleep(60)
     except KeyboardInterrupt:
         pass
-    fleet.log("queue drained")
+    fleet.log("this fleet's arms drained")
     if not args.keep:
         for b in up:
             # Wait for the box's final /work->sink rsync to finish (it touches

@@ -118,6 +118,13 @@ def main():
     fleet.log("queue drained")
     if not args.keep:
         for b in up:
+            # Wait for the box's final /work->sink rsync to finish (it touches
+            # /work/WORKER_DONE) before destroying — else the last cells' results
+            # are lost. ~10 min grace, then destroy anyway.
+            for _ in range(40):
+                if fleet.ssh(b["ip"], "test -f /work/WORKER_DONE").returncode == 0:
+                    break
+                time.sleep(15)
             try:
                 fleet.destroy(b["name"])
                 fleet.log(f"destroyed {b['name']}")

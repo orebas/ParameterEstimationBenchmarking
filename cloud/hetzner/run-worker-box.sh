@@ -58,5 +58,8 @@ docker run --rm --network host "${M[@]}" -e SYNC_INTERVAL_S=60 \
     --amigo2-slots "$AMIGO2_SLOTS" --results-rsync "" --worker-name "$WNAME"
 RC=$?
 kill "$SYNC_PID" 2>/dev/null
+# Final deposit, THEN signal worker_fleet that all results are on the sink (so it
+# won't destroy this box mid-rsync and lose the last cells).
 [ -d "/work/$BENCH/filetree" ] && rsync -az -e "ssh $SSHOPTS" "/work/$BENCH/filetree/" "$RESULTS_SINK/" 2>/dev/null
-echo "[wbox] $(date -u +%T) done rc=$RC"
+touch /work/WORKER_DONE
+echo "[wbox] $(date -u +%T) done rc=$RC (final deposit complete)"

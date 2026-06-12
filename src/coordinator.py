@@ -292,7 +292,12 @@ def main():
     DB = init_db(CFG)
     if CFG.cells_csv:
         export_cells_csv(DB, CFG.cells_csv)
-    srv = ThreadingHTTPServer(("0.0.0.0", CFG.port), Handler)
+    # request_queue_size default (5) is too small for ~50 workers bursting
+    # claims+heartbeats; raise the listen backlog so connections aren't dropped.
+    class Coord(ThreadingHTTPServer):
+        request_queue_size = 256
+        daemon_threads = True
+    srv = Coord(("0.0.0.0", CFG.port), Handler)
     print(f"[coordinator] listening on :{CFG.port}  db={CFG.db}  "
           f"lease={CFG.lease_seconds}s")
     try:

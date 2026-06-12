@@ -212,5 +212,10 @@ println("Total time: ", time() - t_start)
 println("===END===")
 
 if analysis_failed
-    exit(1)
+    # A persistent warm worker (the shared-work-queue engine) must survive a failed
+    # cell — exit(1) would kill the engine and force a full recompile. Match the v2
+    # template's guard so a failed shade cell is non-fatal to the engine.
+    if get(ENV, "ODEPE_WARM_JULIA_NO_EXIT", "0") != "1"
+        exit(1)
+    end
 end

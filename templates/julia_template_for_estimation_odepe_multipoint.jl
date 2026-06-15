@@ -147,6 +147,24 @@ function result_metadata(best_sol)
 end
 
 sidecar_file = joinpath(@__DIR__, "odepe_metadata.json")
+
+# Sanitize metadata for JSON: JSON.print throws ArgumentError on NaN/Inf (the error fields of
+# hard/failed cells go non-finite). Recursively map non-finite floats to `nothing` (JSON null)
+# and stringify dict keys; clean metadata is unchanged.
+function _json_safe(x)
+    if x isa AbstractFloat
+        return isfinite(x) ? x : nothing
+    elseif x isa AbstractDict
+        return Dict{String, Any}(string(k) => _json_safe(v) for (k, v) in x)
+    elseif x isa AbstractVector || x isa Tuple
+        return Any[_json_safe(v) for v in x]
+    elseif x isa Symbol
+        return string(x)
+    else
+        return x
+    end
+end
+
 metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
@@ -213,7 +231,19 @@ catch err
     metadata["error"] = sprint(showerror, err, catch_backtrace())
     rethrow()
 finally
-    open(sidecar_file, "w") do io
-        JSON.print(io, metadata, 4)
+    # Build the JSON string FIRST (so a serialization failure never leaves a truncated
+    # 0-byte file), sanitizing non-finite floats; LOG on failure instead of crashing in finally.
+    try
+        sidecar_json = sprint(io -> JSON.print(io, _json_safe(metadata), 4))
+        write(sidecar_file, sidecar_json)
+    catch _meta_err
+        @error "metadata sidecar serialization failed" exception = (_meta_err, catch_backtrace())
+        try
+            write(sidecar_file, sprint(io -> JSON.print(io, Dict(
+                "status" => get(metadata, "status", "error"),
+                "metadata_write_error" => sprint(showerror, _meta_err),
+            ), 4)))
+        catch
+        end
     end
 end

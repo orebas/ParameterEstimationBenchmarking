@@ -59,6 +59,7 @@ TEMPLATE_ESTIMATION = {
     "odepe_v2_polish"         : "templates/julia_template_for_estimation_odepe_v2.jl",
     "odepe_v2_nopolish"       : "templates/julia_template_for_estimation_odepe_v2.jl",
     "odepe_v2_aaa_nopolish"   : "templates/julia_template_for_estimation_odepe_v2.jl",
+    "odepe_v2_gponly"         : "templates/julia_template_for_estimation_odepe_v2.jl",
     "odepe_shade"             : "templates/julia_template_for_estimation_odepe_shade.jl",
 }
 
@@ -76,6 +77,7 @@ SOFTWARE_COMMENT = {
     "odepe_v2_polish"         : "#",
     "odepe_v2_nopolish"       : "#",
     "odepe_v2_aaa_nopolish"   : "#",
+    "odepe_v2_gponly"         : "#",
     "odepe_shade"             : "#",
 }
 
@@ -84,7 +86,7 @@ FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm',
             'odepe_kernel_se_plus_rq': 'jl', 'odepe_kernel_se_times_rq': 'jl',
             'odepe_multipoint': 'jl',
             'odepe_v2_polish': 'jl', 'odepe_v2_nopolish': 'jl',
-            'odepe_v2_aaa_nopolish': 'jl',
+            'odepe_v2_aaa_nopolish': 'jl', 'odepe_v2_gponly': 'jl',
             'odepe_shade': 'jl'}
 
 # Per-software Mustache overrides applied AFTER get_settings(). Lets us render
@@ -96,6 +98,13 @@ SOFTWARE_OVERRIDES = {
     "odepe_v2_aaa_nopolish": {
         "ODEPE_POLISH": "false",
         "ODEPE_FORCE_INTERPOLATOR": "InterpolatorAAAD",
+    },
+    # GP-only arm for the TAC practical-identifiability certificate: forces the
+    # UQ-capable SE-kernel GP so the estimator's derivative smoother IS the
+    # certificate's W. No polish, matching the aaa_nopolish comparison arm.
+    "odepe_v2_gponly": {
+        "ODEPE_POLISH": "false",
+        "ODEPE_FORCE_INTERPOLATOR": "InterpolatorAGPUQ",
     },
 }
 
@@ -187,14 +196,14 @@ OUTPUT:             {args.dir}
             if software in ['pe','odepe','sciml','amigo2',
                             'odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq',
                             'odepe_multipoint',
-                            'odepe_v2_polish','odepe_v2_nopolish','odepe_v2_aaa_nopolish',
+                            'odepe_v2_polish','odepe_v2_nopolish','odepe_v2_aaa_nopolish','odepe_v2_gponly',
                             'odepe_shade']:
                 julia_env_name = {"pe": "julia_pe", "odepe": "julia_odepe", "sciml": "julia_sciml",
                                   "odepe_kernel_se": "julia_odepe", "odepe_kernel_rq": "julia_odepe",
                                   "odepe_kernel_se_plus_rq": "julia_odepe", "odepe_kernel_se_times_rq": "julia_odepe",
                                   "odepe_multipoint": "julia_odepe",
                                   "odepe_v2_polish": "julia_odepe", "odepe_v2_nopolish": "julia_odepe",
-                                  "odepe_v2_aaa_nopolish": "julia_odepe",
+                                  "odepe_v2_aaa_nopolish": "julia_odepe", "odepe_v2_gponly": "julia_odepe",
                                   "odepe_shade": "julia_odepe"}.get(software, "")
                 if julia_env_name:
                     julia_env_abs = str((parent / "environments" / julia_env_name).resolve())

@@ -123,7 +123,6 @@ function result_metadata(best_sol)
         "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
         "rescue_path" => string(provenance.rescue_path),
         "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
-        "residual_fix_set" => ordered_dict_to_string_dict(provenance.residual_fix_set),
         "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
         "practical_identifiability_status" => string(provenance.practical_identifiability_status),
         "notes" => notes_strs,

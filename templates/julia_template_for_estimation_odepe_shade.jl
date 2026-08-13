@@ -114,23 +114,16 @@ end
 
 function result_metadata(best_sol)
     provenance = best_sol.provenance
-    notes_strs = [string(x) for x in provenance.notes]
-    return Dict(
+    return merge(
+        ODEParameterEstimation.provenance_metadata_dict(provenance),
+        Dict(
         "parameters" => ordered_pairs_to_string_dict(collect(best_sol.parameters)),
         "states" => ordered_pairs_to_string_dict(collect(best_sol.states)),
         "all_unidentifiable" => [string(x) for x in best_sol.all_unidentifiable],
-        "primary_method" => string(provenance.primary_method),
-        "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
-        "rescue_path" => string(provenance.rescue_path),
-        "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
-        "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
-        "practical_identifiability_status" => string(provenance.practical_identifiability_status),
-        "notes" => notes_strs,
-        "was_terminal_fallback" => ("terminal_fallback" in notes_strs) || (string(provenance.rescue_path) == "direct_opt_fallback"),
         "pre_polish_error" => provenance.pre_polish_error,
         "post_polish_error" => provenance.post_polish_error,
         "polish_applied" => provenance.polish_applied,
-        "source_type" => string(provenance.source_type),
+        ),
     )
 end
 

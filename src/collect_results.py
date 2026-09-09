@@ -164,7 +164,19 @@ OUTPUT:             {args.dir.as_posix()}
       # AMIGO2 falls back to stdout-parsing for backward compatibility with bilby-era runs
       # where the AMIGO2 template printed to stdout only and didn't write result.csv.
       result_path = cell_dir / "result.csv"
-      if software in ("odepe", "pe", "sciml", "amigo2") and result_path.exists():
+      if software == "odepe" and result_path.exists():
+        df = pd.read_csv(result_path, index_col=False)
+        required_vars = [*instance['parameter_variables'], *instance['state_variables']]
+        if len(df) > 0:
+          row = df.iloc[0]
+          data = []
+          for column in df.columns:
+            name = str(column).removesuffix("(t)")
+            if name in required_vars:
+              data.append([name, row[column]])
+        else:
+          data = []
+      elif software in ("pe", "sciml", "amigo2") and result_path.exists():
         df = pd.read_csv(result_path, header=None, index_col=False)
         data = df.values.T.tolist()
         for i in range(len(data)):

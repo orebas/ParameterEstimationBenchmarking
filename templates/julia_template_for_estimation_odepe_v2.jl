@@ -69,6 +69,10 @@ pep = ParameterEstimationProblem(
 #     AAAD and S2AAAMLE for the crauste-class problems. Noise-gating via
 #     `auto_filter_interpolators=true` (also a package default) drops
 #     S2AAAMLE/AAAD/AAADOld at high noise automatically.
+#     Subexperiment-only variants can force a single interpolator through
+#     {{ODEPE_FORCE_INTERPOLATOR}} while leaving the main polish/no-polish arms unchanged.
+#     Forcing an interpolator ALSO sets `auto_filter_interpolators=false` (see below) so the
+#     forced method survives at high noise — the aaa-only arm must use AAAD at every σ̂.
 #   * Polish via PolishLSOBoundedLog (post-2026-05 bake-off winner; bounded LSO LM in
 #     per-variable log space). The {{ODEPE_POLISH}} Mustache toggle controls whether
 #     polish runs at all (this is the only difference between odepe_v2_polish and
@@ -79,10 +83,16 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
-    # Quoll: pin branch/conditioning knobs explicitly (no hidden package defaults).
-    # Both ship default-on in ODEPE 1fe5062 (2026-05-27); pinned here for provenance.
+    # Keep Quoll's explicit conditioning pin; branch completion remains configurable.
     use_column_scaling = true,
-    branch_completion = true,
+    branch_completion = {{ODEPE_BRANCH_COMPLETION}},
+    {{#ODEPE_FORCE_INTERPOLATOR}}
+    interpolator = {{ODEPE_FORCE_INTERPOLATOR}},
+    interpolators = InterpolatorMethod[],
+    # Forcing ONE interpolator ⇒ disable noise-gated filtering, else the forced method
+    # (e.g. AAAD) is silently dropped above σ̂≈1e-5 and the arm falls back to AAADGPR.
+    auto_filter_interpolators = false,
+    {{/ODEPE_FORCE_INTERPOLATOR}}
     # Shooting: 20 warp points clustered near t=0 (numbat: was 12 in bilby; bumped for
     # better statistical power in the synthesize_aggregate_candidates median/trimmed-mean pool).
     shooting_points = 20,
@@ -128,36 +138,38 @@ end
 
 function result_metadata(best_sol)
     provenance = best_sol.provenance
-    notes_strs = [string(x) for x in provenance.notes]
-    return Dict(
+    return merge(
+        ODEParameterEstimation.provenance_metadata_dict(provenance),
+        Dict(
         "parameters" => ordered_pairs_to_string_dict(collect(best_sol.parameters)),
         "states" => ordered_pairs_to_string_dict(collect(best_sol.states)),
         "all_unidentifiable" => [string(x) for x in best_sol.all_unidentifiable],
-        "primary_method" => string(provenance.primary_method),
-        "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
-        "rescue_path" => string(provenance.rescue_path),
-        "source_shooting_index" => provenance.source_shooting_index,
-        "source_candidate_index" => provenance.source_candidate_index,
-        "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
-        "residual_fix_set" => ordered_dict_to_string_dict(provenance.residual_fix_set),
-        "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
-        "template_status_before_residual_fix" => isnothing(provenance.template_status_before_residual_fix) ? nothing : string(provenance.template_status_before_residual_fix),
-        "template_status_after_residual_fix" => isnothing(provenance.template_status_after_residual_fix) ? nothing : string(provenance.template_status_after_residual_fix),
-        "equations_dropped_by_rank_trimming" => provenance.equations_dropped_by_rank_trimming,
-        "practical_identifiability_status" => string(provenance.practical_identifiability_status),
-        "notes" => notes_strs,
-        "was_terminal_fallback" => ("terminal_fallback" in notes_strs) || (string(provenance.rescue_path) == "direct_opt_fallback"),
-        "source_type" => string(provenance.source_type),
-        "multipoint_time_indices" => isnothing(provenance.multipoint_time_indices) ? nothing : provenance.multipoint_time_indices,
-        "multipoint_combo_index" => provenance.multipoint_combo_index,
-        "aggregation_strategy" => string(provenance.aggregation_strategy),
-        "aggregation_source_indices" => provenance.aggregation_source_indices,
+        ),
     )
 end
 
 sidecar_file = joinpath(@__DIR__, "odepe_metadata.json")
 wall_time_file = joinpath(@__DIR__, "wall_time_seconds.txt")
 failure_reason_file = joinpath(@__DIR__, "failure_reason.txt")
+
+# Sanitize metadata for JSON: JSON.print throws ArgumentError on NaN/Inf, which (with the
+# truncate-then-write below) silently produced 0-byte sidecars on ~1/3 of the final_v2 cells
+# (the hard/failed ones, whose error fields go non-finite). Recursively map non-finite floats
+# to `nothing` (JSON null) and stringify dict keys; clean metadata is unchanged.
+function _json_safe(x)
+    if x isa AbstractFloat
+        return isfinite(x) ? x : nothing
+    elseif x isa AbstractDict
+        return Dict{String, Any}(string(k) => _json_safe(v) for (k, v) in x)
+    elseif x isa AbstractVector || x isa Tuple
+        return Any[_json_safe(v) for v in x]
+    elseif x isa Symbol
+        return string(x)
+    else
+        return x
+    end
+end
+
 metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
@@ -170,10 +182,30 @@ t_start = time()
 analysis_failed = false
 
 try
-    raw_results, analysis, _ = analyze_parameter_estimation_problem(
-        pep,
-        opts,
-    )
+    (estimation_value, timing_breakdown) = ODEParameterEstimation.with_estimation_timing() do
+        analyze_parameter_estimation_problem(
+            pep,
+            opts,
+        )
+    end
+    raw_results, analysis, uq_result = estimation_value
+    {{#ODEPE_DUMP_POOL}}
+    # Full candidate-pool dump (err + provenance) for the offline ranking study — polish/nopolish
+    # arms only. raw_results[1] is the full pre-truncation pool (analysis_utils.jl). Wrapped so a
+    # dump failure is non-fatal to the cell; invokelatest because dump_pool is just-included.
+    try
+        # Base.include(@__MODULE__, ...) not bare include(): the warm worker runs each
+        # cell inside a hand-built Module that has no module-local `include` binding.
+        Base.include(@__MODULE__, raw"{{harness_root}}/src/dump_pool.jl")
+        Base.invokelatest(dump_pool, raw_results, pep, opts;
+            csv_path = joinpath(@__DIR__, "pool.csv"), jls_path = joinpath(@__DIR__, "pool.jls"))
+    catch _dump_err
+        @warn "dump_pool failed (non-fatal)" exception = (_dump_err, catch_backtrace())
+    end
+    {{/ODEPE_DUMP_POOL}}
+    if !isnothing(timing_breakdown)
+        metadata["timing"] = ODEParameterEstimation.timing_breakdown_to_dict(timing_breakdown)
+    end
 
     (solutions_vector,
         besterror,
@@ -196,6 +228,7 @@ try
     metadata["best_approximation_error"] = best_approximation_error
     metadata["best_rms_error"] = best_rms_error
     metadata["algebraic_multiplicity_used"] = hasproperty(analysis, :algebraic_multiplicity) ? analysis.algebraic_multiplicity : nothing
+    metadata["uq"] = ODEParameterEstimation.uq_metadata_dict(uq_result)
 
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
@@ -263,11 +296,20 @@ finally
         end
     catch
     end
+    # Build the JSON string FIRST (so a serialization failure never leaves a truncated
+    # 0-byte file), sanitizing non-finite floats; LOG on failure instead of swallowing.
     try
-        open(sidecar_file, "w") do io
-            JSON.print(io, metadata, 4)
+        sidecar_json = sprint(io -> JSON.print(io, _json_safe(metadata), 4))
+        write(sidecar_file, sidecar_json)
+    catch _meta_err
+        @error "metadata sidecar serialization failed" exception = (_meta_err, catch_backtrace())
+        try
+            write(sidecar_file, sprint(io -> JSON.print(io, Dict(
+                "status" => get(metadata, "status", "error"),
+                "metadata_write_error" => sprint(showerror, _meta_err),
+            ), 4)))
+        catch
         end
-    catch
     end
 end
 
@@ -278,5 +320,7 @@ println("Total time: ", time() - t_start)
 println("===END===")
 
 if analysis_failed
-    exit(1)
+    if get(ENV, "ODEPE_WARM_JULIA_NO_EXIT", "0") != "1"
+        exit(1)
+    end
 end

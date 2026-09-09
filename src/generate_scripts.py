@@ -26,6 +26,11 @@ from shared import warn, info, get_settings, AVAILABLE_SOFTWARE, JULIA_ENVIRONME
 DEFAULT_CONFIG_VALUES = {
     "PATH_TO_AMIGO2": "",
     "ODEPE_POLISH": "true",
+    "ODEPE_BRANCH_COMPLETION": "true",
+    "ODEPE_FORCE_INTERPOLATOR": "",
+    # Empty ⇒ the {{#ODEPE_DUMP_POOL}} section is skipped (chevron: "" is falsy, any
+    # non-empty string is truthy). Enabled for polish/nopolish via SOFTWARE_OVERRIDES.
+    "ODEPE_DUMP_POOL": "",
     "POLISH_MAXTIME": 1200.0,
     "POLISH_DIVERGENCE_FACTOR": 10.0,
     "POLISH_STAGNATION_WINDOW": 50,
@@ -53,6 +58,8 @@ TEMPLATE_ESTIMATION = {
     # the only difference is `ODEPE_POLISH` injected via SOFTWARE_OVERRIDES below.
     "odepe_v2_polish"         : "templates/julia_template_for_estimation_odepe_v2.jl",
     "odepe_v2_nopolish"       : "templates/julia_template_for_estimation_odepe_v2.jl",
+    "odepe_v2_aaa_nopolish"   : "templates/julia_template_for_estimation_odepe_v2.jl",
+    "odepe_v2_gponly"         : "templates/julia_template_for_estimation_odepe_v2.jl",
     "odepe_shade"             : "templates/julia_template_for_estimation_odepe_shade.jl",
 }
 
@@ -69,6 +76,8 @@ SOFTWARE_COMMENT = {
     "odepe_multipoint"        : "#",
     "odepe_v2_polish"         : "#",
     "odepe_v2_nopolish"       : "#",
+    "odepe_v2_aaa_nopolish"   : "#",
+    "odepe_v2_gponly"         : "#",
     "odepe_shade"             : "#",
 }
 
@@ -77,14 +86,26 @@ FILE_EXT = {'pe': 'jl', 'odepe': 'jl', 'sciml': 'jl', 'amigo2': 'm', 'iqm': 'm',
             'odepe_kernel_se_plus_rq': 'jl', 'odepe_kernel_se_times_rq': 'jl',
             'odepe_multipoint': 'jl',
             'odepe_v2_polish': 'jl', 'odepe_v2_nopolish': 'jl',
+            'odepe_v2_aaa_nopolish': 'jl', 'odepe_v2_gponly': 'jl',
             'odepe_shade': 'jl'}
 
 # Per-software Mustache overrides applied AFTER get_settings(). Lets us render
 # multiple distinct runs from a single template — e.g. odepe_v2 polish/nopolish
 # from one file by toggling {{ODEPE_POLISH}}.
 SOFTWARE_OVERRIDES = {
-    "odepe_v2_polish":   {"ODEPE_POLISH": "true"},
-    "odepe_v2_nopolish": {"ODEPE_POLISH": "false"},
+    "odepe_v2_polish":   {"ODEPE_POLISH": "true",  "ODEPE_DUMP_POOL": "1"},
+    "odepe_v2_nopolish": {"ODEPE_POLISH": "false", "ODEPE_DUMP_POOL": "1"},
+    "odepe_v2_aaa_nopolish": {
+        "ODEPE_POLISH": "false",
+        "ODEPE_FORCE_INTERPOLATOR": "InterpolatorAAAD",
+    },
+    # GP-only arm for the TAC practical-identifiability certificate: forces the
+    # UQ-capable SE-kernel GP so the estimator's derivative smoother IS the
+    # certificate's W. No polish, matching the aaa_nopolish comparison arm.
+    "odepe_v2_gponly": {
+        "ODEPE_POLISH": "false",
+        "ODEPE_FORCE_INTERPOLATOR": "InterpolatorAGPUQ",
+    },
 }
 
 def get_sciml_measurements(instance):
@@ -175,12 +196,14 @@ OUTPUT:             {args.dir}
             if software in ['pe','odepe','sciml','amigo2',
                             'odepe_kernel_se','odepe_kernel_rq','odepe_kernel_se_plus_rq','odepe_kernel_se_times_rq',
                             'odepe_multipoint',
-                            'odepe_v2_polish','odepe_v2_nopolish','odepe_shade']:
+                            'odepe_v2_polish','odepe_v2_nopolish','odepe_v2_aaa_nopolish','odepe_v2_gponly',
+                            'odepe_shade']:
                 julia_env_name = {"pe": "julia_pe", "odepe": "julia_odepe", "sciml": "julia_sciml",
                                   "odepe_kernel_se": "julia_odepe", "odepe_kernel_rq": "julia_odepe",
                                   "odepe_kernel_se_plus_rq": "julia_odepe", "odepe_kernel_se_times_rq": "julia_odepe",
                                   "odepe_multipoint": "julia_odepe",
                                   "odepe_v2_polish": "julia_odepe", "odepe_v2_nopolish": "julia_odepe",
+                                  "odepe_v2_aaa_nopolish": "julia_odepe", "odepe_v2_gponly": "julia_odepe",
                                   "odepe_shade": "julia_odepe"}.get(software, "")
                 if julia_env_name:
                     julia_env_abs = str((parent / "environments" / julia_env_name).resolve())

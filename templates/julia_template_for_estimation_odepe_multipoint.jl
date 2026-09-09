@@ -71,6 +71,7 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
+    branch_completion = {{ODEPE_BRANCH_COMPLETION}},
     # 7 interpolators: mix of GP, spectral, and rational
     interpolators = [
         InterpolatorAGPRobust,        # AGP-Robust-SE
@@ -125,27 +126,35 @@ end
 
 function result_metadata(best_sol)
     provenance = best_sol.provenance
-    return Dict(
+    return merge(
+        ODEParameterEstimation.provenance_metadata_dict(provenance),
+        Dict(
         "parameters" => ordered_pairs_to_string_dict(collect(best_sol.parameters)),
         "states" => ordered_pairs_to_string_dict(collect(best_sol.states)),
         "all_unidentifiable" => [string(x) for x in best_sol.all_unidentifiable],
-        "primary_method" => string(provenance.primary_method),
-        "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
-        "rescue_path" => string(provenance.rescue_path),
-        "source_shooting_index" => provenance.source_shooting_index,
-        "source_candidate_index" => provenance.source_candidate_index,
-        "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
-        "residual_fix_set" => ordered_dict_to_string_dict(provenance.residual_fix_set),
-        "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
-        "template_status_before_residual_fix" => isnothing(provenance.template_status_before_residual_fix) ? nothing : string(provenance.template_status_before_residual_fix),
-        "template_status_after_residual_fix" => isnothing(provenance.template_status_after_residual_fix) ? nothing : string(provenance.template_status_after_residual_fix),
-        "equations_dropped_by_rank_trimming" => provenance.equations_dropped_by_rank_trimming,
-        "practical_identifiability_status" => string(provenance.practical_identifiability_status),
-        "notes" => [string(x) for x in provenance.notes],
+        ),
     )
 end
 
 sidecar_file = joinpath(@__DIR__, "odepe_metadata.json")
+
+# Sanitize metadata for JSON: JSON.print throws ArgumentError on NaN/Inf (the error fields of
+# hard/failed cells go non-finite). Recursively map non-finite floats to `nothing` (JSON null)
+# and stringify dict keys; clean metadata is unchanged.
+function _json_safe(x)
+    if x isa AbstractFloat
+        return isfinite(x) ? x : nothing
+    elseif x isa AbstractDict
+        return Dict{String, Any}(string(k) => _json_safe(v) for (k, v) in x)
+    elseif x isa AbstractVector || x isa Tuple
+        return Any[_json_safe(v) for v in x]
+    elseif x isa Symbol
+        return string(x)
+    else
+        return x
+    end
+end
+
 metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
@@ -153,7 +162,7 @@ metadata = Dict{String, Any}(
 )
 
 try
-    raw_results, analysis, _ = analyze_parameter_estimation_problem(
+    raw_results, analysis, uq_result = analyze_parameter_estimation_problem(
         pep,
         opts,
     )
@@ -178,6 +187,7 @@ try
     metadata["best_max_error"] = best_max_error
     metadata["best_approximation_error"] = best_approximation_error
     metadata["best_rms_error"] = best_rms_error
+    metadata["uq"] = ODEParameterEstimation.uq_metadata_dict(uq_result)
 
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),
@@ -212,7 +222,19 @@ catch err
     metadata["error"] = sprint(showerror, err, catch_backtrace())
     rethrow()
 finally
-    open(sidecar_file, "w") do io
-        JSON.print(io, metadata, 4)
+    # Build the JSON string FIRST (so a serialization failure never leaves a truncated
+    # 0-byte file), sanitizing non-finite floats; LOG on failure instead of crashing in finally.
+    try
+        sidecar_json = sprint(io -> JSON.print(io, _json_safe(metadata), 4))
+        write(sidecar_file, sidecar_json)
+    catch _meta_err
+        @error "metadata sidecar serialization failed" exception = (_meta_err, catch_backtrace())
+        try
+            write(sidecar_file, sprint(io -> JSON.print(io, Dict(
+                "status" => get(metadata, "status", "error"),
+                "metadata_write_error" => sprint(showerror, _meta_err),
+            ), 4)))
+        catch
+        end
     end
 end

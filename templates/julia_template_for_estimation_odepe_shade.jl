@@ -114,30 +114,41 @@ end
 
 function result_metadata(best_sol)
     provenance = best_sol.provenance
-    notes_strs = [string(x) for x in provenance.notes]
-    return Dict(
+    return merge(
+        ODEParameterEstimation.provenance_metadata_dict(provenance),
+        Dict(
         "parameters" => ordered_pairs_to_string_dict(collect(best_sol.parameters)),
         "states" => ordered_pairs_to_string_dict(collect(best_sol.states)),
         "all_unidentifiable" => [string(x) for x in best_sol.all_unidentifiable],
-        "primary_method" => string(provenance.primary_method),
-        "interpolator_source" => isnothing(provenance.interpolator_source) ? nothing : string(provenance.interpolator_source),
-        "rescue_path" => string(provenance.rescue_path),
-        "structural_fix_set" => ordered_dict_to_string_dict(provenance.structural_fix_set),
-        "residual_fix_set" => ordered_dict_to_string_dict(provenance.residual_fix_set),
-        "representative_assignments" => ordered_dict_to_string_dict(provenance.representative_assignments),
-        "practical_identifiability_status" => string(provenance.practical_identifiability_status),
-        "notes" => notes_strs,
-        "was_terminal_fallback" => ("terminal_fallback" in notes_strs) || (string(provenance.rescue_path) == "direct_opt_fallback"),
         "pre_polish_error" => provenance.pre_polish_error,
         "post_polish_error" => provenance.post_polish_error,
         "polish_applied" => provenance.polish_applied,
-        "source_type" => string(provenance.source_type),
+        ),
     )
 end
 
 sidecar_file = joinpath(@__DIR__, "odepe_metadata.json")
 wall_time_file = joinpath(@__DIR__, "wall_time_seconds.txt")
 failure_reason_file = joinpath(@__DIR__, "failure_reason.txt")
+
+# Sanitize metadata for JSON: JSON.print throws ArgumentError on NaN/Inf, which (with the
+# truncate-then-write below) silently produced 0-byte sidecars on ~1/3 of the final_v2 cells
+# (the hard/failed ones, whose error fields go non-finite). Recursively map non-finite floats
+# to `nothing` (JSON null) and stringify dict keys; clean metadata is unchanged.
+function _json_safe(x)
+    if x isa AbstractFloat
+        return isfinite(x) ? x : nothing
+    elseif x isa AbstractDict
+        return Dict{String, Any}(string(k) => _json_safe(v) for (k, v) in x)
+    elseif x isa AbstractVector || x isa Tuple
+        return Any[_json_safe(v) for v in x]
+    elseif x isa Symbol
+        return string(x)
+    else
+        return x
+    end
+end
+
 metadata = Dict{String, Any}(
     "status" => "error",
     "raw_count" => 0,
@@ -200,11 +211,20 @@ finally
         end
     catch
     end
+    # Build the JSON string FIRST (so a serialization failure never leaves a truncated
+    # 0-byte file), sanitizing non-finite floats; LOG on failure instead of swallowing.
     try
-        open(sidecar_file, "w") do io
-            JSON.print(io, metadata, 4)
+        sidecar_json = sprint(io -> JSON.print(io, _json_safe(metadata), 4))
+        write(sidecar_file, sidecar_json)
+    catch _meta_err
+        @error "metadata sidecar serialization failed" exception = (_meta_err, catch_backtrace())
+        try
+            write(sidecar_file, sprint(io -> JSON.print(io, Dict(
+                "status" => get(metadata, "status", "error"),
+                "metadata_write_error" => sprint(showerror, _meta_err),
+            ), 4)))
+        catch
         end
-    catch
     end
 end
 
@@ -212,5 +232,10 @@ println("Total time: ", time() - t_start)
 println("===END===")
 
 if analysis_failed
-    exit(1)
+    # A persistent warm worker (the shared-work-queue engine) must survive a failed
+    # cell — exit(1) would kill the engine and force a full recompile. Match the v2
+    # template's guard so a failed shade cell is non-fatal to the engine.
+    if get(ENV, "ODEPE_WARM_JULIA_NO_EXIT", "0") != "1"
+        exit(1)
+    end
 end

@@ -194,7 +194,7 @@ OUTPUT:             {output_dir.as_posix()}
             with open(data_generation_filepath, 'w') as output_file:
                 output_file.write(file_meta_header + julia_file)
 
-        cmd = shlex.split('julia ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir) + ' ' + "\"" + ",".join(instances_to_generate) + "\"")
+        cmd = shlex.split('julia --startup-file=no ' + str(Path('src/simple_fast_generate_data.jl').as_posix()) + ' ' + str(output_dir) + ' ' + "\"" + ",".join(instances_to_generate) + "\"")
         try:
             output = subprocess.run(
                 cmd,

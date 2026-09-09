@@ -1,0 +1,61 @@
+{
+  "m1_policy": "bounded_physical",
+  "bounds": [
+    1e-05,
+    10.0
+  ],
+  "system_count": 25,
+  "dropped_branched_systems": [
+    "latent_subpopulation_branched",
+    "receptor_binding_branched"
+  ],
+  "replacements": {
+    "biohydrogenation": {
+      "branched_name": "biohydrogenation_branched",
+      "source_name": "biohydrogenation_m1",
+      "added_measurements": {
+        "y3": "0.5*x6"
+      },
+      "reason": "add x6 observable to remove biohydrogenation sign/compensation branch"
+    },
+    "daisy_mamil4": {
+      "branched_name": "daisy_mamil4_branched",
+      "source_name": "daisy_mamil4_m1",
+      "added_measurements": {
+        "y4": "1.2*x3"
+      },
+      "reason": "add one channel-specific observable to break x3/x4 channel swap"
+    },
+    "seir": {
+      "branched_name": "seir_branched",
+      "source_name": "seir_m1",
+      "added_measurements": {
+        "y3": "20.0*E"
+      },
+      "reason": "add exposed-compartment observable to break SEIR hyperbola branch"
+    },
+    "slow_fast": {
+      "branched_name": "slow_fast_branched",
+      "source_name": "slow_fast_m1",
+      "added_measurements": {
+        "y5": "0.9990000000000001*eB"
+      },
+      "reason": "add eB observable to remove slow-fast swap/rescaling branch"
+    },
+    "latent_subpopulation": {
+      "branched_name": "latent_subpopulation_branched",
+      "source_name": "latent_subpopulation_observed_control",
+      "reason": "use observed compartment/control variant for the M=1 paper benchmark"
+    },
+    "receptor_binding": {
+      "branched_name": "receptor_binding_branched",
+      "source_name": "receptor_subtype_binding_observed_control",
+      "reason": "use observed receptor-subtype binding variant with a shorter paper-facing name"
+    }
+  },
+  "branch_completion": false,
+  "notes": [
+    "Original branchful models are left unchanged in ODEPE/PEB source and omitted from this M=1 config.",
+    "biohydrogenation and slow_fast use conservative M=1 observable variants rather than relying on bound-filtered branches."
+  ]
+}

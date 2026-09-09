@@ -45,6 +45,55 @@ This is not bookkeeping for its own sake. It prevents accidental comparisons
 between algorithm changes, interpolator changes, environment changes, and data
 changes.
 
+## Noise Protocol For Next Benchmark
+
+The final-v2 paper benchmark used additive Gaussian noise scaled by the sample
+mean of each observed output component:
+
+```text
+sigma_j = eta * abs(mean(y_j))
+```
+
+This is reproducible and acceptable for the current paper as long as it is
+described honestly, but it is not the preferred protocol for the next benchmark.
+For outputs that oscillate around zero, such as the harmonic oscillator and
+Van der Pol examples, `abs(mean(y_j))` can be much smaller than the trajectory
+amplitude. Those cells are therefore effectively much cleaner than positive
+or offset-valued systems at the same nominal `eta`.
+
+The next primary benchmark should use a centered signal-scale normalization,
+preferably:
+
+```text
+sigma_j = eta * std(y_j)
+```
+
+where the standard deviation is computed over the noiseless sampled trajectory
+for that observed component. Equivalently, normalize each observed trajectory
+to zero mean and unit variance, add `Normal(0, eta)`, and then unnormalize.
+This makes `eta = 1e-2` mean approximately "1% of the dynamic signal scale" for
+oscillatory, decaying, and positive-valued outputs alike.
+
+If `std(y_j)` is numerically tiny, do not silently produce zero-noise data. The
+generator should either:
+
+- mark the output as effectively constant and use a documented RMS or mean
+  magnitude fallback, or
+- exclude that output from noise-scaled benchmark summaries.
+
+Each generated dataset should also record per-output noise metadata:
+
+- noise protocol name, e.g. `sd_relative_additive_noise`;
+- clean mean, standard deviation, RMS, minimum, maximum, and range;
+- chosen noise scale `sigma_j`;
+- realized noise mean and standard deviation;
+- realized ratios such as `noise_sd / clean_sd` and `noise_sd / clean_rms`;
+- RNG seed and data hash.
+
+The current mean-scaled protocol can still be useful as a legacy/sensitivity
+comparison, but it should not be the default protocol for claims about
+cross-system robustness to measurement noise.
+
 ## Suggested Preflight Before Full HPC Run
 
 Run a small preflight before launching the full 920-instance or larger matrix.

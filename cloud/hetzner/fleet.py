@@ -364,7 +364,9 @@ def run_shard_local(shard, run_id, run_date, base_config, base_systems, num_test
         overlay_mounts.extend(["-v", f"{PEB / 'environments' / 'julia_odepe'}:/opt/peb/environments/julia_odepe:ro"])
         for pkg in (p for p in OVERLAY_PACKAGES if p != "ODEParameterEstimation"):
             overlay_mounts.extend(["-v", f"{(PEB / 'environments' / pkg).resolve()}:/opt/peb/environments/{pkg}:ro"])
-        overlay_mounts.extend(["-v", f"{(PEB / 'environments' / 'ODEParameterEstimation').resolve()}:/opt/odepe:ro"])
+        odepe_src = (PEB / "environments" / "ODEParameterEstimation").resolve()
+        overlay_mounts.extend(["-v", f"{odepe_src}:/opt/peb/environments/ODEParameterEstimation:ro"])
+        overlay_mounts.extend(["-v", f"{odepe_src}:/opt/odepe:ro"])
         run(["docker", "run", "--rm", f"--memory={LOCAL_MEM_CAP}",
              "-v", f"{d}:/shard:ro",
              "-v", f"{work}:/work",

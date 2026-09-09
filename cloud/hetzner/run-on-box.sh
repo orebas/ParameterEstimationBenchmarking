@@ -61,7 +61,10 @@ if [ -d /root/overlay ]; then
     fi
   done
   if [ -d /root/overlay/environments/ODEParameterEstimation ]; then
-    DOCKER_MOUNTS+=(-v /root/overlay/environments/ODEParameterEstimation:/opt/odepe:ro)
+    DOCKER_MOUNTS+=(
+      -v /root/overlay/environments/ODEParameterEstimation:/opt/peb/environments/ODEParameterEstimation:ro
+      -v /root/overlay/environments/ODEParameterEstimation:/opt/odepe:ro
+    )
   fi
 else
   DOCKER_MOUNTS+=(-v /root/shard/run-benchmark.sh:/opt/peb/docker/run-benchmark.sh:ro)

@@ -52,16 +52,18 @@ The follow-up runs are designed to be smaller and more diagnostic. We generate t
 Question: At very low noise, does forcing the classic AAA interpolator still improve recovery enough to justify special-casing or retaining it?
 
 - Noises: `0`, `1e-12`, `1e-10`, `1e-8`, `1e-6`
-- Arms: `odepe_v2_aaa_nopolish` vs `odepe_v2_polish`
-- Planned executed size after representative-replica filtering: 25 x 5 x 2 x 2 = 500 cells
+- New arm: `odepe_v2_aaa_nopolish` across all five low-noise levels
+- Baseline: reuse main-run `odepe_v2_polish` for overlapping noises `0`, `1e-8`, and `1e-6`; run fresh `odepe_v2_polish` only for the new AAA-only noises `1e-12` and `1e-10`
+- Planned executed size after representative-replica filtering: 25 x 5 x 2 = 250 AAA cells, plus 25 x 2 x 2 = 100 new-noise polish baseline cells
 
 ### Polish Ablation
 
 Question: How much of the current ODEPE v2 performance comes from bounded log-space polishing rather than the symbolic/homotopy candidate generation pipeline?
 
 - Noises: `0`, `1e-8`, `1e-6`, `1e-4`, `1e-2`
-- Arms: `odepe_v2_polish` vs `odepe_v2_nopolish`
-- Planned executed size after representative-replica filtering: 25 x 5 x 2 x 2 = 500 cells
+- New arm: `odepe_v2_nopolish`
+- Baseline: reuse main-run `odepe_v2_polish`
+- Planned executed size after representative-replica filtering: 25 x 5 x 2 = 250 new no-polish cells
 
 ## Deployment Plan
 
@@ -80,21 +82,22 @@ AMIGO2 is intended to run locally with adaptive concurrency:
 
 The fleet harness now supports stable benchmark dates, shard resume from prior results, periodic result pulls, and final result pulls before node teardown. This should reduce lost work if a shard/node fails or if we hit Hetzner quota limits while launching.
 
-Optional warm-Julia mode is now available as a canary-only launch option: `fleet.py --warm-julia --warm-julia-batch N`. It batches several cells through each Julia process while keeping the default isolated one-process-per-cell mode unchanged. We should compare a small warm run against the default runner before using warm mode for timing-sensitive results.
+Warm-Julia mode is available via `fleet.py --warm-julia --warm-julia-batch N`. It batches several cells through each Julia process while keeping the default isolated one-process-per-cell mode available. A 2026-06-10 Hetzner smoke passed end-to-end for the polish, no-polish, and low-AAA arms; for timing-sensitive interpretation we should still preserve the timing sidecars and note that Julia warmup is amortized within a shard.
 
 ## Current Staging Status
 
 Prepared locally:
 
 - Main data: 1,250 synthetic cells, with 1,250 scripts each for `odepe_v2_polish`, `odepe_shade`, and `amigo2`.
-- Low-noise AAA data: 1,250 synthetic cells, with 1,250 scripts each for `odepe_v2_aaa_nopolish` and `odepe_v2_polish`.
-- Polish-ablation data: reuses the main synthetic cells, with 1,250 scripts each for `odepe_v2_polish` and `odepe_v2_nopolish`.
+- Low-noise AAA data: 1,250 synthetic cells, with scripts staged for `odepe_v2_aaa_nopolish` and `odepe_v2_polish`; the run plan is incremental and only executes polish for the new `1e-12` and `1e-10` noise levels.
+- Polish-ablation data: reuses the main synthetic cells, with scripts staged for `odepe_v2_polish` and `odepe_v2_nopolish`; the run plan executes only `odepe_v2_nopolish` and compares against main-run polish results.
 
 Hetzner dry-run plans, with no cloud nodes created:
 
 - Main cloud launch plan: 122 shards/boxes, 2,500 ODEPE/SHADE cells, approximately `$30.50/hr` at full concurrency.
-- Low-noise AAA full staging plan: 122 shards/boxes, 2,500 cells, approximately `$30.50/hr` at full concurrency.
-- Polish-ablation full staging plan: 122 shards/boxes, 2,500 cells, approximately `$30.50/hr` at full concurrency.
+- Incremental low-noise AAA plan: 61 shards/boxes, 1,250 `odepe_v2_aaa_nopolish` cells, approximately `$12.54/hr` at full concurrency.
+- New-noise polish baseline for AAA: 34 shards/boxes, 500 `odepe_v2_polish` cells for `1e-12` and `1e-10`, approximately `$6.15/hr` at full concurrency.
+- Incremental polish-ablation plan: 61 shards/boxes, 1,250 `odepe_v2_nopolish` cells, approximately `$12.54/hr` at full concurrency.
 
 The follow-up plans are deliberately staged with the full 10-replica universe so we can choose representative replicas after the main ODEPE-polish results are available. Launching those tiers exactly as staged would run all 10 replicas; the intended diagnostic follow-up is the filtered 2-replica-per-system subset unless we explicitly decide to spend the full run.
 

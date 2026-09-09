@@ -184,7 +184,7 @@ try
             opts,
         )
     end
-    raw_results, analysis, _ = estimation_value
+    raw_results, analysis, uq_result = estimation_value
     {{#ODEPE_DUMP_POOL}}
     # Full candidate-pool dump (err + provenance) for the offline ranking study — polish/nopolish
     # arms only. raw_results[1] is the full pre-truncation pool (analysis_utils.jl). Wrapped so a
@@ -223,6 +223,7 @@ try
     metadata["best_max_error"] = best_max_error
     metadata["best_approximation_error"] = best_approximation_error
     metadata["best_rms_error"] = best_rms_error
+    metadata["uq"] = ODEParameterEstimation.uq_metadata_dict(uq_result)
 
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),

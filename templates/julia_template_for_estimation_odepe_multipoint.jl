@@ -162,7 +162,7 @@ metadata = Dict{String, Any}(
 )
 
 try
-    raw_results, analysis, _ = analyze_parameter_estimation_problem(
+    raw_results, analysis, uq_result = analyze_parameter_estimation_problem(
         pep,
         opts,
     )
@@ -187,6 +187,7 @@ try
     metadata["best_max_error"] = best_max_error
     metadata["best_approximation_error"] = best_approximation_error
     metadata["best_rms_error"] = best_rms_error
+    metadata["uq"] = ODEParameterEstimation.uq_metadata_dict(uq_result)
 
     table = merge(
         Dict((string(x) => [each.states[x] for each in solutions_vector] for x in states)),

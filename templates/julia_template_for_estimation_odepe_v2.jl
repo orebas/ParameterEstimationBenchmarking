@@ -79,6 +79,10 @@ opts = EstimationOptions(
     system_solver = SolverHC,
     flow = FlowStandard,
     use_si_template = true,
+    # Quoll: pin branch/conditioning knobs explicitly (no hidden package defaults).
+    # Both ship default-on in ODEPE 1fe5062 (2026-05-27); pinned here for provenance.
+    use_column_scaling = true,
+    branch_completion = true,
     # Shooting: 20 warp points clustered near t=0 (numbat: was 12 in bilby; bumped for
     # better statistical power in the synthesize_aggregate_candidates median/trimmed-mean pool).
     shooting_points = 20,
